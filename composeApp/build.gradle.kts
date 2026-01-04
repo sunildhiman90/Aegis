@@ -56,6 +56,7 @@ kotlin {
             // --- Ktor & Serialization ---
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
         }
 
@@ -109,7 +110,7 @@ buildkonfig {
         buildConfigField(
             com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
             "GEMINI_API_KEY",
-            localProperties.getProperty("GEMINI_API_KEY") ?: ""
+            System.getenv("GEMINI_API_KEY") ?: localProperties.getProperty("GEMINI_API_KEY")
         )
     }
 }
