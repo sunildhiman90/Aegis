@@ -18,7 +18,5 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 
-# Project exclude paths
-/composeApp/
-/gradle/
-/iosApp/
+/.windsurf/rules/android-kmp-project-structure-and-coding-guidelines.md
+/kotlin-js-store/yarn.lock
