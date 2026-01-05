@@ -21,6 +21,9 @@ object SecurityTools {
     fun analyzeLocally(text: String): LocalRisk {
         val lowerText = text.lowercase()
 
+        //TODO, just for testing
+        //return LocalRisk.SUSPICIOUS
+
         // 1. Critical Check (Red)
         if (HIGH_RISK_KEYWORDS.any { lowerText.contains(it) }) {
             // Context check: If "Police" AND "Video Call" appear together -> RED
