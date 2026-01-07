@@ -21,6 +21,8 @@ class AegisAccessibilityService : AccessibilityService() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
     private var analysisJob: Job? = null // 🛑 STORE THE CURRENT JOB
     private var currentAnalysisHash = 0 // Track what content is currently being analyzed
+    private var currentAnalysisText = ""
+    private var currentAnalysisContact = ""
 
     private val geminiClient = GeminiClient()
     private lateinit var overlayManager: OverlayManager
@@ -136,15 +138,28 @@ class AegisAccessibilityService : AccessibilityService() {
 
     // --- HELPER TO AVOID DUPLICATE CODE ---
     private fun runGeminiAnalysis(contactName: String, chatContent: String, contentHash: Int) {
-        // 🛑 OPTIMIZATION: If we are already analyzing this exact content, let it finish.
+        
+        // 1. Check if we are analyzing the SAME content (Exact Hash)
         if (analysisJob?.isActive == true && currentAnalysisHash == contentHash) {
-            Log.d("Aegis", "♻️ Skipping re-analysis: Same content is already being processed.")
-            return
+             return
         }
-
+        
+        // 2. Check if we are analyzing SIMILAR content (Scrolling)
+        if (analysisJob?.isActive == true) {
+            // Must be same contact
+            if (contactName == currentAnalysisContact) {
+                 if (isSimilar(chatContent, currentAnalysisText)) {
+                     Log.d("Aegis", "♻️ Skipping re-analysis: Content is similar (Scroll detected).")
+                     return
+                 }
+            }
+        }
+        
         // Cancel any previous analysis (User scrolled to new message)
         analysisJob?.cancel()
         currentAnalysisHash = contentHash
+        currentAnalysisText = chatContent
+        currentAnalysisContact = contactName
 
         // Show UI feedback
         overlayManager.showWarning("Verifying conversation pattern...")
@@ -160,6 +175,39 @@ class AegisAccessibilityService : AccessibilityService() {
             }
         }
     }
+    
+    private fun isSimilar(text1: String, text2: String): Boolean {
+        // Optimization: identical strings
+        if (text1 == text2) return true
+        
+        // Optimization: Length diff > 30% means it changed a lot
+        val len1 = text1.length
+        val len2 = text2.length
+        val maxLen = kotlin.math.max(len1, len2)
+        if (maxLen == 0) return true
+        
+        val diff = kotlin.math.abs(len1 - len2)
+        if (diff.toDouble() / maxLen.toDouble() > 0.3) return false // Length changed significantly
+
+        // Jaccard Similarity on Words
+        // We filter short words to avoid matching "is", "the", "at"
+        // Use regex for spaces and whitespace
+        val words1 = text1.split(Regex("\\s+")).filter { it.length > 3 }.toHashSet()
+        val words2 = text2.split(Regex("\\s+")).filter { it.length > 3 }.toHashSet()
+        
+        if (words1.isEmpty() && words2.isEmpty()) return true
+        if (words1.isEmpty() || words2.isEmpty()) return false
+        
+        val intersection = words1.count { words2.contains(it) }
+        val union = words1.size + words2.size - intersection // |A U B| = |A| + |B| - |A n B|
+        
+        if (union == 0) return true
+        
+        val score = intersection.toDouble() / union.toDouble()
+        // If 75% of unique words are shared, we assume it's the same conversation view
+        return score > 0.75 
+    }
+
     // --- HELPER TO UNIFY SHIELD LOGIC ---
     private fun showBlockingShield(reason: String, contactName: String, contentHash: Int, sources: List<Source> = emptyList()) {
         overlayManager.showShield(
