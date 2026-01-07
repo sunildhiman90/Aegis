@@ -17,7 +17,10 @@ data class GenerateContentRequest(
 data class Content(val parts: List<Part>, val role: String = "user")
 
 @Serializable
-data class Part(val text: String? = null)
+data class Part(
+    val text: String? = null,
+    @SerialName("inline_data") val inlineData: InlineData? = null
+)
 
 @Serializable
 data class GenerateContentConfig(
@@ -66,7 +69,8 @@ data class GenerateContentResponse(
 @Serializable
 data class Candidate(
     val content: Content,
-    val groundingMetadata: GroundingMetadata? = null
+    val groundingMetadata: GroundingMetadata? = null,
+    val finishReason: String? = null
 )
 
 @Serializable
@@ -100,15 +104,25 @@ data class ScamVerdict(
     val sources: List<Source> = emptyList() // Default to empty
 )
 
-@Serializable data class GroundingMetadata(
+@Serializable
+data class GroundingMetadata(
     val groundingChunks: List<GroundingChunk>? = null
 )
 
-@Serializable data class GroundingChunk(
+@Serializable
+data class GroundingChunk(
     val web: Web? = null
 )
 
-@Serializable data class Web(
+@Serializable
+data class Web(
     val uri: String? = null,
     val title: String? = null
+)
+
+
+@Serializable
+data class InlineData(
+    @SerialName("mime_type") val mimeType: String,
+    val data: String // Base64 encoded string
 )

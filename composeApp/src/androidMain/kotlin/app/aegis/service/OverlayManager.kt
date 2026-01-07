@@ -1,8 +1,9 @@
 package app.aegis.service
 
 import android.content.Context
-import android.graphics.Color
+import android.content.Intent
 import android.graphics.PixelFormat
+import android.net.Uri
 import android.os.Build
 import android.view.Gravity
 import android.view.WindowManager
@@ -74,6 +75,15 @@ class OverlayManager(private val context: Context) {
                 onUnlock = {
                     hideShield()
                     onUnlock()
+                },
+                onSourceClick = {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.url))
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             )
         }
