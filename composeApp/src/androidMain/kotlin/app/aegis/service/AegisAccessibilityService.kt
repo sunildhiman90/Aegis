@@ -20,6 +20,7 @@ class AegisAccessibilityService : AccessibilityService() {
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
     private var analysisJob: Job? = null // 🛑 STORE THE CURRENT JOB
+    private var currentAnalysisHash = 0 // Track what content is currently being analyzed
 
     private val geminiClient = GeminiClient()
     private lateinit var overlayManager: OverlayManager
@@ -115,30 +116,35 @@ class AegisAccessibilityService : AccessibilityService() {
             runGeminiAnalysis(contactName, chatContent, contentHash)
 
         } else {
-            // 🟡 CASE B: NAMED CONTACT (Mom, Amazon, Rahul) -> MEDIUM RISK
-
-            // We TRUST the name by default, BUT we VERIFY the content locally.
-            // This protects against "Hacked Friend" or "Impersonator" attacks.
-
+            // 🟡 CASE B: NAMED CONTACT ("Mom", "Rahul")
             val localVerdict = SecurityTools.analyzeLocally(chatContent)
 
             if (localVerdict != LocalRisk.SAFE) {
-                // Name is safe, but text is dangerous ("send money", "urgent link")
-                Log.d("Aegis", "⚠️ Named contact '$contactName' flagged by Local Regex. Escalating to AI.")
+                // Suspicious keyword found -> Verify with Gemini
                 runGeminiAnalysis(contactName, chatContent, contentHash)
             } else {
-                // Name is safe + Text is safe.
-                // We do NOT call TrustRepository.markAsSafe() here because the NEXT message might be a scam.
-                // We just silently ignore this specific safe message.
-                Log.d("Aegis", "✅ Named contact '$contactName' passed local checks. Ignoring.")
+                // ✅ MESSAGE IS SAFE
+                Log.d("Aegis", "Named contact '$contactName' passed local checks.")
+
+                // 💡 NEW OPTIMIZATION: Build Trust
+                // If this friend sends us a safe message, increase their "Trust Score".
+                // After 3 safe messages, add them to the Ignore List permanently.
+                TrustRepository.increaseTrustScore(contactName)
             }
         }
     }
 
     // --- HELPER TO AVOID DUPLICATE CODE ---
     private fun runGeminiAnalysis(contactName: String, chatContent: String, contentHash: Int) {
+        // 🛑 OPTIMIZATION: If we are already analyzing this exact content, let it finish.
+        if (analysisJob?.isActive == true && currentAnalysisHash == contentHash) {
+            Log.d("Aegis", "♻️ Skipping re-analysis: Same content is already being processed.")
+            return
+        }
+
         // Cancel any previous analysis (User scrolled to new message)
         analysisJob?.cancel()
+        currentAnalysisHash = contentHash
 
         // Show UI feedback
         overlayManager.showWarning("Verifying conversation pattern...")
