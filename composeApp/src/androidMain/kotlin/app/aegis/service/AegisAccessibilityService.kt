@@ -47,95 +47,113 @@ class AegisAccessibilityService : AccessibilityService() {
         Log.d("Aegis", "✅ Service Online")
     }
 
+    // Add this class-level variable to prevent re-scanning static screens
+    private var lastProcessedHash = 0
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
 
-        // 1. GLOBAL CHECKS
+        // 1. GLOBAL CHECKS & BATTERY OPTIMIZATION 🔋
         if (event.packageName?.toString() !in SUPPORTED_PACKAGES) return
         if (System.currentTimeMillis() < globalPauseUntil) return
 
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastAnalysisTime < DEBOUNCE) return
+        // 🛑 OPTIMIZATION: Ignore Scroll Events to save CPU
+        // We only care when the window content actually changes
+        if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) return
 
         val rootNode = rootInActiveWindow ?: return
 
-        // 1. VIDEO CALL CHECK (Priority)
+        // 2. VIDEO CALL CHECK (Priority #1)
+        // Checks for "Incoming Video Call" screens immediately
         if (detectVideoCallScam(rootNode)) return
 
-        // 2. CHAT SCAM CHECK
+        // 3. CHAT SCAM CHECK
+        // Must be a real chat screen (have an input box) to proceed
         if (!isRealChatScreen(rootNode)) return
 
+        // 4. IDENTIFY CONTACT (Fast Check)
+        val contactName = extractTitle(rootNode)
 
-        // 3. EXTRACT CONTENT
+        // 🛑 TRUST CHECK: If user manually trusted them, or we auto-trusted them before
+        if (TrustRepository.isTrusted(contactName)) return
+
+        // 5. EXTRACT & DEDUPLICATE CONTENT
+        // Don't re-scan if we just analyzed this exact screen 100ms ago
         val capturedText = StringBuilder()
         traverseNode(rootNode, capturedText)
         val chatContent = capturedText.toString()
 
         if (chatContent.length < 10) return
 
-        // 4. CHECK SNOOZE
         val contentHash = chatContent.hashCode()
-        if (isScreenSnoozed(contentHash)) return
+        if (contentHash == lastProcessedHash) return // 🔋 CPU Saver: Static Screen
+        if (isScreenSnoozed(contentHash)) return    // User dismissed this specific text
 
-        val contactName = extractTitle(rootNode)
+        // Update state
+        lastProcessedHash = contentHash
 
-        // NEW CHECK: IGNORE BUSINESS & SAVED CONTACTS
-        // If the name has letters (e.g. "Flipkart", "Mom"), it's not a raw unknown number.
-        // We assume Saved Contacts and Business Accounts are safe to avoid false positives.
-        if (!isLikelyPhoneNumber(contactName)) {
-            Log.d("Aegis", "Skipping analysis: '$contactName' is a known name/business.")
-            return
-        }
-
-        if (TrustRepository.isTrusted(contactName)) return
-
-        // CRITICAL FIX: NEW EVENT = CANCEL OLD ANALYSIS
-        // This stops the "Ghost Dismiss" bug.
-        // If we are analyzing a new screen, the old Gemini result is irrelevant.
-        analysisJob?.cancel()
-
+        // Debounce only for meaningful new content updates
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastAnalysisTime < DEBOUNCE) return
         lastAnalysisTime = currentTime
 
-        // 5. RUN ANALYSIS
-        val localVerdict = SecurityTools.analyzeLocally(chatContent)
+        // 6. DECISION ENGINE (The "Smart" Logic)
 
-        when (localVerdict) {
-            LocalRisk.HIGH_RISK -> {
-                Log.d("Aegis", "🔴 LOCAL BLOCK (High Risk)")
-                // Stop any pending Gemini loading indicators
-                analysisJob?.cancel()
+        if (isLikelyPhoneNumber(contactName)) {
+            // 🔴 CASE A: UNKNOWN NUMBER (Raw Digits) -> HIGH RISK
 
-                showBlockingShield(
-                    reason = "Critical keywords detected locally.",
-                    contactName = contactName,
-                    contentHash = contentHash,
-                    sources = emptyList()
-                )
+            // 🔋 GATEKEEPER: Don't waste money analyzing "Hi" or "Ok"
+            val localRisk = SecurityTools.analyzeLocally(chatContent)
+
+            if (localRisk == LocalRisk.SAFE && chatContent.length < 50) {
+                Log.d("Aegis", "🔋 Unknown number sent safe/short text. Ignoring (Battery Saver).")
+                return
             }
-            LocalRisk.SUSPICIOUS -> {
-                Log.d("Aegis", "🟡 SUSPICIOUS - Starting Gemini...")
-                overlayManager.showWarning("Verifying conversation pattern...")
 
-                // Start Gemini in a tracked Job
-                analysisJob = serviceScope.launch {
-                    val verdict = geminiClient.analyze(chatContent)
+            // If text is LONG or SUSPICIOUS -> Analyze with Gemini
+            Log.d("Aegis", "⚠️ Unknown Number + Complex Text. Analyzing...")
+            runGeminiAnalysis(contactName, chatContent, contentHash)
 
-                    if (!isActive) return@launch // Don't update UI if job was cancelled
+        } else {
+            // 🟡 CASE B: NAMED CONTACT (Mom, Amazon, Rahul) -> MEDIUM RISK
 
-                    if (verdict.riskLevel == RiskLevel.DANGER) {
-                        showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
-                    } else {
-                        // Only hide if we haven't been cancelled/replaced
-                        overlayManager.hideShield()
-                    }
-                }
-            }
-            LocalRisk.SAFE -> {
-                // Do nothing
+            // We TRUST the name by default, BUT we VERIFY the content locally.
+            // This protects against "Hacked Friend" or "Impersonator" attacks.
+
+            val localVerdict = SecurityTools.analyzeLocally(chatContent)
+
+            if (localVerdict != LocalRisk.SAFE) {
+                // Name is safe, but text is dangerous ("send money", "urgent link")
+                Log.d("Aegis", "⚠️ Named contact '$contactName' flagged by Local Regex. Escalating to AI.")
+                runGeminiAnalysis(contactName, chatContent, contentHash)
+            } else {
+                // Name is safe + Text is safe.
+                // We do NOT call TrustRepository.markAsSafe() here because the NEXT message might be a scam.
+                // We just silently ignore this specific safe message.
+                Log.d("Aegis", "✅ Named contact '$contactName' passed local checks. Ignoring.")
             }
         }
     }
 
+    // --- HELPER TO AVOID DUPLICATE CODE ---
+    private fun runGeminiAnalysis(contactName: String, chatContent: String, contentHash: Int) {
+        // Cancel any previous analysis (User scrolled to new message)
+        analysisJob?.cancel()
+
+        // Show UI feedback
+        overlayManager.showWarning("Verifying conversation pattern...")
+
+        analysisJob = serviceScope.launch {
+            val verdict = geminiClient.analyze(chatContent)
+            if (!isActive) return@launch
+
+            if (verdict.riskLevel == RiskLevel.DANGER) {
+                showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
+            } else {
+                overlayManager.hideShield()
+            }
+        }
+    }
     // --- HELPER TO UNIFY SHIELD LOGIC ---
     private fun showBlockingShield(reason: String, contactName: String, contentHash: Int, sources: List<Source> = emptyList()) {
         overlayManager.showShield(

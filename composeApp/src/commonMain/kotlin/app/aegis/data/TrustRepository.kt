@@ -1,21 +1,34 @@
 package app.aegis.data
 
 object TrustRepository {
-    // In-memory set of trusted contact titles
-    private val trustedContacts = mutableSetOf<String>()
+    // 1. In-Memory Sets (Lost on App Restart)
+    private val userTrustedCache = mutableSetOf<String>() // User manually clicked "Trust"
 
-    fun isTrusted(title: String): Boolean {
-        return trustedContacts.contains(title)
+    // No init() needed anymore since we aren't loading from disk.
+
+    /**
+     * General check: Is this safe to ignore?
+     * Returns TRUE if it exists in EITHER list.
+     */
+    fun isTrusted(contactName: String): Boolean {
+        return userTrustedCache.contains(contactName)
     }
 
-    fun trustContact(title: String) {
-        if (title.isNotEmpty()) {
-            trustedContacts.add(title)
-            println("Aegis: Trusted contact added -> $title")
-        }
+    /**
+     * 🟢 MANUAL TRUST: User clicked "I trust this person"
+     */
+    fun trustContact(contactName: String) {
+        userTrustedCache.add(contactName)
+        // TODO: Later, insert into Room DB here
     }
 
-    fun clear() {
-        trustedContacts.clear()
+
+    /**
+     * Debug/UI Helper
+     */
+    fun getUserTrustedList(): List<String> = userTrustedCache.toList()
+
+    fun clearCache() {
+        userTrustedCache.clear()
     }
 }

@@ -255,7 +255,19 @@ class GeminiClient {
             }
 
             val rawText = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
-            parseGeminiJson(rawText)
+
+            // 1. Parse the Text Verdict
+            val baseVerdict = parseGeminiJson(rawText)
+
+            // 2. Extract Sources from Metadata
+            val extractedSources = candidate?.groundingMetadata?.groundingChunks
+                ?.mapNotNull { it.web }
+                ?.map { Source(title = it.title ?: "Source", url = it.uri ?: "") }
+                ?.distinctBy { it.url } // Remove duplicates
+                ?: emptyList()
+
+            // 3. Combine
+            baseVerdict.copy(sources = extractedSources)
         } catch (e: Exception) {
             e.printStackTrace()
             ScamVerdict(RiskLevel.SAFE, "Analysis Failed", 0)
