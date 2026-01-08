@@ -12,6 +12,7 @@ import app.aegis.ai.gemini.types.Source
 import app.aegis.ui.ScamShield
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import app.aegis.ui.ScamWarning
+import app.aegis.ui.CameraWarningOverlay
 
 class OverlayManager(private val context: Context) {
 
@@ -23,11 +24,17 @@ class OverlayManager(private val context: Context) {
 
 
     // 🟡 YELLOW WARNING (Non-Blocking)
-    fun showWarning(text: String) {
+    fun showWarning(text: String, onDismiss: () -> Unit) {
         if (overlayView != null) return // Don't spam if already showing
 
         setupComposeView {
-            ScamWarning(text = text)
+            ScamWarning(
+                text = text,
+                onDismiss = {
+                    hideShield() // Remove the view
+                    onDismiss() // Notify service to cancel job
+                }
+            )
         }
 
         // Params for Banner: Top only, Click-through
@@ -138,5 +145,42 @@ class OverlayManager(private val context: Context) {
         }
     }
 
+    /**
+     * 🛡️ CAMERA WARNING (Full-Screen Blocking)
+     * Shows "COVER YOUR CAMERA" overlay for Zero-Trust video call protection.
+     * User must acknowledge before the warning is dismissed.
+     */
+    fun showCameraWarning(onAcknowledge: () -> Unit) {
+        hideShield() // Reset previous view
+
+        setupComposeView {
+            CameraWarningOverlay(
+                onAcknowledge = {
+                    hideShield()
+                    onAcknowledge()
+                }
+            )
+        }
+
+        // Full-screen blocking params
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            else
+                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+            PixelFormat.TRANSLUCENT
+        )
+
+        try {
+            windowManager.addView(overlayView, params)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
 }

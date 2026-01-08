@@ -31,7 +31,7 @@ fun ScamShield(
     onUnlock: () -> Unit,
     onSourceClick: (Source) -> Unit
 ) {
-    val scrollState = rememberScrollState() // 1. Track Scroll
+    val scrollState = rememberScrollState()
 
     // 🔴 MAIN CONTAINER
     Box(
@@ -44,14 +44,14 @@ fun ScamShield(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .padding(24.dp)
-                .fillMaxHeight() // Ensure Column fills screen height
+                .fillMaxHeight()
         ) {
             // 🛡️ HEADER (Fixed at Top)
             Spacer(modifier = Modifier.height(20.dp))
             Text("🛡️", fontSize = 60.sp)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "SCAM BLOCKED",
+                text = "SCAM DETECTED",
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -59,17 +59,17 @@ fun ScamShield(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🕵️ EVIDENCE CARD (Flexible Height + Scrollable)
+            // 🕵️ EVIDENCE CARD (Flexible Height)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = false) // 2. CRITICAL: Take available space, but don't push buttons off
+                    .weight(1f, fill = false) // Take available space, but allow buttons to push up
                     .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(16.dp))
                     .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
-                    .padding(20.dp)
-                    .verticalScroll(scrollState), // 3. Allow text to scroll inside this box
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // FIXED HEADER Inside Card
                 Text(
                     text = "🔎 AI INVESTIGATION REPORT",
                     color = Color(0xFFFFD700),
@@ -77,36 +77,44 @@ fun ScamShield(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.5.sp
                 )
-
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = reason,
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
+                // SCROLLABLE CONTENT (Reason)
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false) // Push footer down, but shrink if needed
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = reason,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
 
+                // FIXED FOOTER (Resources)
                 if (sources.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.DarkGray))
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text("VERIFIED SOURCES:", color = Color.LightGray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    sources.take(3).forEach { source ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(vertical = 6.dp)
-                                .clickable {
-                                  onSourceClick(source)
-                                }
-                        ) {
-                            Text("🔗", fontSize = 14.sp)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(source.title, color = Color(0xFF64B5F6), fontSize = 14.sp, maxLines = 1)
+                    
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        sources.take(3).forEach { source ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .padding(vertical = 6.dp)
+                                    .clickable { onSourceClick(source) }
+                            ) {
+                                Text("🔗", fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(source.title, color = Color(0xFF64B5F6), fontSize = 14.sp, maxLines = 1)
+                            }
                         }
                     }
                 }

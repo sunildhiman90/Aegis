@@ -13,6 +13,8 @@ import app.aegis.ai.gemini.types.Tool
 import app.aegis.models.RiskLevel
 import app.aegis.models.ScamVerdict
 import app.aegis.models.parseGeminiJson
+import app.aegis.models.NudityVerdict
+import app.aegis.models.parseNudityVerdictJson
 import app.aegis.tools.LocalRisk
 import app.aegis.tools.SecurityTools
 import io.ktor.client.HttpClient
@@ -65,7 +67,7 @@ class GeminiClient {
 
         // Local Tools Pre-check
         val localAnalysis = SecurityTools.analyzeLocally(screenText)
-        val toolOutput = when(localAnalysis) {
+        val toolOutput = when (localAnalysis) {
             LocalRisk.HIGH_RISK -> "Local Regex Tool detected CRITICAL keywords."
             LocalRisk.SUSPICIOUS -> "Local Regex Tool detected SUSPICIOUS keywords."
             LocalRisk.SAFE -> "Local Regex Tool found no pattern."
@@ -131,6 +133,64 @@ class GeminiClient {
         )
     }
 
+    /**
+     * 3. SEXTORTION MODE (Video Call Frame Analysis)
+     * Analyzes video frames for nudity and fake feed detection.
+     * Returns NudityVerdict for quick boolean checks.
+     */
+    suspend fun analyzeForNudity(base64Image: String, model: String = "gemini-2.0-flash"): NudityVerdict {
+        val apiKey = AegisConfig.GEMINI_API_KEY
+        if (apiKey.isBlank()) return NudityVerdict(nudity = false, fakeFeed = false, confidence = 0)
+
+        val promptText = """
+            URGENT SAFETY ANALYSIS: Analyze this video call screenshot for sextortion/blackmail threats.
+            
+            CHECK FOR NUDITY:
+            - Is there ANY exposed human body parts visible? (breasts, genitals, buttocks)
+            - Is there revealing/explicit clothing or poses?
+            - Are there private body parts even partially visible?
+            
+            CHECK FOR FAKE VIDEO:
+            - Does the video appear pre-recorded or looped? (look for compression artifacts, static elements, unnatural movements)
+            
+            CRITICAL: If there is ANY nudity or explicit content, set nudity to TRUE.
+            
+            Return strictly JSON: { "nudity": true/false, "fake_feed": true/false, "confidence": 0-100 }
+        """.trimIndent()
+
+        return try {
+            val response: GenerateContentResponse = client.post("${baseUrl}$model:generateContent") {
+                contentType(ContentType.Application.Json)
+                headers { append("x-goog-api-key", apiKey) }
+                setBody(
+                    GenerateContentRequest(
+                        contents = listOf(
+                            Content(
+                                listOf(
+                                    Part(text = promptText),
+                                    Part(inlineData = InlineData(mimeType = "image/jpeg", data = base64Image))
+                                )
+                            )
+                        ),
+                        generationConfig = GenerateContentConfig(responseMimeType = "application/json")
+                    )
+                )
+            }.body()
+
+            // Check for safety block (likely nudity)
+            val candidate = response.candidates?.firstOrNull()
+            if (candidate?.finishReason == "SAFETY") {
+                return NudityVerdict(nudity = true, fakeFeed = false, confidence = 100)
+            }
+
+            val rawText = candidate?.content?.parts?.firstOrNull()?.text ?: ""
+            parseNudityVerdictJson(rawText)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            NudityVerdict(nudity = false, fakeFeed = false, confidence = 0)
+        }
+    }
+
     // ... (executeRequest remains the same) ...
     private suspend fun executeRequest(
         model: String, apiKey: String, parts: List<Part>, useGoogleSearch: Boolean
@@ -142,11 +202,13 @@ class GeminiClient {
             val response: GenerateContentResponse = client.post("$baseUrl$model:generateContent") {
                 contentType(ContentType.Application.Json)
                 headers { append("x-goog-api-key", apiKey) }
-                setBody(GenerateContentRequest(
-                    contents = listOf(Content(parts)),
-                    generationConfig = GenerateContentConfig(responseMimeType = "application/json"),
-                    tools = toolsList
-                ))
+                setBody(
+                    GenerateContentRequest(
+                        contents = listOf(Content(parts)),
+                        generationConfig = GenerateContentConfig(responseMimeType = "application/json"),
+                        tools = toolsList
+                    )
+                )
             }.body()
 
             // CHECK 1: Did we get a valid candidate?
