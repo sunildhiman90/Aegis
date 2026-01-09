@@ -42,12 +42,8 @@ class AegisAccessibilityService : AccessibilityService() {
     private var lastCallActivityTime = 0L  // Track when we last saw actual call evidence
     private val CALL_STATE_TIMEOUT = 15_000L  // 15 seconds - if no WhatsApp activity, assume call ended
 
-    // 📱 ONGOING VIDEO CALL DETECTION
-    // When user answers video call (from notification or app):
-    // 1. "Incoming video call" notification → store caller name
-    // 2. "Ongoing video call" notification → call connected → start analysis
-    // 3. "Missed/ended" notification → call ended → stop analysis
-    private var pendingVideoCallCaller = ""  // Caller name from incoming notification
+    // 📱 VIDEO CALL DETECTION - Caller tracking
+    private var pendingVideoCallCaller = ""  // Store caller name from notification
 
     private val SUPPORTED_PACKAGES = setOf(
         "com.whatsapp",
@@ -535,15 +531,24 @@ class AegisAccessibilityService : AccessibilityService() {
         val isEncryptedVideoCall = screenText.any { it.contains("encrypted video call", ignoreCase = true) }
         val hasLeaveCall = screenText.any { it.contains("Leave call", ignoreCase = true) }
 
-        // Active call if ANY of these combinations:
-        val isActiveVideoCall = (hasCallTimer && hasCallControls) ||  // Established call
+        // Negative indicator: Screen has "Accept" or "Decline" buttons (Incoming call screen)
+        // Even if it says "encrypted video call", if these buttons are here, it's NOT active yet.
+        val hasIncomingCallButtons = screenText.any {
+            it.contains("Accept call", ignoreCase = true) ||
+                    it.contains("Decline call", ignoreCase = true) ||
+                    it.contains("slide to answer", ignoreCase = true)
+        }
+
+        // Active call if ANY of these combinations AND distinct lack of incoming call buttons:
+        val isActiveVideoCall = ((hasCallTimer && hasCallControls) ||  // Established call
                 (isConnecting && hasCallControls) ||   // Connecting phase
                 isEncryptedVideoCall ||                // WhatsApp video call text
-                hasLeaveCall                           // Definitive "Leave call" button
+                hasLeaveCall) &&                       // Definitive "Leave call" button
+                !hasIncomingCallButtons                // EXCLUDE incoming call screens
 
         Log.d(
             "Aegis",
-            "📞 Video call check: hasCallTimer=$hasCallTimer, hasCallControls=$hasCallControls, isInVideoCall=$isInVideoCall, screenText=${
+            "📞 Video call check: isActive=$isActiveVideoCall, hasIncomingBtns=$hasIncomingCallButtons, hasTimer=$hasCallTimer, hasControls=$hasCallControls, isEncrypted=$isEncryptedVideoCall, screenText=${
                 screenText.take(10)
             }"
         )
