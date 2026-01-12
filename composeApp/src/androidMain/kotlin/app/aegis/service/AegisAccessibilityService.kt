@@ -44,6 +44,8 @@ class AegisAccessibilityService : AccessibilityService() {
 
     // 📱 VIDEO CALL DETECTION - Caller tracking
     private var pendingVideoCallCaller = ""  // Store caller name from notification
+    private var hasShownCameraWarning = false // Ensure warning shows only once per call
+    private var cameraWarningShownTime: Long = 0 // Debounce to prevent reset during notification->pickup transition
 
     private val SUPPORTED_PACKAGES = setOf(
         "com.whatsapp",
@@ -156,21 +158,51 @@ class AegisAccessibilityService : AccessibilityService() {
                 if (notificationText.contains("video call", ignoreCase = true) ||
                     notificationText.contains("Video call", ignoreCase = true)
                 ) {
-                    // Skip already-handled notifications
-                    if (!notificationText.contains("missed", ignoreCase = true) &&
-                        !notificationText.contains("ended", ignoreCase = true) &&
-                        !notificationText.contains("ongoing", ignoreCase = true)
+                    // Check for Missed/Ended/Declined notifications FIRST
+                    if (notificationText.contains("missed", ignoreCase = true) ||
+                        notificationText.contains("ended", ignoreCase = true) ||
+                        notificationText.contains("declined", ignoreCase = true)
                     ) {
+                        // Call ended/missed - stop everything and clear state
+                        Log.d("Aegis", "🛑 Call ended/missed notification: $notificationText. Clearing state.")
+                        stopSextortionAnalysis()
+                        overlayManager.hideShield() // Hide any showing warning
+                        hasShownCameraWarning = false // Reset for next call
+                        isInVideoCall = false
+                        return
+                    }
+
+                    // Skip ongoing calls handled elsewhere
+                    if (!notificationText.contains("ongoing", ignoreCase = true)) {
                         pendingVideoCallCaller = extractCallerFromNotification(notificationText)
                         Log.d("Aegis", "🔔 INCOMING VIDEO CALL: $notificationText, caller=$pendingVideoCallCaller")
 
+                        // 🛡️ STALE FLAG CHECK
+                        // If the flag is TRUE, but it's been > 15 seconds since we showed it, 
+                        // this is likely a NEW call (or a re-dial). Force reset.
+                        if (hasShownCameraWarning) {
+                            val timeSinceShown = System.currentTimeMillis() - cameraWarningShownTime
+                            if (timeSinceShown > 15000) {
+                                Log.d(
+                                    "Aegis",
+                                    "♻️ Stale camera warning flag detected (>15s). Resetting for new incoming call."
+                                )
+                                hasShownCameraWarning = false
+                            }
+                        }
+
                         // 🛡️ SHOW CAMERA WARNING ONLY FOR UNKNOWN NUMBERS
                         // If caller is a phone number (not saved contact name), show warning
-                        if (isLikelyPhoneNumber(pendingVideoCallCaller)) {
+                        // AND only if we haven't shown it already for this session
+                        if (isLikelyPhoneNumber(pendingVideoCallCaller) && !hasShownCameraWarning) {
                             Log.d("Aegis", "🛡️ Unknown caller detected! Showing camera warning...")
+                            hasShownCameraWarning = true // Mark as shown
+                            cameraWarningShownTime = System.currentTimeMillis() // Start debounce timer
                             overlayManager.showCameraWarning {
                                 Log.d("Aegis", "🛡️ Camera warning acknowledged")
                             }
+                        } else if (hasShownCameraWarning) {
+                            Log.d("Aegis", "ℹ️ Camera warning already shown for this session.")
                         } else {
                             Log.d("Aegis", "✅ Saved contact: $pendingVideoCallCaller - skipping camera warning")
                         }
@@ -219,7 +251,12 @@ class AegisAccessibilityService : AccessibilityService() {
 
         // 2. VIDEO CALL CHECK (Priority #1)
         // Checks for "Incoming Video Call" screens immediately
-        if (detectVideoCallScam(rootNode)) return
+        // 2. VIDEO CALL CHECK (Priority #1)
+        // Checks for "Incoming Video Call" screens immediately
+        if (detectVideoCallScam(rootNode)) {
+            return
+        }
+        // REMOVED: Generic reset block. We now only reset on EXPLICIT exit conditions (see detectVideoCallScam)
 
         // 3. CHAT SCAM CHECK
         // Must be a real chat screen (have an input box) to proceed
@@ -484,10 +521,15 @@ class AegisAccessibilityService : AccessibilityService() {
         // If the screen has a "Type a message" input box, it's a CHAT screen.
         // This is a definitive signal that any video call has ended.
         // This also prevents false positives from the "Video Call" button in chat headers.
+        // EXIT CONDITION #1: User returned to chat screen (call definitely ended)
         if (hasChatInput(rootNode)) {
             if (isInVideoCall) {
                 Log.d("Aegis", "📞 Call ended: User returned to chat screen")
                 stopSextortionAnalysis()
+            }
+            if (hasShownCameraWarning) {
+                Log.d("Aegis", "Resetting camera warning flag (User returned to Chat Screen)")
+                hasShownCameraWarning = false // RESET: User is in chat, call is over.
             }
             return false
         }
@@ -539,12 +581,34 @@ class AegisAccessibilityService : AccessibilityService() {
                     it.contains("slide to answer", ignoreCase = true)
         }
 
+        // Negative Indicator: Chat Screen (has text input)
+        val hasMessageInput = screenText.any {
+            it.contains("Type a message", ignoreCase = true) ||
+                    it.equals("Message", ignoreCase = true)
+        }
+
+        // Negative Indicator: Main List (has tabs)
+        val hasMainTabs = screenText.any { it.equals("Chats", ignoreCase = true) } &&
+                screenText.any { it.equals("Calls", ignoreCase = true) }
+
+        // EXIT CONDITION #2: Main App List (Chats/Calls tabs)
+        if (hasMainTabs) {
+            if (isInVideoCall) stopSextortionAnalysis()
+            if (hasShownCameraWarning) {
+                Log.d("Aegis", "Resetting camera warning flag (User returned to Main List)")
+                hasShownCameraWarning = false // RESET: User is in list, call is over.
+            }
+            return false
+        }
+
         // Active call if ANY of these combinations AND distinct lack of incoming call buttons:
         val isActiveVideoCall = ((hasCallTimer && hasCallControls) ||  // Established call
                 (isConnecting && hasCallControls) ||   // Connecting phase
                 isEncryptedVideoCall ||                // WhatsApp video call text
                 hasLeaveCall) &&                       // Definitive "Leave call" button
-                !hasIncomingCallButtons                // EXCLUDE incoming call screens
+                !hasIncomingCallButtons &&             // EXCLUDE incoming call screens
+                !hasMessageInput &&                    // EXCLUDE chat thread
+                !hasMainTabs                           // EXCLUDE chat list
 
         Log.d(
             "Aegis",
@@ -678,6 +742,7 @@ class AegisAccessibilityService : AccessibilityService() {
 
     private fun collectAllText(node: AccessibilityNodeInfo?, list: MutableList<String>) {
         if (node == null) return
+        if (!node.isVisibleToUser) return // Skip hidden elements (like buttons behind the call screen)
         if (!node.text.isNullOrEmpty()) list.add(node.text.toString())
         // Also collect contentDescription for icon buttons (Mute, Camera, End call, etc.)
         if (!node.contentDescription.isNullOrEmpty()) list.add(node.contentDescription.toString())
@@ -739,22 +804,41 @@ class AegisAccessibilityService : AccessibilityService() {
         isInVideoCall = true
         lastCallActivityTime = System.currentTimeMillis()  // Initialize timeout tracking
 
-        // 🛡️ CAMERA WARNING - Show immediately to protect user!
-        // User's face may already be exposed, warn them to cover camera
-        Log.d("Aegis", "🛡️ Showing camera warning for: $callerId")
-        overlayManager.showCameraWarning {
-            Log.d("Aegis", "🛡️ Camera warning acknowledged. Starting analysis...")
+        // 🛡️ CAMERA WARNING - Show only if not already shown AND unknown caller
+        if (!hasShownCameraWarning && isLikelyPhoneNumber(callerId)) {
+            Log.d("Aegis", "🛡️ Showing camera warning for: $callerId")
+            hasShownCameraWarning = true // Mark as shown
+            cameraWarningShownTime = System.currentTimeMillis() // Start debounce timer
+            overlayManager.showCameraWarning {
+                Log.d("Aegis", "🛡️ Camera warning acknowledged. Starting analysis...")
+            }
+        } else {
+            Log.d(
+                "Aegis",
+                "ℹ️ Camera warning skipped (shown=$hasShownCameraWarning, unknown=${isLikelyPhoneNumber(callerId)})"
+            )
         }
 
         Log.d("Aegis", "🛡️ Starting Video Call Protection (Sextortion + Digital Arrest)")
 
         sextortionAnalysisJob = serviceScope.launch {
             var consecutiveSafeFrames = 0  // Counter for early termination
-            val safeFramesThreshold =
-                1 // TODO using 1 for tersting, else we can set it 2 or 3  // Stop after 3 consecutive safe frames
+            // Stop after 3 consecutive safe frames (approx 3 seconds of non-suspicious content)
+            // This prevents the analysis from stopping just because of a brief moment of safety.
+            val safeFramesThreshold = 3
 
             while (isActive && isInVideoCall) {
                 try {
+                    // ═══════════════════════════════════════════════════════════
+                    // CHECK FOR ACTIVE OVERLAY (Camera Warning / Shield)
+                    // ═══════════════════════════════════════════════════════════
+                    // If our own warning/shield is showing, don't analyze it!
+                    if (overlayManager.isShowing) {
+                        Log.d("Aegis", "🛡️ Overlay visible, skipping analysis frame...")
+                        delay(1000)
+                        continue
+                    }
+
                     // ═══════════════════════════════════════════════════════════
                     // SKIP ANALYSIS IF LOCK SCREEN DETECTED
                     // ═══════════════════════════════════════════════════════════
@@ -856,6 +940,7 @@ class AegisAccessibilityService : AccessibilityService() {
      */
     private fun stopSextortionAnalysis() {
         isInVideoCall = false
+        // hasShownCameraWarning = false // DO NOT RESET HERE! Only reset when detectVideoCallScam confirms no call.
         sextortionAnalysisJob?.cancel()
         sextortionAnalysisJob = null
         Log.d("Aegis", "🛡️ Sextortion Shield analysis stopped")

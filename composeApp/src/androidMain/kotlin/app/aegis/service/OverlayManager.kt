@@ -19,6 +19,9 @@ class OverlayManager(private val context: Context) {
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var overlayView: ComposeView? = null
 
+    val isShowing: Boolean
+        get() = overlayView != null
+
     // Hold reference to our dummy lifecycle
     private var lifecycleOwner: OverlayLifecycleOwner? = null
 
