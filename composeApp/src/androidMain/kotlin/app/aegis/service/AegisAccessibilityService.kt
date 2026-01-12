@@ -1,8 +1,11 @@
 package app.aegis.service
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
 import android.graphics.Bitmap
+import android.graphics.Path
 import android.util.Base64
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -223,6 +226,9 @@ class AegisAccessibilityService : AccessibilityService() {
         if (currentPackage !in SUPPORTED_PACKAGES) {
             // If in an active video call, check for timeout
             if (isInVideoCall) {
+                /*
+                // REMOVED: Timeout logic was too aggressive for PiP / Multitasking.
+                // We now trust isInVideoCall until explicitly cleared by detection logic.
                 val timeSinceLastActivity = System.currentTimeMillis() - lastCallActivityTime
                 if (timeSinceLastActivity > CALL_STATE_TIMEOUT) {
                     // Timeout: No WhatsApp activity for 30+ seconds, assume call ended
@@ -230,6 +236,8 @@ class AegisAccessibilityService : AccessibilityService() {
                     stopSextortionAnalysis()
                     return
                 }
+                */
+                // Still within call - continue PiP mode handling
                 // Still within timeout - continue PiP mode handling
                 Log.d("Aegis", "📞 PiP mode detected: continuing video call analysis despite package=$currentPackage")
             } else {
@@ -952,22 +960,40 @@ class AegisAccessibilityService : AccessibilityService() {
     private fun autoEndCall(reason: String) {
         stopSextortionAnalysis()
 
-        val rootNode = rootInActiveWindow
-        if (rootNode != null) {
-            // Try to find and click End Call button
-            val endButtonIds = listOf(
-                "com.whatsapp:id/end_call_btn",
-                "com.whatsapp:id/call_end",
-                "com.whatsapp:id/hangup_btn"
-            )
+        // 1. Reveal Controls: Tap the center of the screen
+        // Video call controls often fade out. We need to wake them up.
+        tapToRevealControls()
 
-            for (buttonId in endButtonIds) {
-                val endBtn = rootNode.findAccessibilityNodeInfosByViewId(buttonId)
-                if (endBtn?.firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true) {
-                    Log.d("Aegis", "✅ Call ended automatically via $buttonId")
-                    break
+        // Wait a small bit for UI to respond to the tap
+        GlobalScope.launch {
+            delay(200) // 200ms delay for UI animation
+
+            val rootNode = rootInActiveWindow
+            if (rootNode != null) {
+                // 2. Smart Search for End Button
+                // We look for text like "End", "Decline", "Hang up" or standard IDs
+                val ended = findAndClickEndButton(rootNode)
+
+                if (!ended) {
+                    Log.d("Aegis", "⚠️ End button not found via search. Attempting fallback...")
+                    // 3. Fallback: Global Back Actions
+                    // Often pressing 'Back' during a call will ask "End call?", pressing again confirms.
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    delay(300)
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    Log.d("Aegis", "🔙 Performed double BACK action as fallback")
                 }
+            } else {
+                Log.d("Aegis", "❌ Root node null, forcing Global Back")
+                performGlobalAction(GLOBAL_ACTION_BACK)
             }
+
+            delay(500)
+            // 4. Safety Net: Home Screen
+            // Even if call didn't end, strict reset logic will handle the flag eventually,
+            // but we must get the user out of the scam interface.
+            performGlobalAction(GLOBAL_ACTION_HOME)
+            Log.d("Aegis", "🏠 Performed GLOBAL_ACTION_HOME safety net")
         }
 
         // Show blocking shield regardless
@@ -977,6 +1003,72 @@ class AegisAccessibilityService : AccessibilityService() {
             onDismiss = { overlayManager.hideShield() },
             onUnlock = { overlayManager.hideShield() }
         )
+    }
+
+    /**
+     * Simulates a tap in the center of the screen to reveal hidden call controls.
+     */
+    private fun tapToRevealControls() {
+        try {
+            val metrics = resources.displayMetrics
+            val centerX = metrics.widthPixels / 2f
+            val centerY = metrics.heightPixels / 2f
+
+            val path = Path()
+            path.moveTo(centerX, centerY)
+
+            val gesture = GestureDescription.Builder()
+                .addStroke(GestureDescription.StrokeDescription(path, 0, 100))
+                .build()
+
+            dispatchGesture(gesture, object : GestureResultCallback() {
+                override fun onCompleted(gestureDescription: GestureDescription?) {
+                    Log.d("Aegis", "👆 Tap dispatched to reveal controls")
+                }
+
+                override fun onCancelled(gestureDescription: GestureDescription?) {
+                    Log.d("Aegis", "❌ Tap gesture cancelled")
+                }
+            }, null)
+        } catch (e: Exception) {
+            Log.e("Aegis", "Failed to dispatch tap: ${e.message}")
+        }
+    }
+
+    /**
+     * Recursively searches for and clicks any button that looks like it would end a call.
+     */
+    private fun findAndClickEndButton(node: AccessibilityNodeInfo): Boolean {
+        // Check if this node is a candidate
+        if (node.isClickable) {
+            val text = (node.text ?: "").toString().lowercase()
+            val desc = (node.contentDescription ?: "").toString().lowercase()
+            val viewId = (node.viewIdResourceName ?: "").lowercase()
+
+            // Criteria for "End Call" button
+            val isEndButton =
+                text.contains("end call") || text.contains("hang up") || text.contains("decline") ||
+                        desc.contains("end call") || desc.contains("hang up") || desc.contains("decline") ||
+                        desc.contains("end") || // Simple "End" often works
+                        viewId.contains("end_call") || viewId.contains("hangup") || viewId.contains("reject")
+
+            if (isEndButton) {
+                val clicked = node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                if (clicked) {
+                    Log.d("Aegis", "✅ End button CLICKED: text='$text', desc='$desc', id='$viewId'")
+                    return true
+                }
+            }
+        }
+
+        // Recursive search children
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            if (findAndClickEndButton(child)) {
+                return true
+            }
+        }
+        return false
     }
 
     override fun onInterrupt() {
