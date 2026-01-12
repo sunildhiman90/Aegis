@@ -116,9 +116,20 @@ class GeminiClient {
         if (apiKey.isBlank()) return ScamVerdict(RiskLevel.SAFE, "No API Key", 0)
 
         val promptText = """
-            Analyze this video call screenshot for security threats.
-            Look for: Nudity (Sextortion), Police Uniforms (Digital Arrest), or Threatening Text overlays.
-            Return JSON: { "riskLevel": "DANGER"|"SAFE", "reason": "State what was visually detected.", "confidence": 100 }
+            You are an Indian Cyber-Security Agent. Analyze this video frame for "Digital Arrest" video call scams.
+            Look for:
+            1. People wearing Khaki uniforms or Police caps.
+            2. Backgrounds that look like Police Stations, Flags, or Official Seals.
+            3. Text overlays saying "CBI", "RBI", "Supreme Court".
+
+            CRITICAL RULE: Real police NEVER video call. If you see a uniform, it is a SCAM.
+
+            Output strictly JSON:
+            {
+              "riskLevel": "DANGER" | "SAFE",
+              "reason": "Briefly state what was detected (e.g., 'Fake CBI Officer detected').",
+              "confidence": 0-100
+            }
         """.trimIndent()
 
         // Multipart Request (Text + Image)
