@@ -262,4 +262,59 @@ class GeminiClient {
             ScamVerdict(RiskLevel.SAFE, "Analysis Failed", 0)
         }
     }
+
+    /**
+     * 4. PHISHING LINK MODE (The Marathon Agent)
+     * Analyzes URLs for phishing and generates a takedown report.
+     */
+    suspend fun analyzeUrl(url: String, model: String = "gemini-2.0-flash"): app.aegis.models.PhishingVerdict {
+        val apiKey = AegisConfig.GEMINI_API_KEY
+        if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "No API Key", 0)
+
+        // 🛑 CRITICAL PROMPT: Detects Phishing & Drafts Report
+        val promptText = """
+            You are a Cyber-Security Analyst. Investigate this URL for phishing/scam activity.
+            
+            URL: "$url"
+            
+            Check for:
+            1. Homograph attacks (e.g., 'g0ogle.com').
+            2. IP-based URLs or suspicious TLDs (.xyz, .top) mimicking banks/gov.
+            3. Free hosting providers (ngrok, vercel.app, firebaseapp) used for banking login?
+            
+            If DANGER:
+            - Construct a formal abuse report email.
+            - Identify the likely registrar abuse email (e.g., abuse@godaddy.com) based on the domain. If unknown, use "abuse@<domain>".
+            
+            Return strictly JSON:
+            {
+              "riskLevel": "DANGER" | "WARN" | "SAFE",
+              "reason": "Brief explanation (e.g., 'Fake SBI login page hosted on ngrok').",
+              "confidence": 0-100,
+              "recipient": "abuse@<hosting_provider>.com", 
+              "subject": "Phishing Takedown Request: <domain>",
+              "body": "To whom it may concern,\n\nThe following URL is hosting a phishing page targeting [Target Brand]:\n$url\n\nPlease investigate and suspend this domain immediately.\n\nSent via Aegis Security Agent."
+            }
+        """.trimIndent()
+
+        return try {
+            val response: GenerateContentResponse = client.post("$baseUrl$model:generateContent") {
+                contentType(ContentType.Application.Json)
+                headers { append("x-goog-api-key", apiKey) }
+                setBody(
+                    GenerateContentRequest(
+                        contents = listOf(Content(listOf(Part(text = promptText)))),
+                        generationConfig = GenerateContentConfig(responseMimeType = "application/json")
+                    )
+                )
+            }.body()
+
+            val rawText = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: ""
+            app.aegis.models.parsePhishingVerdictJson(rawText)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "Analysis Failed", 0)
+        }
+    }
 }

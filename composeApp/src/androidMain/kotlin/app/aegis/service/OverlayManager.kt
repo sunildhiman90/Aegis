@@ -186,4 +186,56 @@ class OverlayManager(private val context: Context) {
         }
     }
 
+    /**
+     * 🎣 PHISHING WARNING (Blocking)
+     * Shows red screen with Report button.
+     */
+    fun showPhishingWarning(
+        reason: String,
+        url: String,
+        onReport: () -> Unit,
+        onDismiss: () -> Unit,
+        onTrust: () -> Unit
+    ) {
+        hideShield()
+
+        setupComposeView {
+            app.aegis.ui.PhishingShield(
+                reason = reason,
+                url = url,
+                onReport = {
+                    hideShield()
+                    onReport()
+                },
+                onDismiss = {
+                    hideShield()
+                    onDismiss()
+                },
+                onTrust = {
+                    hideShield()
+                    onTrust()
+                }
+            )
+        }
+
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            else
+                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+            PixelFormat.TRANSLUCENT
+        )
+
+        try {
+            windowManager.addView(overlayView, params)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
 }

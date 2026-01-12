@@ -43,6 +43,8 @@ class AegisAccessibilityService : AccessibilityService() {
     private var sextortionAnalysisJob: Job? = null
     private var isInVideoCall = false
     private var lastCallActivityTime = 0L  // Track when we last saw actual call evidence
+    private var lastAudioWarningTime = 0L
+
     private val CALL_STATE_TIMEOUT = 15_000L  // 15 seconds - if no WhatsApp activity, assume call ended
 
     // 📱 VIDEO CALL DETECTION - Caller tracking
@@ -264,6 +266,13 @@ class AegisAccessibilityService : AccessibilityService() {
         if (detectVideoCallScam(rootNode)) {
             return
         }
+
+        // 3. AUDIO CALL CHECK (Priority #2)
+        // Checks for "Incoming Voice Call" screens
+        if (detectAudioCallScam(rootNode)) {
+            return
+        }
+
         // REMOVED: Generic reset block. We now only reset on EXPLICIT exit conditions (see detectVideoCallScam)
 
         // 3. CHAT SCAM CHECK
@@ -297,6 +306,18 @@ class AegisAccessibilityService : AccessibilityService() {
         lastAnalysisTime = currentTime
 
         // 6. DECISION ENGINE (The "Smart" Logic)
+
+        // 🔗 PHISHING LINK CHECK (Priority: Links can be dangerous from ANYONE)
+        val urls = extractUrls(chatContent)
+        if (urls.isNotEmpty()) {
+            Log.d("Aegis", "🔗 URLs detected: $urls")
+            urls.forEach { url ->
+                // Basic Whitelist Check (optimization)
+                if (!isWhitelisted(url)) {
+                    processSuspiciousUrl(url)
+                }
+            }
+        }
 
         if (isLikelyPhoneNumber(contactName)) {
             // TODO: Revert after testing
@@ -687,8 +708,48 @@ class AegisAccessibilityService : AccessibilityService() {
     }
 
     // ---------------------------------------------------------
+    // 📞 AUDIO CALL IMPLEMENTATION
+    // ---------------------------------------------------------
+    private fun detectAudioCallScam(rootNode: AccessibilityNodeInfo): Boolean {
+        val screenText = mutableListOf<String>()
+        collectAllText(rootNode, screenText)
+
+        val isIncomingAudioCall = screenText.any {
+            it.contains("Incoming voice call", ignoreCase = true) ||
+                    (it.contains("WhatsApp voice call", ignoreCase = true) && it.contains("Decline", ignoreCase = true))
+        }
+
+        if (!isIncomingAudioCall) return false
+
+        val callerId = screenText.firstOrNull { text ->
+            val cleanText = text.trim()
+            !cleanText.equals("incoming voice call", ignoreCase = true) &&
+                    !cleanText.equals("whatsapp voice call", ignoreCase = true) &&
+                    !cleanText.equals("decline", ignoreCase = true) &&
+                    !cleanText.equals("answer", ignoreCase = true) &&
+                    !cleanText.equals("swipe up to accept", ignoreCase = true) &&
+                    cleanText.length > 2
+        } ?: "Unknown"
+
+        if (isLikelyPhoneNumber(callerId)) {
+            Log.d("Aegis", "📞 Unknown Audio Call Detected: $callerId")
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastAudioWarningTime > 10000) {
+                lastAudioWarningTime = currentTime
+                overlayManager.showWarning(
+                    text = "⚠️ Unknown Caller: $callerId\nDO NOT share OTPs. Real Police/Banks never ask for PINs on call.",
+                    onDismiss = {}
+                )
+            }
+            return true
+        }
+        return false
+    }
+
+    // ---------------------------------------------------------
     // 🛑 CRITICAL HELPER: PHONE NUMBER DETECTION
     // ---------------------------------------------------------
+
     /**
      * Determines if a string is likely a raw phone number (Unknown)
      * or a saved contact name (Trusted).
@@ -1069,6 +1130,76 @@ class AegisAccessibilityService : AccessibilityService() {
             }
         }
         return false
+    }
+
+    // ---------------------------------------------------------
+    // 🎣 PHISHING SCAM IMPLEMENTATION
+    // ---------------------------------------------------------
+    private fun extractUrls(text: String): List<String> {
+        val urlRegex = Regex("(https?://[\\w\\-\\.]+\\.[a-z]{2,}(/[\\w\\- ./?%&=]*)?)", RegexOption.IGNORE_CASE)
+        return urlRegex.findAll(text).map { it.value }.toList()
+    }
+
+    private fun isWhitelisted(url: String): Boolean {
+        return try {
+            val host = android.net.Uri.parse(url).host ?: return false
+            val safeDomains = listOf(
+                "google.com",
+                "youtube.com",
+                "facebook.com",
+                "instagram.com",
+                "whatsapp.com",
+                "wikipedia.org",
+                "amazon.in",
+                "flipkart.com",
+                "apple.com",
+                "microsoft.com"
+            )
+            safeDomains.any { host.equals(it, ignoreCase = true) || host.endsWith(".$it", ignoreCase = true) }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun processSuspiciousUrl(url: String) {
+        if (analysisJob?.isActive == true && currentAnalysisText == url) return // Dedup
+
+        Log.d("Aegis", "🎣 Analyzing Suspicious URL: $url")
+
+        // Show scanning warning? Optional. For now, silent scan until Danger found.
+
+        analysisJob = serviceScope.launch {
+            val verdict = geminiClient.analyzeUrl(url)
+            if (!isActive) return@launch
+
+            if (verdict.riskLevel == app.aegis.models.RiskLevel.DANGER) {
+                withContext(Dispatchers.Main) {
+                    overlayManager.showPhishingWarning(
+                        reason = verdict.reason,
+                        url = url,
+                        onReport = { launchReportIntent(verdict) },
+                        onDismiss = { overlayManager.hideShield() },
+                        onTrust = { /* Add to whitelist session */ overlayManager.hideShield() }
+                    )
+                }
+            }
+        }
+    }
+
+    private fun launchReportIntent(verdict: app.aegis.models.PhishingVerdict) {
+        try {
+            val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                data = android.net.Uri.parse("mailto:") // only email apps should handle this
+                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(verdict.recipient))
+                putExtra(android.content.Intent.EXTRA_SUBJECT, verdict.subject)
+                putExtra(android.content.Intent.EXTRA_TEXT, verdict.body)
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            Log.d("Aegis", "🚀 Report Intent Launched to ${verdict.recipient}")
+        } catch (e: Exception) {
+            Log.e("Aegis", "Failed to launch report intent: ${e.message}")
+        }
     }
 
     override fun onInterrupt() {
