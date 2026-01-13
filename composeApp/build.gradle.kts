@@ -60,6 +60,9 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kermit)
+            
+            // Navigation
+            implementation(libs.navigation.compose)
         }
 
         iosMain.dependencies {

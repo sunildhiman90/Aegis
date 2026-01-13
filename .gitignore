@@ -20,3 +20,4 @@ node_modules/
 
 /.windsurf/rules/android-kmp-project-structure-and-coding-guidelines.md
 /kotlin-js-store/yarn.lock
+/designs
