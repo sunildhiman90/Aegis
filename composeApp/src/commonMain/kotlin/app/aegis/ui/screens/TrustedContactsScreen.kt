@@ -19,8 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.aegis.domain.model.TrustedContact
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.viewmodel.TrustedContactViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Trusted Contacts Screen - Manage emergency contacts
@@ -28,20 +31,13 @@ import app.aegis.ui.theme.AegisTypography
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrustedContactsScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    viewModel: TrustedContactViewModel = koinViewModel()
 ) {
     val colors = AegisTheme.colors
 
-    // TODO: Replace with data from Room DB
-    var contacts by remember {
-        mutableStateOf(
-            listOf(
-                TrustedContactDisplayItem("1", "Mom", "+91 98765 43210", "Family"),
-                TrustedContactDisplayItem("2", "Dad", "+91 98765 43211", "Family"),
-                TrustedContactDisplayItem("3", "Best Friend", "+91 98765 43212", "Friend")
-            )
-        )
-    }
+    // Collect contacts from ViewModel
+    val contacts by viewModel.contacts.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -93,7 +89,8 @@ fun TrustedContactsScreen(
                 .padding(horizontal = 20.dp)
                 .padding(top = 16.dp)
         ) {
-            // Info Card
+            // Info Card - Hidden as requested
+            /*
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,6 +112,7 @@ fun TrustedContactsScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            */
 
             Text(
                 text = "YOUR CONTACTS (${contacts.size})",
@@ -132,9 +130,14 @@ fun TrustedContactsScreen(
                 ) {
                     items(contacts, key = { it.id }) { contact ->
                         TrustedContactItem(
-                            contact = contact,
+                            contact = TrustedContactDisplayItem(
+                                id = contact.id,
+                                name = contact.name,
+                                phoneNumber = contact.phoneNumber,
+                                relationship = contact.relationship
+                            ),
                             onDelete = {
-                                contacts = contacts.filter { it.id != contact.id }
+                                viewModel.deleteContact(contact.id)
                             }
                         )
                     }
@@ -148,13 +151,14 @@ fun TrustedContactsScreen(
         AddContactDialog(
             onDismiss = { showAddDialog = false },
             onAdd = { name, phone, relationship ->
-                val newContact = TrustedContactDisplayItem(
+                val newContact = TrustedContact(
                     id = System.currentTimeMillis().toString(),
                     name = name,
                     phoneNumber = phone,
-                    relationship = relationship
+                    relationship = relationship,
+                    addedAt = System.currentTimeMillis()
                 )
-                contacts = contacts + newContact
+                viewModel.addContact(newContact)
                 showAddDialog = false
             }
         )
