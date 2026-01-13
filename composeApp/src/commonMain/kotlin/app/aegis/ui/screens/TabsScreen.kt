@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -90,6 +91,7 @@ fun TabsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.background)
+                .padding(bottom = 64.dp)
         ) {
             composable<DashboardRoute> {
                 DashboardScreen(

@@ -94,7 +94,6 @@ fun ActivityLogScreen() {
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     .padding(horizontal = 20.dp)
-                    .padding(bottom = 16.dp)  // Add bottom padding for better scroll experience
             ) {
                 // Today Section
                 ActivityDateHeader(date = "TODAY")

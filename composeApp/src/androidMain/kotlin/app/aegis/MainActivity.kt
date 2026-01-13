@@ -4,8 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.res.Configuration
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
@@ -14,9 +16,12 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import app.aegis.data.settings.AppSettingsRepository
 import app.aegis.di.initKoin
+import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinContext
+import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +32,8 @@ class MainActivity : ComponentActivity() {
         initKoin {
             androidContext(this@MainActivity)
         }
+
+        setStatusBarColor(isPrimaryStatusBar = false)
 
         setContent {
             KoinContext {
@@ -88,6 +95,48 @@ class MainActivity : ComponentActivity() {
         return enabledServices.any {
             it.resolveInfo?.serviceInfo?.packageName == packageName
         }
+    }
+
+    private fun setStatusBarColor(isPrimaryStatusBar: Boolean) {
+        val settingsRepository = get<AppSettingsRepository>()
+        // This is non compose way to get dark mode equivalent to composable isSystemInDarkTheme()
+        val isSystemDarkTheme =
+            when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                Configuration.UI_MODE_NIGHT_YES -> true
+                Configuration.UI_MODE_NIGHT_NO -> false
+                else -> false
+            }
+        val isDeviceDarkTheme = settingsRepository.isDarkTheme(isSystemDarkTheme)
+        val statusBarStyle =
+            if (isPrimaryStatusBar) {
+                if (!isDeviceDarkTheme) {
+                    // SystemBarStyle.dark will use light icons, it means white icons
+                    SystemBarStyle.dark(
+                        scrim = android.graphics.Color.TRANSPARENT,
+                    )
+                } else {
+                    SystemBarStyle.light(
+                        scrim = android.graphics.Color.TRANSPARENT,
+                        darkScrim = android.graphics.Color.TRANSPARENT,
+                    )
+                }
+            } else {
+                if (isDeviceDarkTheme) {
+                    SystemBarStyle.dark(
+                        scrim = android.graphics.Color.TRANSPARENT,
+                    )
+                } else {
+                    // SystemBarStyle.light will use dark icons, it means gray icons
+                    SystemBarStyle.light(
+                        scrim = android.graphics.Color.TRANSPARENT,
+                        darkScrim = android.graphics.Color.TRANSPARENT,
+                    )
+                }
+            }
+        enableEdgeToEdge(
+            statusBarStyle = statusBarStyle,
+            navigationBarStyle = statusBarStyle,
+        )
     }
 }
 

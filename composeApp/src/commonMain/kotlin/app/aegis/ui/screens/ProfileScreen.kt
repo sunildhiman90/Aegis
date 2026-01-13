@@ -71,11 +71,9 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 20.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Protection Status
             Box(
                 modifier = Modifier
@@ -104,9 +102,10 @@ fun ProfileScreen(
             )
 
             Text(
-                text = if (isProtected) "System is active and monitoring" else "Setup permissions on Dashboard to activate protection",
+                text = if (isProtected) "System is active and monitoring" else "Setup permissions to activate protection",
                 style = AegisTypography.bodyMedium,
-                color = colors.textSecondary
+                color = colors.textSecondary,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(32.dp))

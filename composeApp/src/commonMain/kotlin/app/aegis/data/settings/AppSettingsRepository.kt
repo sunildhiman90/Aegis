@@ -1,6 +1,5 @@
 package app.aegis.data.settings
 
-import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.Settings
 
 /**

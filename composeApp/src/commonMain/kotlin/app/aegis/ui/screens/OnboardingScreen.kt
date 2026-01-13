@@ -8,6 +8,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -71,6 +73,7 @@ fun OnboardingScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(colors.background)
+            .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         // Top bar with Skip
         Row(
@@ -80,12 +83,16 @@ fun OnboardingScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             if (pagerState.currentPage > 0) {
-                TextButton(onClick = {
+                IconButton(onClick = {
                     scope.launch {
                         pagerState.animateScrollToPage(pagerState.currentPage - 1)
                     }
                 }) {
-                    Text("←", color = colors.textSecondary)
+                    Icon(
+                        Icons.AutoMirrored.Default.ArrowBack,
+                        contentDescription = "Go Back",
+                        tint = colors.textSecondary
+                    )
                 }
             } else {
                 Spacer(modifier = Modifier.width(48.dp))
@@ -246,7 +253,11 @@ private fun MockChatUI() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column {
-                Text("Unknown Sender", style = AegisTypography.titleSmall, color = colors.textPrimary)
+                Text(
+                    "Unknown Sender",
+                    style = AegisTypography.titleSmall,
+                    color = colors.textPrimary
+                )
                 Text("Today, 2:41 PM", style = AegisTypography.caption, color = colors.textTertiary)
             }
         }

@@ -13,6 +13,7 @@ import app.aegis.ui.navigation.*
 import app.aegis.ui.screens.*
 import app.aegis.ui.theme.AegisTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 
 /**
  * Main Aegis App entry point
@@ -27,7 +28,7 @@ fun App(
     onOpenAccessibilitySettings: () -> Unit = {},
 ) {
     // Initialize Repository
-    val settingsRepository = remember { AppSettingsRepository() }
+    val settingsRepository = koinInject<AppSettingsRepository>()
 
     // Theme state
     // Better theme initialization that respects system changes unless overridden

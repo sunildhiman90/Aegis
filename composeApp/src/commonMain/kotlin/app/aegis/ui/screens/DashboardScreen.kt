@@ -157,7 +157,6 @@ private fun ActiveProtectionContent(
                 modifier = Modifier.weight(1f)
             )
 
-            /*
             // Trusted Contacts - Hidden for now as feature is not enabled
             StatCard(
                 icon = {
@@ -172,7 +171,6 @@ private fun ActiveProtectionContent(
                 subtitle = "$trustedContactsCount Contacts",
                 modifier = Modifier.weight(1f)
             )
-            */
         }
 
         Spacer(modifier = Modifier.height(32.dp))
