@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 
 /**
  * Local composition for Aegis-specific colors
@@ -19,7 +20,7 @@ val LocalAegisColors = staticCompositionLocalOf { DarkColorScheme }
  */
 private val AegisMaterialDarkColorScheme = darkColorScheme(
     primary = AegisDarkColors.Primary,
-    onPrimary = AegisDarkColors.TextPrimary,
+    onPrimary = Color(0xFF121212),  // Dark text on gold for readability
     primaryContainer = AegisDarkColors.PrimaryContainer,
     onPrimaryContainer = AegisDarkColors.TextPrimary,
 
