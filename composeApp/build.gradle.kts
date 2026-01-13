@@ -9,6 +9,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.buildkonfig)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 // Load local.properties, for using in local, But on github actions we will directly use env variables
@@ -63,6 +69,16 @@ kotlin {
             
             // Navigation
             implementation(libs.navigation.compose)
+
+            // Settings
+            implementation(libs.multiplatform.settings)
+            
+            // DateTime
+            implementation(libs.kotlinx.datetime)
+
+            // Room
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
         }
 
         iosMain.dependencies {
@@ -103,6 +119,11 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+
+    // KSP for Room
+    add("kspAndroid", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
+    add("kspIosSimulatorArm64", libs.room.compiler)
 }
 
 

@@ -51,9 +51,16 @@ fun OnboardingScreen(
         OnboardingPage(
             emoji = "📵",
             title = "Stop Blackmail",
-            description = "We automatically hide your camera during calls from unknown numbers to prevent sextortion.",
+            description = "We automatically hide your camera during calls from unknown numbers to prevent sextortion or fake police video call scams.",
             showMockChat = false,
             showCameraBlocked = true
+        ),
+        OnboardingPage(
+            emoji = "✨",
+            title = "You're All Set",
+            description = "Aegis is ready to run in the background. Grant permissions on the next screen to activate full protection.",
+            showMockChat = false,
+            showCameraBlocked = false // Will default to ShieldHandUI (Big Shield) which fits nicely
         )
     )
 
@@ -148,16 +155,7 @@ fun OnboardingScreen(
                 leadingIcon = if (isLastPage) Icons.Default.Check else null
             )
 
-            if (isLastPage) {
-                Spacer(modifier = Modifier.height(12.dp))
-                TextButton(onClick = onSkip) {
-                    Text(
-                        text = "Skip for now",
-                        style = AegisTypography.bodyMedium,
-                        color = colors.textSecondary
-                    )
-                }
-            }
+
         }
     }
 }

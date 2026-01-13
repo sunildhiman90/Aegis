@@ -104,7 +104,7 @@ fun ProfileScreen(
             )
 
             Text(
-                text = "System is active and monitoring",
+                text = if (isProtected) "System is active and monitoring" else "Setup permissions on Dashboard to activate protection",
                 style = AegisTypography.bodyMedium,
                 color = colors.textSecondary
             )

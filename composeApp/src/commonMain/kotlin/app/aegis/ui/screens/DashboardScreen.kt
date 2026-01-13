@@ -33,7 +33,7 @@ import app.aegis.ui.theme.AegisTypography
 @Composable
 fun DashboardScreen(
     userName: String = "Sarah",
-    isProtectionActive: Boolean = true,
+
     hasOverlayPermission: Boolean = true,
     hasAccessibilityPermission: Boolean = true,
     sensitivityLevel: String = "High Protection",
@@ -157,6 +157,8 @@ private fun ActiveProtectionContent(
                 modifier = Modifier.weight(1f)
             )
 
+            /*
+            // Trusted Contacts - Hidden for now as feature is not enabled
             StatCard(
                 icon = {
                     Icon(
@@ -170,6 +172,7 @@ private fun ActiveProtectionContent(
                 subtitle = "$trustedContactsCount Contacts",
                 modifier = Modifier.weight(1f)
             )
+            */
         }
 
         Spacer(modifier = Modifier.height(32.dp))

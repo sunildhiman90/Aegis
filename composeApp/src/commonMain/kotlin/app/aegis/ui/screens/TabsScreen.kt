@@ -82,14 +82,13 @@ fun TabsScreen(
                 }
             }
         }
-    ) { paddingValues ->
-        // Nested NavHost for tabs
+    ) { _ ->
+        // Nested NavHost for tabs - no padding needed, screens handle their own scrolling
         NavHost(
             navController = tabsNavController,
             startDestination = DashboardRoute,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
                 .background(colors.background)
         ) {
             composable<DashboardRoute> {
@@ -116,7 +115,9 @@ fun TabsScreen(
             }
 
             composable<ProfileRoute> {
+                val isProtected = hasOverlayPermission && hasAccessibilityPermission
                 ProfileScreen(
+                    isProtected = isProtected,
                     onSettingsClick = onNavigateToSettings
                 )
             }
