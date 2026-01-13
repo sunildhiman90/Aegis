@@ -19,6 +19,9 @@ interface IncidentDao {
     @Delete
     suspend fun deleteIncident(incident: IncidentEntity)
 
+    @Query("SELECT * FROM incidents WHERE id = :id")
+    suspend fun getIncidentById(id: String): IncidentEntity?
+
     @Query("DELETE FROM incidents")
     suspend fun deleteAllIncidents()
 }
