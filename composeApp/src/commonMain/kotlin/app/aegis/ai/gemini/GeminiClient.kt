@@ -55,6 +55,14 @@ class GeminiClient {
         }
     }
 
+
+//    private val defaultModel = "gemini-3.0-pro"
+//    private val defaultModelVision = "gemini-3.0-flash"
+
+    //TODO, just for testing, need to remove later
+    private val defaultModel = "gemini-2.5-pro"
+    private val defaultModelVision = "gemini-2.5-flash"
+
     // Using Gemini 3 Pro (via AI Studio Free Tier)
     private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/"
 
@@ -62,7 +70,7 @@ class GeminiClient {
      * 1. TEXT MODE (Chat Scams)
      * Restored the "Mental Toolkit" for maximum security accuracy.
      */
-    suspend fun analyze(screenText: String, model: String = "gemini-2.5-flash"): ScamVerdict {
+    suspend fun analyze(screenText: String, model: String = defaultModel): ScamVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
 
         // Local Tools Pre-check
@@ -111,7 +119,7 @@ class GeminiClient {
      * * accepts 'base64Image' string instead of Bitmap.
      * The Platform code (Android) is responsible for converting the image.
      */
-    suspend fun analyzeImage(base64Image: String, model: String = "gemini-2.5-flash"): ScamVerdict {
+    suspend fun analyzeImage(base64Image: String, model: String = defaultModelVision): ScamVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return ScamVerdict(RiskLevel.SAFE, "No API Key", 0)
 
@@ -149,7 +157,7 @@ class GeminiClient {
      * Analyzes video frames for nudity and fake feed detection.
      * Returns NudityVerdict for quick boolean checks.
      */
-    suspend fun analyzeForNudity(base64Image: String, model: String = "gemini-2.0-flash"): NudityVerdict {
+    suspend fun analyzeForNudity(base64Image: String, model: String = defaultModelVision): NudityVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return NudityVerdict(nudity = false, fakeFeed = false, confidence = 0)
 
@@ -272,7 +280,7 @@ class GeminiClient {
      * @param model The model to use for analysis
      * @return The verdict of the analysis
      */
-    suspend fun analyzeUrl(url: String, model: String = "gemini-2.0-flash"): app.aegis.models.PhishingVerdict {
+    suspend fun analyzeUrl(url: String, model: String = defaultModelVision): app.aegis.models.PhishingVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "No API Key", 0)
 
