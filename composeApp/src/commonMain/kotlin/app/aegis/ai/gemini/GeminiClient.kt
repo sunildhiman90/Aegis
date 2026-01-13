@@ -266,6 +266,11 @@ class GeminiClient {
     /**
      * 4. PHISHING LINK MODE (The Marathon Agent)
      * Analyzes URLs for phishing and generates a takedown report.
+     * If the provider is unknown, it falls back to report_phishing@google.com (Google Safe Browsing).
+     * 
+     * @param url The URL to analyze
+     * @param model The model to use for analysis
+     * @return The verdict of the analysis
      */
     suspend fun analyzeUrl(url: String, model: String = "gemini-2.0-flash"): app.aegis.models.PhishingVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
@@ -284,7 +289,9 @@ class GeminiClient {
             
             If DANGER:
             - Construct a formal abuse report email.
-            - Identify the likely registrar abuse email (e.g., abuse@godaddy.com) based on the domain. If unknown, use "abuse@<domain>".
+            - Identify the likely **Registrar** or **Hosting Provider** abuse email (e.g., abuse@godaddy.com, abuse@namecheap.com) based on the domain/TLD. 
+            - If it's a free subdomain (e.g., .vercel.app, .ngrok.io), use the platform's abuse email (abuse@vercel.com).
+            - **CRITICAL**: Do NOT use "abuse@<domain>" if the domain itself is suspicious, as that alerts the scammer. If unknown, use "report_phishing@google.com".
             
             Return strictly JSON:
             {

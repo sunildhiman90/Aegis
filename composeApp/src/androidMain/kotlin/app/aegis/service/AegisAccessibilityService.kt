@@ -26,6 +26,7 @@ class AegisAccessibilityService : AccessibilityService() {
     private var currentAnalysisHash = 0 // Track what content is currently being analyzed
     private var currentAnalysisText = ""
     private var currentAnalysisContact = ""
+    private var lastInputText = "" // 🛑 Track user's last typed text for Smart Diff
 
     private val geminiClient = GeminiClient()
     private lateinit var overlayManager: OverlayManager
@@ -199,7 +200,7 @@ class AegisAccessibilityService : AccessibilityService() {
                         // 🛡️ SHOW CAMERA WARNING ONLY FOR UNKNOWN NUMBERS
                         // If caller is a phone number (not saved contact name), show warning
                         // AND only if we haven't shown it already for this session
-                        if (isLikelyPhoneNumber(pendingVideoCallCaller) && !hasShownCameraWarning) {
+                        if (isPotentialRisk(pendingVideoCallCaller) && !hasShownCameraWarning) {
                             Log.d("Aegis", "🛡️ Unknown caller detected! Showing camera warning...")
                             hasShownCameraWarning = true // Mark as shown
                             cameraWarningShownTime = System.currentTimeMillis() // Start debounce timer
@@ -289,11 +290,37 @@ class AegisAccessibilityService : AccessibilityService() {
         // Don't re-scan if we just analyzed this exact screen 100ms ago
         val capturedText = StringBuilder()
         traverseNode(rootNode, capturedText)
-        val chatContent = capturedText.toString()
+        val rawChatContent = capturedText.toString()
 
-        if (chatContent.length < 10) return
+        // 🛑 NEW: Optimization for User-Initiated Conversations
+        // If user is typing and there is almost no other content (User initiating), assume SAFE.
+        val userInput = extractUserInput(rootNode)
 
-        val contentHash = chatContent.hashCode()
+        // SMART DIFF: If the ONLY change is what the user just typed (it got sent), SKIP.
+        if (userInput.isBlank() && lastInputText.isNotBlank()) {
+            // User cleared input -> valid chance they sent the message.
+            // If the new content contains their last input, and we are stable otherwise, it's safe.
+            // For now, simpler optimization: If input cleared, we reset lastInputText.
+            lastInputText = ""
+        }
+        if (userInput.isNotBlank()) {
+            lastInputText = userInput
+
+            val historyStats =
+                rawChatContent.length // Note: traverseNode now excludes EditText, so this is PURE history
+            // Threshold 300 allows for Contact Name + Encryption Notice + Date headers
+            if (historyStats < 300) {
+                Log.d("Aegis", "User typed: '$userInput' (History len: $historyStats). Starting conversation -> SAFE.")
+                return
+            }
+        }
+
+        if (rawChatContent.length < 10) return
+
+        // 🛑 STABLE HASHING (Ignore Timestamps & Status)
+        val stableContent = getStableContent(rawChatContent)
+        val contentHash = stableContent.hashCode()
+
         if (contentHash == lastProcessedHash) return // 🔋 CPU Saver: Static Screen
         if (isScreenSnoozed(contentHash)) return    // User dismissed this specific text
 
@@ -308,7 +335,7 @@ class AegisAccessibilityService : AccessibilityService() {
         // 6. DECISION ENGINE (The "Smart" Logic)
 
         // 🔗 PHISHING LINK CHECK (Priority: Links can be dangerous from ANYONE)
-        val urls = extractUrls(chatContent)
+        val urls = extractUrls(stableContent)
         if (urls.isNotEmpty()) {
             Log.d("Aegis", "🔗 URLs detected: $urls")
             urls.forEach { url ->
@@ -319,33 +346,32 @@ class AegisAccessibilityService : AccessibilityService() {
             }
         }
 
-        if (isLikelyPhoneNumber(contactName)) {
-            // TODO: Revert after testing
-            //if (true) { // Was: isLikelyPhoneNumber(callerId)
-            // 🔴 CASE A: UNKNOWN NUMBER (Raw Digits) -> HIGH RISK
+        // 🛡️ REFACTORED RISK LOGIC: "Unknown" OR "Fake Official"
+        if (isPotentialRisk(contactName)) {
+            // 🔴 CASE A: HIGH RISK (Unknown Number OR "Bank Support")
 
             // 🔋 GATEKEEPER: Don't waste money analyzing "Hi" or "Ok"
-            val localRisk = SecurityTools.analyzeLocally(chatContent)
+            val localRisk = SecurityTools.analyzeLocally(stableContent)
 
-            if (localRisk == LocalRisk.SAFE && chatContent.length < 50) {
-                Log.d("Aegis", "🔋 Unknown number sent safe/short text. Ignoring (Battery Saver).")
+            if (localRisk == LocalRisk.SAFE && stableContent.length < 50) {
+                Log.d("Aegis", "🔋 Risky contact sent safe/short text. Ignoring (Battery Saver).")
                 return
             }
 
             // If text is LONG or SUSPICIOUS -> Analyze with Gemini
-            Log.d("Aegis", "⚠️ Unknown Number + Complex Text. Analyzing...")
-            runGeminiAnalysis(contactName, chatContent, contentHash)
+            Log.d("Aegis", "⚠️ High Risk Contact + Complex Text. Analyzing...")
+            runGeminiAnalysis(contactName, stableContent, contentHash)
 
         } else {
             // 🟡 CASE B: NAMED CONTACT ("Mom", "Rahul")
-            val localVerdict = SecurityTools.analyzeLocally(chatContent)
+            val localVerdict = SecurityTools.analyzeLocally(stableContent)
 
             if (localVerdict != LocalRisk.SAFE) {
                 // Suspicious keyword found -> Verify with Gemini
-                runGeminiAnalysis(contactName, chatContent, contentHash)
+                runGeminiAnalysis(contactName, stableContent, contentHash)
             } else {
                 // ✅ MESSAGE IS SAFE
-                Log.d("Aegis", "Named contact '$contactName' passed local checks.")
+                Log.d("Aegis", "Safe contact '$contactName' passed local checks.")
 
                 // 💡 NEW OPTIMIZATION: Build Trust
                 // If this friend sends us a safe message, increase their "Trust Score".
@@ -490,12 +516,58 @@ class AegisAccessibilityService : AccessibilityService() {
         return false
     }
 
+    private fun extractUserInput(node: AccessibilityNodeInfo?): String {
+        if (node == null) return ""
+        if (node.className == "android.widget.EditText") {
+            return (node.text ?: "").toString()
+        }
+        val count = node.childCount
+        for (i in 0 until count) {
+            val text = extractUserInput(node.getChild(i))
+            if (text.isNotEmpty()) return text
+        }
+        return ""
+    }
+
     private fun traverseNode(node: AccessibilityNodeInfo?, sb: StringBuilder) {
         if (node == null) return
+
+        // 🛑 EXCLUDE INPUT BOXES: We only analyze incoming messages, not what user is typing (Privacy + Optimization)
+        if (node.className == "android.widget.EditText") return
+
         if (!node.text.isNullOrEmpty()) sb.append(node.text).append(" ")
         if (!node.contentDescription.isNullOrEmpty()) sb.append(node.contentDescription).append(" ")
         val count = node.childCount
         for (i in 0 until count) traverseNode(node.getChild(i), sb)
+    }
+
+    /**
+     * Filters out volatile content (Time, Date, Status) to ensure stable hashing.
+     */
+    private fun getStableContent(text: String): String {
+        var stable = text
+
+        // 1. Remove Timestamps (10:00 AM, 10:00am, 22:00)
+        stable = stable.replace(Regex("\\d{1,2}:\\d{2}\\s?([aA][pP][mM])?"), "")
+
+        // 2. Remove Dates (Yesterday, Today, Oct 12, 12 Oct)
+        stable = stable.replace(Regex("\\b(Yesterday|Today)\\b", RegexOption.IGNORE_CASE), "")
+        stable = stable.replace(Regex("\\b[A-Za-z]{3}\\s\\d{1,2}\\b"), "") // Oct 12
+        stable = stable.replace(Regex("\\b\\d{1,2}\\s[A-Za-z]{3}\\b"), "") // 12 Oct
+
+        // 3. Remove Delivery Status
+        stable = stable.replace(Regex("\\b(Read|Delivered|Sent|Sending)\\b", RegexOption.IGNORE_CASE), "")
+        stable = stable.replace(Regex("\\b(Sent via SMS|MMS)\\b", RegexOption.IGNORE_CASE), "")
+
+        // 4. Remove Dynamic Contact Status (Top bar updates)
+        stable = stable.replace(
+            Regex(
+                "\\b(Online|Typing\\.\\.\\.|recording audio\\.\\.\\.|Last seen.*?)\\b",
+                RegexOption.IGNORE_CASE
+            ), ""
+        )
+
+        return stable
     }
 
     private fun extractTitle(rootNode: AccessibilityNodeInfo?): String {
@@ -677,7 +749,7 @@ class AegisAccessibilityService : AccessibilityService() {
         } ?: "Unknown"
 
         // 3. Is it an Unknown Number? (High Risk) - Apply Zero-Trust for BOTH threats
-        if (isLikelyPhoneNumber(callerId)) {
+        if (isPotentialRisk(callerId)) {
             Log.d("Aegis", "🚨 UNKNOWN VIDEO CALL: $callerId")
 
             // 🛡️ ZERO-TRUST DEFENSE: Try to disable camera immediately
@@ -731,13 +803,14 @@ class AegisAccessibilityService : AccessibilityService() {
                     cleanText.length > 2
         } ?: "Unknown"
 
-        if (isLikelyPhoneNumber(callerId)) {
+        if (isPotentialRisk(callerId)) {
             Log.d("Aegis", "📞 Unknown Audio Call Detected: $callerId")
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastAudioWarningTime > 10000) {
                 lastAudioWarningTime = currentTime
                 overlayManager.showWarning(
-                    text = "⚠️ Unknown Caller: $callerId\nDO NOT share OTPs. Real Police/Banks never ask for PINs on call.",
+                    text = """⚠️ Unknown Caller: $callerId
+DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                     onDismiss = {}
                 )
             }
@@ -754,32 +827,45 @@ class AegisAccessibilityService : AccessibilityService() {
      * Determines if a string is likely a raw phone number (Unknown)
      * or a saved contact name (Trusted).
      */
-    private fun isLikelyPhoneNumber(text: String): Boolean {
+    /**
+     * Determines if a contact is POTENTIALLY RISKY.
+     * Returns TRUE if:
+     * 1. It's a raw phone number (Unknown).
+     * 2. It's a "Fake Official" name (e.g., "Bank Support", "CBI Officer") even if saved.
+     */
+    private fun isPotentialRisk(contactName: String): Boolean {
+        // 1. Check for "Official" Keywords (Scammers use these in saved names)
+        val suspiciousKeywords = listOf(
+            "Bank", "Support", "Service", "Customer", "Care", // Banking
+            "Police", "CBI", "Officer", "Inspector", "Cyber", "Crime", // Digital Arrest
+            "FedEx", "DHL", "Customs", // Courier Scams
+            "Lottery", "Winner", "Prize", // Lottery Scams
+            "Investment", "Crypto", "Stock", "Trading" // Investment Scams
+        )
 
-        //TODO. just for testing, returning true, need to change later
-        return true
-
-        val clean = text.trim()
-
-        // 1. Explicit Indicators of Risk
-        if (clean.contains("Unknown", true) ||
-            clean.contains("Private", true) ||
-            clean.contains("Spam", true)
-        ) {
+        if (suspiciousKeywords.any { contactName.contains(it, ignoreCase = true) }) {
+            Log.d("Aegis", "🚨 DETECTED SUSPICIOUS NAME: '$contactName'. Treating as High Risk.")
             return true
         }
 
-        // 2. Saved Contacts usually contain Letters (e.g., "Mom", "Rahul JLL")
-        // If it has letters, it is NOT a raw phone number.
-        if (clean.any { it.isLetter() }) {
-            return false
+        // 2. Local Trust Check (If explicitly trusted, return false)
+        if (TrustRepository.isTrusted(contactName)) return false
+
+        // 3. Raw Phone Number Check
+        val clean = contactName.trim()
+
+        // Explicit Indicators
+        if (clean.contains("Unknown", true) || clean.contains("Private", true) || clean.contains("Spam", true)) {
+            return true
         }
 
-        // 3. Raw Numbers contain mostly digits (e.g., "+91 999...", "0987...")
-        // We strip special chars (+, -, spaces) and count digits.
-        val digitCount = clean.count { it.isDigit() }
+        // Saved contacts usually have letters. If NO letters, it's a number.
+        if (clean.any { it.isLetter() }) {
+            return false // It's a saved name (and didn't trigger the keyword check above)
+        }
 
-        // If it has > 6 digits and NO letters, it's a Phone Number.
+        // Count digits
+        val digitCount = clean.count { it.isDigit() }
         return digitCount > 6
     }
 
@@ -812,6 +898,10 @@ class AegisAccessibilityService : AccessibilityService() {
     private fun collectAllText(node: AccessibilityNodeInfo?, list: MutableList<String>) {
         if (node == null) return
         if (!node.isVisibleToUser) return // Skip hidden elements (like buttons behind the call screen)
+
+        // 🛑 NEW: Video Call Logic shouldn't read Input Box either (privacy)
+        if (node.className == "android.widget.EditText") return
+
         if (!node.text.isNullOrEmpty()) list.add(node.text.toString())
         // Also collect contentDescription for icon buttons (Mute, Camera, End call, etc.)
         if (!node.contentDescription.isNullOrEmpty()) list.add(node.contentDescription.toString())
@@ -874,7 +964,7 @@ class AegisAccessibilityService : AccessibilityService() {
         lastCallActivityTime = System.currentTimeMillis()  // Initialize timeout tracking
 
         // 🛡️ CAMERA WARNING - Show only if not already shown AND unknown caller
-        if (!hasShownCameraWarning && isLikelyPhoneNumber(callerId)) {
+        if (!hasShownCameraWarning && isPotentialRisk(callerId)) {
             Log.d("Aegis", "🛡️ Showing camera warning for: $callerId")
             hasShownCameraWarning = true // Mark as shown
             cameraWarningShownTime = System.currentTimeMillis() // Start debounce timer
@@ -884,7 +974,7 @@ class AegisAccessibilityService : AccessibilityService() {
         } else {
             Log.d(
                 "Aegis",
-                "ℹ️ Camera warning skipped (shown=$hasShownCameraWarning, unknown=${isLikelyPhoneNumber(callerId)})"
+                "ℹ️ Camera warning skipped (shown=$hasShownCameraWarning, unknown=${isPotentialRisk(callerId)})"
             )
         }
 
@@ -1166,14 +1256,15 @@ class AegisAccessibilityService : AccessibilityService() {
 
         Log.d("Aegis", "🎣 Analyzing Suspicious URL: $url")
 
-        // Show scanning warning? Optional. For now, silent scan until Danger found.
+        // ⚡️ IMMEDIATE FEEDBACK: Warn the user effectively "Wait, I'm checking"
+        overlayManager.showWarning("🔍 Wait, I'm checking this link for scams/phishing...", onDismiss = {})
 
         analysisJob = serviceScope.launch {
             val verdict = geminiClient.analyzeUrl(url)
             if (!isActive) return@launch
 
-            if (verdict.riskLevel == app.aegis.models.RiskLevel.DANGER) {
-                withContext(Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
+                if (verdict.riskLevel == app.aegis.models.RiskLevel.DANGER) {
                     overlayManager.showPhishingWarning(
                         reason = verdict.reason,
                         url = url,
@@ -1181,6 +1272,9 @@ class AegisAccessibilityService : AccessibilityService() {
                         onDismiss = { overlayManager.hideShield() },
                         onTrust = { /* Add to whitelist session */ overlayManager.hideShield() }
                     )
+                } else {
+                    // ✅ Safe: Remove the yellow warning
+                    overlayManager.hideShield()
                 }
             }
         }
