@@ -20,10 +20,10 @@ import kotlinx.datetime.toLocalDateTime
 /**
  * Filter types for activity log
  */
-enum class ActivityFilter(val displayName: String) {
-    ALL("All"),
-    THREATS("Threats"),
-    SAFE_SCANS("Safe Scans")
+enum class ActivityFilter {
+    ALL,
+    THREATS,
+    SAFE_SCANS
 }
 
 /**

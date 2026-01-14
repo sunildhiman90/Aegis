@@ -1,5 +1,6 @@
 package app.aegis.ui.navigation
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.StringResource
 
 /**
  * Type-safe navigation routes for Aegis app
@@ -48,7 +50,7 @@ data object ProfileRoute
  */
 data class BottomNavItem<T : Any>(
     val route: T,
-    val label: String,
+    val labelRes: StringResource,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 )
@@ -56,19 +58,19 @@ data class BottomNavItem<T : Any>(
 val bottomNavItems = listOf(
     BottomNavItem(
         route = DashboardRoute,
-        label = "Dashboard",
+        labelRes = Res.string.nav_dashboard,
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home
     ),
     BottomNavItem(
         route = ActivityRoute,
-        label = "Activity",
+        labelRes = Res.string.nav_activity,
         selectedIcon = Icons.AutoMirrored.Filled.List,
         unselectedIcon = Icons.AutoMirrored.Outlined.List
     ),
     BottomNavItem(
         route = ProfileRoute,
-        label = "Profile",
+        labelRes = Res.string.nav_profile,
         selectedIcon = Icons.Filled.Person,
         unselectedIcon = Icons.Outlined.Person
     )

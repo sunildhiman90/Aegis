@@ -1,5 +1,6 @@
 package app.aegis.ui.screens
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -25,6 +25,8 @@ import app.aegis.ui.components.AegisPrimaryButton
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Onboarding Screen with horizontal pager
@@ -40,27 +42,27 @@ fun OnboardingScreen(
     val pages = listOf(
         OnboardingPage(
             emoji = "🔍",
-            title = "Identify Scammers",
-            description = "Aegis analyzes chat patterns to warn you about impersonators and fake agents in real-time.",
+            titleRes = Res.string.onboarding_title_1,
+            descriptionRes = Res.string.onboarding_desc_1,
             showMockChat = true
         ),
         OnboardingPage(
             emoji = "🛡️",
-            title = "Safe Browsing",
-            description = "We scan links in your messages to stop you from visiting malicious phishing sites before they steal your data.",
+            titleRes = Res.string.onboarding_title_2,
+            descriptionRes = Res.string.onboarding_desc_2,
             showMockChat = false
         ),
         OnboardingPage(
             emoji = "📵",
-            title = "Stop Blackmail",
-            description = "We automatically hide your camera during calls from unknown numbers to prevent sextortion or fake police video call scams.",
+            titleRes = Res.string.onboarding_title_3,
+            descriptionRes = Res.string.onboarding_desc_3,
             showMockChat = false,
             showCameraBlocked = true
         ),
         OnboardingPage(
             emoji = "✨",
-            title = "You're All Set",
-            description = "Aegis is ready to run in the background. Grant permissions on the next screen to activate full protection.",
+            titleRes = Res.string.onboarding_title_4,
+            descriptionRes = Res.string.onboarding_desc_4,
             showMockChat = false,
             showCameraBlocked = false // Will default to ShieldHandUI (Big Shield) which fits nicely
         )
@@ -90,7 +92,7 @@ fun OnboardingScreen(
                 }) {
                     Icon(
                         Icons.AutoMirrored.Default.ArrowBack,
-                        contentDescription = "Go Back",
+                        contentDescription = stringResource(Res.string.nav_back),
                         tint = colors.textSecondary
                     )
                 }
@@ -100,7 +102,7 @@ fun OnboardingScreen(
 
             TextButton(onClick = onSkip) {
                 Text(
-                    text = "Skip",
+                    text = stringResource(Res.string.onboarding_skip),
                     style = AegisTypography.labelMedium,
                     color = colors.textSecondary
                 )
@@ -149,7 +151,9 @@ fun OnboardingScreen(
             val isLastPage = pagerState.currentPage == pages.size - 1
 
             AegisPrimaryButton(
-                text = if (isLastPage) "Enable Protection" else if (pagerState.currentPage == 0) "Continue" else "Next",
+                text = if (isLastPage) stringResource(Res.string.onboarding_enable_protection) 
+                       else if (pagerState.currentPage == 0) stringResource(Res.string.onboarding_continue) 
+                       else stringResource(Res.string.onboarding_next),
                 onClick = {
                     if (isLastPage) {
                         onComplete()
@@ -169,8 +173,8 @@ fun OnboardingScreen(
 
 private data class OnboardingPage(
     val emoji: String,
-    val title: String,
-    val description: String,
+    val titleRes: StringResource,
+    val descriptionRes: StringResource,
     val showMockChat: Boolean = false,
     val showCameraBlocked: Boolean = false
 )
@@ -181,6 +185,8 @@ private fun OnboardingPageContent(
     modifier: Modifier = Modifier
 ) {
     val colors = AegisTheme.colors
+    val title = stringResource(page.titleRes)
+    val description = stringResource(page.descriptionRes)
 
     Column(
         modifier = modifier.padding(horizontal = 24.dp),
@@ -199,7 +205,7 @@ private fun OnboardingPageContent(
         Spacer(modifier = Modifier.height(48.dp))
 
         // Title with colored word
-        val titleParts = page.title.split(" ")
+        val titleParts = title.split(" ")
         if (titleParts.size > 1) {
             Row {
                 Text(
@@ -215,7 +221,7 @@ private fun OnboardingPageContent(
             }
         } else {
             Text(
-                text = page.title,
+                text = title,
                 style = AegisTypography.displayMedium,
                 color = colors.textPrimary
             )
@@ -224,7 +230,7 @@ private fun OnboardingPageContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = page.description,
+            text = description,
             style = AegisTypography.bodyLarge,
             color = colors.textSecondary,
             textAlign = TextAlign.Center
@@ -254,11 +260,11 @@ private fun MockChatUI() {
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    "Unknown Sender",
+                    stringResource(Res.string.mock_sender_name),
                     style = AegisTypography.titleSmall,
                     color = colors.textPrimary
                 )
-                Text("Today, 2:41 PM", style = AegisTypography.caption, color = colors.textTertiary)
+                Text(stringResource(Res.string.mock_message_time), style = AegisTypography.caption, color = colors.textTertiary)
             }
         }
 
@@ -274,7 +280,7 @@ private fun MockChatUI() {
                     .padding(12.dp)
             ) {
                 Text(
-                    text = "URGENT: Your account has been flagged. Click here to verify immediately.",
+                    text = stringResource(Res.string.mock_message_content),
                     style = AegisTypography.bodyMedium,
                     color = colors.textPrimary
                 )
@@ -290,7 +296,7 @@ private fun MockChatUI() {
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "SCAM",
+                    text = stringResource(Res.string.mock_scam_badge),
                     style = AegisTypography.labelSmall,
                     color = Color.White
                 )
@@ -315,7 +321,7 @@ private fun MockChatUI() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Analyzing patterns...",
+                text = stringResource(Res.string.mock_analyzing),
                 style = AegisTypography.labelSmall,
                 color = colors.primary
             )
@@ -393,7 +399,7 @@ private fun CameraBlockedUI() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "CAMERA BLOCKED",
+                text = stringResource(Res.string.mock_camera_blocked),
                 style = AegisTypography.labelSmall,
                 color = colors.primary
             )

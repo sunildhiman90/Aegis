@@ -1,5 +1,6 @@
 package app.aegis.ui.screens
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,7 +26,8 @@ import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.ActivityFilter
 import app.aegis.ui.viewmodel.ActivityLogViewModel
-import app.aegis.ui.viewmodel.GroupedIncidents
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -50,7 +52,7 @@ fun ActivityLogScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Activity",
+                            text = stringResource(Res.string.nav_activity),
                             style = AegisTypography.headlineMedium,
                             color = colors.textPrimary
                         )
@@ -77,12 +79,18 @@ fun ActivityLogScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ActivityFilter.entries.forEach { filter ->
+                    val label = when (filter) {
+                        ActivityFilter.ALL -> stringResource(Res.string.activity_filter_all)
+                        ActivityFilter.THREATS -> stringResource(Res.string.activity_filter_threats)
+                        ActivityFilter.SAFE_SCANS -> stringResource(Res.string.activity_filter_safe)
+                    }
+                    
                     FilterChip(
                         selected = selectedFilter == filter,
                         onClick = { viewModel.setFilter(filter) },
                         label = {
                             Text(
-                                text = filter.displayName,
+                                text = label,
                                 style = AegisTypography.labelMedium
                             )
                         },
@@ -113,7 +121,7 @@ fun ActivityLogScreen(
                         .padding(horizontal = 20.dp)
                 ) {
                     groupedIncidents.forEach { group ->
-                        ActivityDateHeader(date = group.dateLabel)
+                        ActivityDateHeader(dateLabel = group.dateLabel)
                         Spacer(modifier = Modifier.height(12.dp))
 
                         group.incidents.forEach { incident ->
@@ -197,7 +205,7 @@ private fun ActivityEmptyState() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "Your Security Journal",
+            text = stringResource(Res.string.activity_empty_title),
             style = AegisTypography.headlineMedium,
             color = colors.textPrimary
         )
@@ -205,7 +213,7 @@ private fun ActivityEmptyState() {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "You haven't had any security incidents yet. When Aegis blocks a threat or scans a message, the details will be listed here.",
+            text = stringResource(Res.string.activity_empty_message),
             style = AegisTypography.bodyMedium,
             color = colors.textSecondary,
             textAlign = TextAlign.Center
@@ -214,10 +222,16 @@ private fun ActivityEmptyState() {
 }
 
 @Composable
-private fun ActivityDateHeader(date: String) {
+private fun ActivityDateHeader(dateLabel: String) {
     val colors = AegisTheme.colors
+    val text = when (dateLabel) {
+        "TODAY" -> stringResource(Res.string.activity_today)
+        "YESTERDAY" -> stringResource(Res.string.activity_yesterday)
+        else -> dateLabel
+    }
+    
     Text(
-        text = date,
+        text = text,
         style = AegisTypography.labelMedium,
         color = colors.textSecondary
     )
@@ -231,6 +245,9 @@ private fun IncidentLogItemFromData(incident: Incident) {
     val colors = AegisTheme.colors
 
     val (icon, iconColor) = getIncidentIconAndColor(incident.type, incident.isBlocked, colors)
+    
+    // Determine title resource
+    val titleRes = getIncidentTitleRes(incident.type)
 
     IncidentLogItem(
         icon = {
@@ -241,9 +258,9 @@ private fun IncidentLogItemFromData(incident: Incident) {
                 modifier = Modifier.size(24.dp)
             )
         },
-        title = getIncidentTitle(incident.type),
+        title = stringResource(titleRes),
         description = incident.description,
-        timestamp = "",
+        timestamp = "", // This would use stringResource(Res.string.time_minutes_ago, ...) if dynamic
         iconBackgroundColor = iconColor,
         onClick = {}
     )
@@ -264,15 +281,15 @@ private fun getIncidentIconAndColor(type: IncidentType, isBlocked: Boolean, colo
 }
 
 /**
- * Get human-readable title for incident type
+ * Get string resource for incident title
  */
-private fun getIncidentTitle(type: IncidentType): String {
+private fun getIncidentTitleRes(type: IncidentType): StringResource {
     return when (type) {
-        IncidentType.SCAM_CALL -> "Scam Call Detected"
-        IncidentType.PHISHING_LINK -> "Phishing Link Blocked"
-        IncidentType.DANGEROUS_APP -> "Dangerous App Warning"
-        IncidentType.POLICE_IMPERSONATION -> "Police Impersonation Detected"
-        IncidentType.SEXTORTION -> "Sextortion Attempt Blocked"
-        IncidentType.OTHER -> "System Update"
+        IncidentType.SCAM_CALL -> Res.string.incident_blocked_scam_call
+        IncidentType.PHISHING_LINK -> Res.string.incident_blocked_link
+        IncidentType.DANGEROUS_APP -> Res.string.incident_dangerous_app
+        IncidentType.POLICE_IMPERSONATION -> Res.string.incident_police_impersonation
+        IncidentType.SEXTORTION -> Res.string.incident_sextortion
+        IncidentType.OTHER -> Res.string.incident_system_update
     }
 }

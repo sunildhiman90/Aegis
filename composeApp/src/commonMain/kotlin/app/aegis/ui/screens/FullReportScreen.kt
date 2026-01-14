@@ -1,5 +1,6 @@
 package app.aegis.ui.screens
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +24,7 @@ import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.PrivacyReportStats
 import app.aegis.ui.viewmodel.ProfileViewModel
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -46,7 +48,7 @@ fun FullReportScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Privacy Report",
+                            text = stringResource(Res.string.full_report_title),
                             style = AegisTypography.headlineMedium,
                             color = colors.textPrimary
                         )
@@ -55,7 +57,7 @@ fun FullReportScreen(
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(Res.string.nav_back),
                                 tint = colors.textPrimary
                             )
                         }
@@ -82,7 +84,7 @@ fun FullReportScreen(
             
             // Threats Breakdown Section
             Text(
-                text = "THREATS BLOCKED",
+                text = stringResource(Res.string.full_report_threats_blocked),
                 style = AegisTypography.overline,
                 color = colors.textSecondary
             )
@@ -95,7 +97,7 @@ fun FullReportScreen(
             
             // Processing Summary Section
             Text(
-                text = "PROCESSING SUMMARY",
+                text = stringResource(Res.string.full_report_processing_summary),
                 style = AegisTypography.overline,
                 color = colors.textSecondary
             )
@@ -148,7 +150,7 @@ private fun SummaryCard(stats: PrivacyReportStats) {
         )
         
         Text(
-            text = "Total Threats Blocked",
+            text = stringResource(Res.string.full_report_total_threats_blocked),
             style = AegisTypography.titleMedium,
             color = colors.textSecondary
         )
@@ -156,7 +158,7 @@ private fun SummaryCard(stats: PrivacyReportStats) {
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "All processing happens locally on your device",
+            text = stringResource(Res.string.full_report_local_processing),
             style = AegisTypography.bodySmall,
             color = colors.textTertiary,
             textAlign = TextAlign.Center
@@ -176,7 +178,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
             .padding(16.dp)
     ) {
         ThreatRow(
-            label = "Scam Calls Blocked",
+            label = stringResource(Res.string.full_report_scam_calls),
             count = stats.scamCallsBlocked,
             iconColor = colors.error
         )
@@ -187,7 +189,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
         )
         
         ThreatRow(
-            label = "Phishing Links Blocked",
+            label = stringResource(Res.string.full_report_phishing_links),
             count = stats.phishingLinksBlocked,
             iconColor = colors.warning
         )
@@ -198,7 +200,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
         )
         
         ThreatRow(
-            label = "Sextortion Attempts Blocked",
+            label = stringResource(Res.string.full_report_sextortion),
             count = stats.sextortionBlocked,
             iconColor = colors.error
         )
@@ -209,7 +211,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
         )
         
         ThreatRow(
-            label = "Police Impersonation Blocked",
+            label = stringResource(Res.string.full_report_police_impersonation),
             count = stats.policeImpersonationBlocked,
             iconColor = colors.error
         )
@@ -220,7 +222,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
         )
         
         ThreatRow(
-            label = "Dangerous Apps Blocked",
+            label = stringResource(Res.string.full_report_dangerous_apps),
             count = stats.dangerousAppsBlocked,
             iconColor = colors.warning
         )
@@ -305,12 +307,12 @@ private fun ProcessingSummaryCard(stats: PrivacyReportStats) {
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Data Processed On-Device",
+                    text = stringResource(Res.string.full_report_data_processed),
                     style = AegisTypography.bodyMedium,
                     color = colors.textPrimary
                 )
                 Text(
-                    text = "No cloud uploads",
+                    text = stringResource(Res.string.full_report_no_cloud),
                     style = AegisTypography.caption,
                     color = colors.textTertiary
                 )
@@ -345,7 +347,7 @@ private fun PrivacyAssuranceCard() {
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "Privacy Assured",
+                text = stringResource(Res.string.full_report_privacy_assured),
                 style = AegisTypography.titleMedium,
                 color = colors.success
             )
@@ -354,7 +356,7 @@ private fun PrivacyAssuranceCard() {
         Spacer(modifier = Modifier.height(12.dp))
         
         Text(
-            text = "All threat detection and analysis happens locally on your device. Your data never leaves your phone and is never uploaded to any cloud servers.",
+            text = stringResource(Res.string.full_report_privacy_message),
             style = AegisTypography.bodySmall,
             color = colors.textSecondary
         )
@@ -362,7 +364,7 @@ private fun PrivacyAssuranceCard() {
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "Aegis uses on-device AI models to protect your privacy while keeping you safe from scams.",
+            text = stringResource(Res.string.full_report_privacy_note),
             style = AegisTypography.caption,
             color = colors.textTertiary
         )

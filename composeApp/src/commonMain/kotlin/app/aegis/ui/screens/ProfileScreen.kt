@@ -1,5 +1,6 @@
 package app.aegis.ui.screens
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.ProfileViewModel
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -51,11 +53,10 @@ fun ProfileScreen(
         containerColor = colors.background,
         topBar = {
             Column {
-                // Left-aligned title for tab screens
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Profile",
+                            text = stringResource(Res.string.profile_title),
                             style = AegisTypography.headlineMedium,
                             color = colors.textPrimary
                         )
@@ -64,7 +65,6 @@ fun ProfileScreen(
                         containerColor = colors.background
                     )
                 )
-                // Divider below action bar
                 HorizontalDivider(color = colors.divider, thickness = 1.dp)
             }
         }
@@ -99,13 +99,13 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = if (isProtected) "Protected" else "At Risk",
+                text = if (isProtected) stringResource(Res.string.profile_protected) else stringResource(Res.string.profile_at_risk),
                 style = AegisTypography.headlineMedium,
                 color = if (isProtected) colors.success else colors.warning
             )
 
             Text(
-                text = if (isProtected) "System is active and monitoring" else "Setup permissions to activate protection",
+                text = if (isProtected) stringResource(Res.string.profile_system_active) else stringResource(Res.string.profile_system_inactive),
                 style = AegisTypography.bodyMedium,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center
@@ -130,7 +130,7 @@ fun ProfileScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "DEVICE ID",
+                        text = stringResource(Res.string.profile_device_id),
                         style = AegisTypography.overline,
                         color = colors.textSecondary
                     )
@@ -155,13 +155,13 @@ fun ProfileScreen(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Copy ID", style = AegisTypography.button)
+                    Text(stringResource(Res.string.profile_copy_id), style = AegisTypography.button)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "This anonymous ID is used for encrypted support requests only.",
+                    text = stringResource(Res.string.profile_id_note),
                     style = AegisTypography.caption,
                     color = colors.textTertiary,
                     textAlign = TextAlign.Center,
@@ -187,7 +187,7 @@ fun ProfileScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Privacy Report",
+                    text = stringResource(Res.string.profile_privacy_report),
                     style = AegisTypography.titleLarge,
                     color = colors.textPrimary
                 )
@@ -202,13 +202,13 @@ fun ProfileScreen(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "Local Processing Summary",
+                        text = stringResource(Res.string.profile_local_processing),
                         style = AegisTypography.titleMedium,
                         color = colors.textPrimary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${privacyStats.totalThreatsBlocked} threats blocked locally. ${privacyStats.dataProcessedMb} of data processed on-device without cloud upload.",
+                        text = stringResource(Res.string.profile_threats_blocked, privacyStats.totalThreatsBlocked, privacyStats.dataProcessedMb),
                         style = AegisTypography.bodySmall,
                         color = colors.textSecondary
                     )
@@ -217,7 +217,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "View Full Report",
+                    text = stringResource(Res.string.profile_view_report),
                     style = AegisTypography.labelMedium,
                     color = colors.primary,
                     modifier = Modifier.clickable { onViewReport() }
@@ -228,7 +228,7 @@ fun ProfileScreen(
 
             // General Section
             Text(
-                text = "General",
+                text = stringResource(Res.string.profile_general),
                 style = AegisTypography.titleLarge,
                 color = colors.textPrimary,
                 modifier = Modifier.fillMaxWidth()
@@ -238,9 +238,9 @@ fun ProfileScreen(
 
             ProfileMenuItem(
                 icon = Icons.Default.Star,
-                title = "Subscription",
+                title = stringResource(Res.string.profile_subscription),
                 subtitle = subscriptionType,
-                actionText = "UPGRADE",
+                actionText = stringResource(Res.string.profile_upgrade),
                 actionColor = colors.primary,
                 onClick = onSubscriptionClick
             )
@@ -249,7 +249,7 @@ fun ProfileScreen(
 
             ProfileMenuItem(
                 icon = Icons.Default.Settings,
-                title = "Settings",
+                title = stringResource(Res.string.profile_settings),
                 onClick = onSettingsClick
             )
 
@@ -257,8 +257,8 @@ fun ProfileScreen(
 
             ProfileMenuItem(
                 icon = Icons.Default.Email,
-                title = "Support",
-                subtitle = "Encrypted Channel",
+                title = stringResource(Res.string.profile_support),
+                subtitle = stringResource(Res.string.profile_encrypted_channel),
                 onClick = onSupportClick
             )
 
@@ -266,7 +266,7 @@ fun ProfileScreen(
 
             // Version
             Text(
-                text = "Aegis v2.4.1 (Build 8821)",
+                text = stringResource(Res.string.profile_version, "2.4.1", "8821"),
                 style = AegisTypography.caption,
                 color = colors.textTertiary
             )

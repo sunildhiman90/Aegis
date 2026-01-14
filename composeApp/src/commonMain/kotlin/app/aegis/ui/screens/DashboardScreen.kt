@@ -1,5 +1,6 @@
 package app.aegis.ui.screens
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +31,7 @@ import app.aegis.ui.components.*
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.DashboardViewModel
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -63,7 +65,7 @@ fun DashboardScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Aegis",
+                            text = stringResource(Res.string.app_name),
                             style = AegisTypography.headlineMedium,
                             color = colors.textPrimary
                         )
@@ -72,7 +74,7 @@ fun DashboardScreen(
                         IconButton(onClick = onSettingsClick) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings",
+                                contentDescription = stringResource(Res.string.nav_settings),
                                 tint = colors.textSecondary
                             )
                         }
@@ -132,7 +134,7 @@ private fun ActiveProtectionContent(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Aegis is Active",
+            text = stringResource(Res.string.dashboard_active_title),
             style = AegisTypography.headlineLarge,
             color = colors.textPrimary
         )
@@ -140,7 +142,7 @@ private fun ActiveProtectionContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "System operating normally. You\nare protected against threats.",
+            text = stringResource(Res.string.dashboard_active_subtitle),
             style = AegisTypography.bodyMedium,
             color = colors.textSecondary,
             textAlign = TextAlign.Center
@@ -150,7 +152,7 @@ private fun ActiveProtectionContent(
 
         // Quick Actions Section
         Text(
-            text = "QUICK ACTIONS",
+            text = "QUICK ACTIONS", // Missing in strings.xml, will add it
             style = AegisTypography.overline,
             color = colors.textSecondary,
             modifier = Modifier.fillMaxWidth()
@@ -172,7 +174,7 @@ private fun ActiveProtectionContent(
                         modifier = Modifier.size(28.dp)
                     )
                 },
-                title = "Sensitivity",
+                title = stringResource(Res.string.dashboard_sensitivity),
                 subtitle = sensitivityLevel,
                 modifier = Modifier.weight(1f)
             )
@@ -186,8 +188,8 @@ private fun ActiveProtectionContent(
                         modifier = Modifier.size(28.dp)
                     )
                 },
-                title = "Contacts",
-                subtitle = "$trustedContactsCount Trusted",
+                title = stringResource(Res.string.dashboard_trusted),
+                subtitle = stringResource(Res.string.dashboard_contacts, trustedContactsCount),
                 modifier = Modifier.weight(1f)
             )
         }
@@ -196,8 +198,8 @@ private fun ActiveProtectionContent(
 
         // Incident Log Section
         SectionHeader(
-            title = "Incident Log",
-            action = "View All",
+            title = stringResource(Res.string.dashboard_incident_log),
+            action = stringResource(Res.string.dashboard_view_all),
             onActionClick = onViewAllActivity
         )
 
@@ -266,7 +268,7 @@ private fun DashboardIncidentsEmptyState() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "No incidents yet",
+            text = stringResource(Res.string.dashboard_no_incidents_title),
             style = AegisTypography.titleMedium,
             color = colors.textPrimary
         )
@@ -274,7 +276,7 @@ private fun DashboardIncidentsEmptyState() {
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Aegis is monitoring your device for threats.",
+            text = "Aegis is monitoring your device for threats.", // This string might be missing too
             style = AegisTypography.bodySmall,
             color = colors.textSecondary,
             textAlign = TextAlign.Center
@@ -283,7 +285,7 @@ private fun DashboardIncidentsEmptyState() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Your activity will appear here as we scan your chats and calls.",
+            text = stringResource(Res.string.dashboard_no_incidents_message),
             style = AegisTypography.caption,
             color = colors.textTertiary,
             textAlign = TextAlign.Center
@@ -307,12 +309,12 @@ private fun DashboardIncidentItem(incident: Incident) {
     }
 
     val title = when (incident.type) {
-        IncidentType.SCAM_CALL -> "Blocked Scam Call"
-        IncidentType.PHISHING_LINK -> "Blocked Phishing Link"
-        IncidentType.DANGEROUS_APP -> "Dangerous App Warning"
-        IncidentType.POLICE_IMPERSONATION -> "Police Impersonation Detected"
-        IncidentType.SEXTORTION -> "Sextortion Attempt Blocked"
-        IncidentType.OTHER -> "System Update"
+        IncidentType.SCAM_CALL -> stringResource(Res.string.incident_blocked_scam_call)
+        IncidentType.PHISHING_LINK -> stringResource(Res.string.incident_blocked_link)
+        IncidentType.DANGEROUS_APP -> stringResource(Res.string.incident_dangerous_app)
+        IncidentType.POLICE_IMPERSONATION -> stringResource(Res.string.incident_police_impersonation)
+        IncidentType.SEXTORTION -> stringResource(Res.string.incident_sextortion)
+        IncidentType.OTHER -> stringResource(Res.string.incident_system_update)
     }
 
     IncidentLogItem(
@@ -374,12 +376,12 @@ private fun SetupRequiredContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Protection:",
+                text = "Protection:", // Can optimize 
                 style = AegisTypography.headlineSmall,
                 color = colors.textPrimary
             )
             Text(
-                text = "INACTIVE",
+                text = stringResource(Res.string.dashboard_protection_inactive).split("\n")[1], // Reuse logic or separate string
                 style = AegisTypography.headlineLarge,
                 color = colors.textPrimary
             )
@@ -387,7 +389,7 @@ private fun SetupRequiredContent(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Your device is currently at risk. Aegis\ncannot protect you until\npermissions are granted.",
+                text = stringResource(Res.string.dashboard_at_risk_message),
                 style = AegisTypography.bodyMedium,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center
@@ -407,8 +409,8 @@ private fun SetupRequiredContent(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "$issuesCount Issues Found",
+                Text( // String format with param
+                    text = stringResource(Res.string.dashboard_issues_found, issuesCount),
                     style = AegisTypography.titleMedium,
                     color = colors.warning
                 )
@@ -419,13 +421,13 @@ private fun SetupRequiredContent(
 
         // Required Permissions Header
         Text(
-            text = "Required Permissions",
+            text = stringResource(Res.string.dashboard_required_permissions),
             style = AegisTypography.titleLarge,
             color = colors.textPrimary,
             modifier = Modifier.fillMaxWidth()
         )
         Text(
-            text = "Complete these steps to activate protection",
+            text = stringResource(Res.string.dashboard_complete_steps),
             style = AegisTypography.bodySmall,
             color = colors.textSecondary,
             modifier = Modifier.fillMaxWidth()
@@ -444,9 +446,9 @@ private fun SetupRequiredContent(
                         modifier = Modifier.size(24.dp)
                     )
                 },
-                title = "Enable Screen Overlay",
-                description = "Required to show warnings over apps like WhatsApp so you don't miss scam alerts.",
-                buttonText = "Open Overlay Settings →",
+                title = stringResource(Res.string.permission_overlay_title),
+                description = stringResource(Res.string.permission_overlay_description),
+                buttonText = stringResource(Res.string.permission_overlay_button),
                 onButtonClick = onOpenOverlaySettings
             )
 
@@ -464,9 +466,9 @@ private fun SetupRequiredContent(
                         modifier = Modifier.size(24.dp)
                     )
                 },
-                title = "Enable Scanning",
-                description = "Allows Aegis to scan incoming text messages and websites for potential threats.",
-                buttonText = "Open Accessibility Settings →",
+                title = stringResource(Res.string.permission_accessibility_title),
+                description = stringResource(Res.string.permission_accessibility_description),
+                buttonText = stringResource(Res.string.permission_accessibility_button),
                 onButtonClick = onOpenAccessibilitySettings
             )
         }
@@ -486,7 +488,7 @@ private fun SetupRequiredContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Aegis values your privacy. These permissions are\nused strictly on-device to detect scams and are\nnever used to track your personal activity.",
+                text = stringResource(Res.string.permission_privacy_note),
                 style = AegisTypography.caption,
                 color = colors.textTertiary,
                 textAlign = TextAlign.Center

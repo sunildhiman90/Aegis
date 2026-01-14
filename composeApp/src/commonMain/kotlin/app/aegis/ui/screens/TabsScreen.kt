@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import app.aegis.ui.navigation.*
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * TabsScreen - Container for bottom navigation tabs with nested NavHost
@@ -49,6 +50,8 @@ fun TabsScreen(
                     val selected = currentDestination?.hierarchy?.any {
                         it.hasRoute(item.route::class)
                     } == true
+                    
+                    val label = stringResource(item.labelRes)
 
                     NavigationBarItem(
                         selected = selected,
@@ -64,12 +67,12 @@ fun TabsScreen(
                         icon = {
                             Icon(
                                 imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                contentDescription = item.label
+                                contentDescription = label
                             )
                         },
                         label = {
                             Text(
-                                text = item.label,
+                                text = label,
                                 style = AegisTypography.labelSmall
                             )
                         },

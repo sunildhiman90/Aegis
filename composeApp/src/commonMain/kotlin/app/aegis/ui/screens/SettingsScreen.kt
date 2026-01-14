@@ -1,5 +1,6 @@
 package app.aegis.ui.screens
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,15 +28,16 @@ import app.aegis.domain.model.TrustedContact
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.SettingsViewModel
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Sensitivity levels - discrete values only
  */
-enum class SensitivityLevel(val displayName: String) {
-    LOW("Low"),
-    BALANCED("Balanced"),
-    AGGRESSIVE("Aggressive")
+enum class SensitivityLevel {
+    LOW,
+    BALANCED,
+    AGGRESSIVE
 }
 
 /**
@@ -72,14 +74,14 @@ fun SettingsScreen(
             containerColor = colors.surface,
             title = {
                 Text(
-                    text = "Factory Reset Aegis",
+                    text = stringResource(Res.string.settings_factory_reset_title),
                     style = AegisTypography.headlineSmall,
                     color = colors.error
                 )
             },
             text = {
                 Text(
-                    text = "This will delete all data including incidents, trusted contacts, and settings. This action cannot be undone.",
+                    text = stringResource(Res.string.settings_factory_reset_message),
                     style = AegisTypography.bodyMedium,
                     color = colors.textSecondary
                 )
@@ -91,12 +93,12 @@ fun SettingsScreen(
                         onFactoryReset()
                     }
                 ) {
-                    Text("Reset Everything", color = colors.error)
+                    Text(stringResource(Res.string.settings_reset_confirm), color = colors.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
-                    Text("Cancel", color = colors.textSecondary)
+                    Text(stringResource(Res.string.settings_cancel), color = colors.textSecondary)
                 }
             }
         )
@@ -110,7 +112,7 @@ fun SettingsScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "App Settings",
+                            text = stringResource(Res.string.settings_title),
                             style = AegisTypography.headlineMedium,
                             color = colors.textPrimary
                         )
@@ -119,7 +121,7 @@ fun SettingsScreen(
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(Res.string.nav_back),
                                 tint = colors.textPrimary
                             )
                         }
@@ -142,7 +144,7 @@ fun SettingsScreen(
                 .padding(top = 16.dp) // Top padding for content
         ) {
             // Protection Levels Section
-            SectionTitle(title = "PROTECTION LEVELS")
+            SectionTitle(title = stringResource(Res.string.settings_section_protection))
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -162,13 +164,13 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Scam Detection Sensitivity",
+                            text = stringResource(Res.string.settings_sensitivity_title),
                             style = AegisTypography.titleMedium,
                             color = colors.textPrimary
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Adjust how aggressively the AI filters unknown calls.",
+                            text = stringResource(Res.string.settings_sensitivity_desc),
                             style = AegisTypography.bodySmall,
                             color = colors.textSecondary
                         )
@@ -190,6 +192,12 @@ fun SettingsScreen(
                 ) {
                     SensitivityLevel.entries.forEach { level ->
                         val isSelected = currentSensitivity == level
+                        val displayName = when(level) {
+                            SensitivityLevel.LOW -> stringResource(Res.string.settings_sensitivity_low)
+                            SensitivityLevel.BALANCED -> stringResource(Res.string.settings_sensitivity_balanced)
+                            SensitivityLevel.AGGRESSIVE -> stringResource(Res.string.settings_sensitivity_aggressive)
+                        }
+                        
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
@@ -215,7 +223,7 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = level.displayName,
+                                text = displayName,
                                 style = AegisTypography.labelMedium,
                                 color = if (isSelected) colors.primary else colors.textSecondary
                             )
@@ -227,7 +235,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // App Permissions Section
-            SectionTitle(title = "APP PERMISSIONS")
+            SectionTitle(title = stringResource(Res.string.settings_section_permissions))
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -241,8 +249,8 @@ fun SettingsScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 },
-                title = "Screen Overlay",
-                subtitle = if (hasOverlayPermission) "Active" else "Disabled",
+                title = stringResource(Res.string.permission_overlay_title),
+                subtitle = if (hasOverlayPermission) stringResource(Res.string.status_active) else stringResource(Res.string.status_disabled),
                 subtitleColor = if (hasOverlayPermission) colors.success else colors.textSecondary,
                 checked = hasOverlayPermission,
                 onCheckedChange = { onOpenOverlaySettings() }
@@ -260,8 +268,8 @@ fun SettingsScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 },
-                title = "Accessibility Services",
-                subtitle = if (hasAccessibilityPermission) "Active" else "Action Needed",
+                title = stringResource(Res.string.permission_accessibility_title),
+                subtitle = if (hasAccessibilityPermission) stringResource(Res.string.status_active) else stringResource(Res.string.status_action_needed),
                 subtitleColor = if (hasAccessibilityPermission) colors.success else colors.warning,
                 checked = hasAccessibilityPermission,
                 onCheckedChange = { onOpenAccessibilitySettings() },
@@ -271,7 +279,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Accessibility permissions are required for Aegis to analyze incoming call screens in real-time.",
+                text = stringResource(Res.string.settings_accessibility_note),
                 style = AegisTypography.caption,
                 color = colors.textTertiary
             )
@@ -279,7 +287,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Appearance Section
-            SectionTitle(title = "APPEARANCE")
+            SectionTitle(title = stringResource(Res.string.settings_section_appearance))
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -298,13 +306,13 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Theme Mode",
+                            text = stringResource(Res.string.settings_theme_title),
                             style = AegisTypography.titleMedium,
                             color = colors.textPrimary
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Choose your preferred app theme.",
+                            text = stringResource(Res.string.settings_theme_desc),
                             style = AegisTypography.bodySmall,
                             color = colors.textSecondary
                         )
@@ -329,9 +337,9 @@ fun SettingsScreen(
                     AppThemeMode.entries.forEach { mode ->
                         val isSelected = currentThemeMode == mode
                         val displayName = when (mode) {
-                            AppThemeMode.LIGHT -> "Light"
-                            AppThemeMode.DARK -> "Dark"
-                            AppThemeMode.SYSTEM_DEFAULT -> "System"
+                            AppThemeMode.LIGHT -> stringResource(Res.string.settings_theme_light)
+                            AppThemeMode.DARK -> stringResource(Res.string.settings_theme_dark)
+                            AppThemeMode.SYSTEM_DEFAULT -> stringResource(Res.string.settings_theme_system)
                         }
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -371,8 +379,8 @@ fun SettingsScreen(
 
             // Trusted Contacts Section
             SectionTitle(
-                title = "TRUSTED CONTACTS",
-                action = "View All",
+                title = stringResource(Res.string.settings_section_contacts),
+                action = stringResource(Res.string.dashboard_view_all),
                 onActionClick = onViewTrustedContacts
             )
 
@@ -395,7 +403,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Advanced Section
-            SectionTitle(title = "ADVANCED")
+            SectionTitle(title = stringResource(Res.string.settings_section_advanced))
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -417,7 +425,7 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Factory Reset Aegis",
+                    text = stringResource(Res.string.settings_factory_reset_title),
                     style = AegisTypography.titleMedium,
                     color = colors.error
                 )
@@ -427,7 +435,7 @@ fun SettingsScreen(
 
             // Version
             Text(
-                text = "Aegis v2.4.1 (Build 209)",
+                text = stringResource(Res.string.profile_version, "2.4.1", "209"),
                 style = AegisTypography.caption,
                 color = colors.textTertiary,
                 modifier = Modifier.fillMaxWidth()
@@ -625,12 +633,12 @@ private fun TrustedContactEmptyState(onAddContacts: () -> Unit) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "No contacts yet",
+                text = stringResource(Res.string.settings_no_contacts),
                 style = AegisTypography.titleMedium,
                 color = colors.textPrimary
             )
             Text(
-                text = "Tap to see trusted contacts",
+                text = stringResource(Res.string.settings_no_contacts_desc),
                 style = AegisTypography.bodySmall,
                 color = colors.textSecondary
             )
@@ -643,4 +651,3 @@ private fun TrustedContactEmptyState(onAddContacts: () -> Unit) {
         )
     }
 }
-

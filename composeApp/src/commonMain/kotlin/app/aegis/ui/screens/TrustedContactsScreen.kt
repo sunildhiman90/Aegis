@@ -1,5 +1,6 @@
 package app.aegis.ui.screens
 
+import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,7 @@ import app.aegis.domain.model.TrustedContact
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.TrustedContactViewModel
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -49,7 +51,7 @@ fun TrustedContactsScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Trusted Contacts",
+                            text = stringResource(Res.string.trusted_contacts_title),
                             style = AegisTypography.headlineMedium,
                             color = colors.textPrimary
                         )
@@ -58,7 +60,7 @@ fun TrustedContactsScreen(
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(Res.string.nav_back),
                                 tint = colors.textPrimary
                             )
                         }
@@ -78,33 +80,9 @@ fun TrustedContactsScreen(
                 .padding(horizontal = 20.dp)
                 .padding(top = 16.dp)
         ) {
-            // Info Card - Hidden as requested
-            /*
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colors.primaryContainer)
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "About Trusted Contacts",
-                    style = AegisTypography.titleMedium,
-                    color = colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Trusted contacts can receive emergency alerts when a threat is detected. They will also be notified if you don't respond to safety checks.",
-                    style = AegisTypography.bodySmall,
-                    color = colors.textSecondary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            */
-
+            
             Text(
-                text = "YOUR CONTACTS (${contacts.size})",
+                text = stringResource(Res.string.trusted_contacts_list_title, contacts.size),
                 style = AegisTypography.overline,
                 color = colors.textSecondary
             )
@@ -208,7 +186,7 @@ private fun TrustedContactItem(
         IconButton(onClick = onDelete) {
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = "Delete",
+                contentDescription = stringResource(Res.string.action_delete),
                 tint = colors.error
             )
         }
@@ -268,7 +246,7 @@ private fun EmptyContactsPlaceholder() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "Your Emergency Contacts",
+            text = stringResource(Res.string.trusted_contacts_empty_title),
             style = AegisTypography.headlineMedium,
             color = colors.textPrimary
         )
@@ -276,7 +254,7 @@ private fun EmptyContactsPlaceholder() {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "No trusted contacts added yet. Add family or friends who can receive alerts when a threat is detected.",
+            text = stringResource(Res.string.trusted_contacts_empty_desc),
             style = AegisTypography.bodyMedium,
             color = colors.textSecondary,
             textAlign = TextAlign.Center
@@ -299,7 +277,7 @@ private fun AddContactDialog(
         containerColor = colors.surface,
         title = {
             Text(
-                text = "Add Trusted Contact",
+                text = stringResource(Res.string.trusted_add_dialog_title),
                 style = AegisTypography.headlineSmall,
                 color = colors.textPrimary
             )
@@ -309,21 +287,21 @@ private fun AddContactDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(Res.string.trusted_add_name_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = { Text("Phone Number") },
+                    label = { Text(stringResource(Res.string.trusted_add_phone_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = relationship,
                     onValueChange = { relationship = it },
-                    label = { Text("Relationship (e.g., Family, Friend)") },
+                    label = { Text(stringResource(Res.string.trusted_add_relationship_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -338,12 +316,12 @@ private fun AddContactDialog(
                 },
                 enabled = name.isNotBlank() && phone.isNotBlank()
             ) {
-                Text("Add", color = colors.primary)
+                Text(stringResource(Res.string.action_add), color = colors.primary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = colors.textSecondary)
+                Text(stringResource(Res.string.action_cancel), color = colors.textSecondary)
             }
         }
     )
