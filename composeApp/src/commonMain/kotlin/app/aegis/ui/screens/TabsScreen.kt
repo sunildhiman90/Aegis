@@ -27,7 +27,8 @@ fun TabsScreen(
     hasAccessibilityPermission: Boolean,
     onNavigateToSettings: () -> Unit,
     onOpenOverlaySettings: () -> Unit,
-    onOpenAccessibilitySettings: () -> Unit
+    onOpenAccessibilitySettings: () -> Unit,
+    onViewFullReport: () -> Unit = {}
 ) {
     val colors = AegisTheme.colors
     val tabsNavController = rememberNavController()
@@ -120,7 +121,8 @@ fun TabsScreen(
                 val isProtected = hasOverlayPermission && hasAccessibilityPermission
                 ProfileScreen(
                     isProtected = isProtected,
-                    onSettingsClick = onNavigateToSettings
+                    onSettingsClick = onNavigateToSettings,
+                    onViewReport = onViewFullReport
                 )
             }
         }

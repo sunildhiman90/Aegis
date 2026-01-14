@@ -33,7 +33,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     isProtected: Boolean = true,
-    deviceId: String = "AE-882-991-X",
     subscriptionType: String = "Plan: Free",
     onCopyId: () -> Unit = {},
     onViewReport: () -> Unit = {},
@@ -46,6 +45,7 @@ fun ProfileScreen(
     val scrollState = rememberScrollState()
     
     val privacyStats by viewModel.privacyStats.collectAsState()
+    val deviceId = viewModel.deviceId
 
     Scaffold(
         containerColor = colors.background,

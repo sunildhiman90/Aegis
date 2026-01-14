@@ -30,6 +30,9 @@ data object OnboardingRoute
 @Serializable
 data object TrustedContactsRoute
 
+@Serializable
+data object FullReportRoute
+
 // === TAB DESTINATIONS (nested inside TabsRoute) ===
 @Serializable
 data object DashboardRoute

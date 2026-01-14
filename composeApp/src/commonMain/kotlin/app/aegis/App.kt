@@ -67,7 +67,8 @@ fun App(
                     hasAccessibilityPermission = hasAccessibilityPermission,
                     onNavigateToSettings = { mainNavController.navigate(SettingsRoute) },
                     onOpenOverlaySettings = onOpenOverlaySettings,
-                    onOpenAccessibilitySettings = onOpenAccessibilitySettings
+                    onOpenAccessibilitySettings = onOpenAccessibilitySettings,
+                    onViewFullReport = { mainNavController.navigate(FullReportRoute) }
                 )
             }
 
@@ -91,6 +92,12 @@ fun App(
 
             composable<TrustedContactsRoute> {
                 TrustedContactsScreen(
+                    onBackClick = { mainNavController.popBackStack() }
+                )
+            }
+
+            composable<FullReportRoute> {
+                FullReportScreen(
                     onBackClick = { mainNavController.popBackStack() }
                 )
             }
