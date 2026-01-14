@@ -14,6 +14,8 @@ actual class DeviceIdProvider(private val context: Context) {
             context.contentResolver,
             Settings.Secure.ANDROID_ID
         )
+        // Note: ANDROID_ID changes on factory reset.
+        // It is unique per user/device combo but not persistent across wipes.
         // Format as AE-XXX-XXX-X for display
         return formatDeviceId(androidId ?: "UNKNOWN")
     }

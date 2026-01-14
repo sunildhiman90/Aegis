@@ -117,6 +117,9 @@
     <string name="settings_sensitivity_low">Low</string>
     <string name="settings_sensitivity_balanced">Balanced</string>
     <string name="settings_sensitivity_aggressive">Aggressive</string>
+    <string name="settings_sensitivity_low_warning">Only analyzes High-Risk keywords from Unknown Numbers. Best for battery life.</string>
+    <string name="settings_sensitivity_balanced_warning">Standard protection. Analyzes all Unknown Numbers but trusts saved contacts.</string>
+    <string name="settings_sensitivity_aggressive_warning">Maximum security. Analyzes ALL unknown numbers and suspicious messages from Saved Contacts.</string>
     <string name="settings_section_permissions">APP PERMISSIONS</string>
     <string name="settings_accessibility_note">Accessibility permissions are required for Aegis to analyze incoming call screens in real-time.</string>
     <string name="settings_section_appearance">APPEARANCE</string>
