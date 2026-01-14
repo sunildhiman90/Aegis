@@ -11,6 +11,9 @@ class AppSettingsRepository(
     companion object {
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
         private const val KEY_IS_DARK_THEME = "is_dark_theme"
+        private const val THEME_MODE_LIGHT = "light"
+        private const val THEME_MODE_DARK = "dark"
+        private const val THEME_MODE_SYSTEM = "system"
     }
 
     // Onboarding
@@ -20,21 +23,60 @@ class AppSettingsRepository(
             settings.putBoolean(KEY_ONBOARDING_COMPLETE, value)
         }
 
-    // Theme - null means system default
-    // We store -1 for system, 0 for light, 1 for dark to match boolean logic somewhat or use string/int
-    // Simpler: use 3-state logic if possible, or just helper methods
-
-    fun isDarkTheme(isSystemDark: Boolean): Boolean {
-        // defaults to system if not set
-        return if (settings.hasKey(KEY_IS_DARK_THEME)) {
-            settings.getBoolean(KEY_IS_DARK_THEME, false)
-        } else {
-            isSystemDark
+    // Theme Mode - supports Light, Dark, and System Default
+    fun getThemeMode(): app.aegis.domain.model.AppThemeMode {
+        return try {
+            // Try reading as string (new format)
+            val stored = settings.getString(KEY_IS_DARK_THEME, THEME_MODE_SYSTEM)
+            when (stored) {
+                THEME_MODE_LIGHT -> app.aegis.domain.model.AppThemeMode.LIGHT
+                THEME_MODE_DARK -> app.aegis.domain.model.AppThemeMode.DARK
+                else -> app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT
+            }
+        } catch (e: ClassCastException) {
+            // Migrate old boolean value
+            val oldDarkTheme = try {
+                settings.getBoolean(KEY_IS_DARK_THEME, false)
+            } catch (e: Exception) {
+                false
+            }
+            val newMode = if (oldDarkTheme) {
+                app.aegis.domain.model.AppThemeMode.DARK
+            } else {
+                app.aegis.domain.model.AppThemeMode.LIGHT
+            }
+            setThemeMode(newMode)
+            newMode
         }
     }
 
+    fun setThemeMode(mode: app.aegis.domain.model.AppThemeMode) {
+        val value = when (mode) {
+            app.aegis.domain.model.AppThemeMode.LIGHT -> THEME_MODE_LIGHT
+            app.aegis.domain.model.AppThemeMode.DARK -> THEME_MODE_DARK
+            app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> THEME_MODE_SYSTEM
+        }
+        settings.putString(KEY_IS_DARK_THEME, value)
+    }
+
+    // Backward compatibility - defaults to false (light mode)
+    @Deprecated("Use getThemeMode() instead")
+    fun getStoredDarkTheme(): Boolean {
+        return getThemeMode() == app.aegis.domain.model.AppThemeMode.DARK
+    }
+
+    @Deprecated("Use getThemeMode() instead")
+    fun isDarkTheme(isSystemDark: Boolean): Boolean {
+        return when (getThemeMode()) {
+            app.aegis.domain.model.AppThemeMode.LIGHT -> false
+            app.aegis.domain.model.AppThemeMode.DARK -> true
+            app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> isSystemDark
+        }
+    }
+
+    @Deprecated("Use setThemeMode() instead")
     fun setDarkTheme(isDark: Boolean) {
-        settings.putBoolean(KEY_IS_DARK_THEME, isDark)
+        setThemeMode(if (isDark) app.aegis.domain.model.AppThemeMode.DARK else app.aegis.domain.model.AppThemeMode.LIGHT)
     }
 
     fun clearThemePreference() {

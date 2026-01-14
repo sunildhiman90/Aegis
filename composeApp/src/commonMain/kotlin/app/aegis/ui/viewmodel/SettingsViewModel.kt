@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import app.aegis.domain.model.AppThemeMode
 
 /**
  * ViewModel for Settings screen
@@ -15,15 +16,11 @@ class SettingsViewModel(
     private val settingsRepository: AppSettingsRepository
 ) : ViewModel() {
 
-    fun setDarkTheme(enabled: Boolean) {
-        settingsRepository.setDarkTheme(enabled)
+    fun getThemeMode(): AppThemeMode {
+        return settingsRepository.getThemeMode()
     }
 
-    fun clearThemePreference() {
-        settingsRepository.clearThemePreference()
-    }
-
-    fun isDarkTheme(isSystemDark: Boolean): Boolean {
-        return settingsRepository.isDarkTheme(isSystemDark)
+    fun setThemeMode(mode: AppThemeMode) {
+        settingsRepository.setThemeMode(mode)
     }
 }

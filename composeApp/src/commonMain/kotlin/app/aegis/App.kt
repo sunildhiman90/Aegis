@@ -26,24 +26,21 @@ fun App(
     hasAccessibilityPermission: Boolean = false,
     onOpenOverlaySettings: () -> Unit = {},
     onOpenAccessibilitySettings: () -> Unit = {},
+    onUpdateStatusBar: () -> Unit = {}
 ) {
     // Initialize Repository
     val settingsRepository = koinInject<AppSettingsRepository>()
 
-    // Theme state
-    // Better theme initialization that respects system changes unless overridden
-    val systemDark = isSystemInDarkTheme()
-
-    // Actually, let's keep it simple:
-    // If settings has a value, use it. Else use system.
-    // The repository method I wrote handles "defaults to system if not set" but needs the system value passed in.
-    val shouldUseDarkTheme = remember(systemDark) {
-        settingsRepository.isDarkTheme(systemDark)
+    // Theme mode with System Default support - reactive state
+    val systemDarkTheme = isSystemInDarkTheme()
+    var themeMode by remember { mutableStateOf(settingsRepository.getThemeMode()) }
+    val isDarkTheme = when (themeMode) {
+        app.aegis.domain.model.AppThemeMode.LIGHT -> false
+        app.aegis.domain.model.AppThemeMode.DARK -> true
+        app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> systemDarkTheme
     }
-    // We need a stable state we can update
-    var currentThemeIsDark by remember { mutableStateOf(shouldUseDarkTheme) }
 
-    AegisTheme(darkTheme = currentThemeIsDark) {
+    AegisTheme(darkTheme = isDarkTheme) {
         val colors = AegisTheme.colors
         val mainNavController = rememberNavController()
 
@@ -82,10 +79,11 @@ fun App(
                     hasAccessibilityPermission = hasAccessibilityPermission,
                     onOpenOverlaySettings = onOpenOverlaySettings,
                     onOpenAccessibilitySettings = onOpenAccessibilitySettings,
-                    isDarkTheme = currentThemeIsDark,
-                    onThemeChange = { isDark ->
-                        currentThemeIsDark = isDark
-                        settingsRepository.setDarkTheme(isDark)
+                    themeMode = themeMode,
+                    onThemeModeChange = { mode ->
+                        themeMode = mode  // Update local state for immediate UI update
+                        settingsRepository.setThemeMode(mode)  // Persist to storage
+                        onUpdateStatusBar()  // Update status bar colors
                     },
                     onViewTrustedContacts = { mainNavController.navigate(TrustedContactsRoute) }
                 )

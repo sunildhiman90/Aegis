@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.aegis.domain.model.AppThemeMode
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 
@@ -44,16 +45,17 @@ fun SettingsScreen(
     sensitivityLevel: SensitivityLevel = SensitivityLevel.BALANCED,
     hasOverlayPermission: Boolean = true,
     hasAccessibilityPermission: Boolean = false,
-    isDarkTheme: Boolean = true,
+    themeMode: AppThemeMode = AppThemeMode.SYSTEM_DEFAULT,
     onSensitivityChange: (SensitivityLevel) -> Unit = {},
     onOpenOverlaySettings: () -> Unit = {},
     onOpenAccessibilitySettings: () -> Unit = {},
     onViewTrustedContacts: () -> Unit = {},
     onFactoryReset: () -> Unit = {},
-    onThemeChange: (Boolean) -> Unit = {}
+    onThemeModeChange: (AppThemeMode) -> Unit = {}
 ) {
     val colors = AegisTheme.colors
     var currentSensitivity by remember { mutableStateOf(sensitivityLevel) }
+    var currentThemeMode by remember { mutableStateOf(themeMode) }
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -237,20 +239,89 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Theme Toggle
-            SettingsToggleItem(
-                icon = {
+            // Theme Mode Selector (3 options: Light, Dark, System)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(colors.surface)
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Theme Mode",
+                            style = AegisTypography.titleMedium,
+                            color = colors.textPrimary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Choose your preferred app theme.",
+                            style = AegisTypography.bodySmall,
+                            color = colors.textSecondary
+                        )
+                    }
                     Text(
-                        text = if (isDarkTheme) "🌙" else "☀️",
+                        text = when (currentThemeMode) {
+                            AppThemeMode.LIGHT -> "☀️"
+                            AppThemeMode.DARK -> "🌙"
+                            AppThemeMode.SYSTEM_DEFAULT -> "🤖"
+                        },
                         style = AegisTypography.titleMedium
                     )
-                },
-                title = "Dark Mode",
-                subtitle = if (isDarkTheme) "Enabled" else "Disabled",
-                subtitleColor = colors.textSecondary,
-                checked = isDarkTheme,
-                onCheckedChange = { onThemeChange(it) }
-            )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Discrete theme mode selector (3 options)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    AppThemeMode.entries.forEach { mode ->
+                        val isSelected = currentThemeMode == mode
+                        val displayName = when (mode) {
+                            AppThemeMode.LIGHT -> "Light"
+                            AppThemeMode.DARK -> "Dark"
+                            AppThemeMode.SYSTEM_DEFAULT -> "System"
+                        }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                    currentThemeMode = mode
+                                    onThemeModeChange(mode)
+                                }
+                                .background(
+                                    if (isSelected) colors.primary.copy(alpha = 0.15f)
+                                    else Color.Transparent
+                                )
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isSelected) colors.primary
+                                        else colors.cardBorder
+                                    )
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = displayName,
+                                style = AegisTypography.labelMedium,
+                                color = if (isSelected) colors.primary else colors.textSecondary
+                            )
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 

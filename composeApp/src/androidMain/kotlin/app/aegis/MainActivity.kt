@@ -76,6 +76,9 @@ class MainActivity : ComponentActivity() {
                     onOpenAccessibilitySettings = {
                         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                         startActivity(intent)
+                    },
+                    onUpdateStatusBar = {
+                        setStatusBarColor(isPrimaryStatusBar = false)
                     }
                 )
             }
@@ -99,18 +102,27 @@ class MainActivity : ComponentActivity() {
 
     private fun setStatusBarColor(isPrimaryStatusBar: Boolean) {
         val settingsRepository = get<AppSettingsRepository>()
-        // This is non compose way to get dark mode equivalent to composable isSystemInDarkTheme()
+
+        // Get system dark theme state
         val isSystemDarkTheme =
             when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
                 Configuration.UI_MODE_NIGHT_YES -> true
                 Configuration.UI_MODE_NIGHT_NO -> false
                 else -> false
             }
-        val isDeviceDarkTheme = settingsRepository.isDarkTheme(isSystemDarkTheme)
+
+        // Determine actual dark theme based on mode
+        val themeMode = settingsRepository.getThemeMode()
+        val isDarkTheme = when (themeMode) {
+            app.aegis.domain.model.AppThemeMode.LIGHT -> false
+            app.aegis.domain.model.AppThemeMode.DARK -> true
+            app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> isSystemDarkTheme
+        }
+
         val statusBarStyle =
             if (isPrimaryStatusBar) {
-                if (!isDeviceDarkTheme) {
-                    // SystemBarStyle.dark will use light icons, it means white icons
+                if (!isDarkTheme) {
+                    // SystemBarStyle.dark will use light icons (white icons)
                     SystemBarStyle.dark(
                         scrim = android.graphics.Color.TRANSPARENT,
                     )
@@ -121,12 +133,12 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             } else {
-                if (isDeviceDarkTheme) {
+                if (isDarkTheme) {
                     SystemBarStyle.dark(
                         scrim = android.graphics.Color.TRANSPARENT,
                     )
                 } else {
-                    // SystemBarStyle.light will use dark icons, it means gray icons
+                    // SystemBarStyle.light will use dark icons (gray icons)
                     SystemBarStyle.light(
                         scrim = android.graphics.Color.TRANSPARENT,
                         darkScrim = android.graphics.Color.TRANSPARENT,
