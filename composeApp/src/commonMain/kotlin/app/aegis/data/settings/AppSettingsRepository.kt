@@ -84,11 +84,17 @@ class AppSettingsRepository(
     }
 
     // Sensitivity Level
-    fun getSensitivity(): String {
-        return settings.getString("sensitivity_level", "BALANCED")
+    // Sensitivity Level
+    fun getSensitivity(): app.aegis.models.SensitivityLevel {
+        val stored = settings.getString("sensitivity_level", "BALANCED")
+        return try {
+            app.aegis.models.SensitivityLevel.valueOf(stored)
+        } catch (e: Exception) {
+            app.aegis.models.SensitivityLevel.BALANCED
+        }
     }
 
-    fun setSensitivity(level: String) {
-        settings.putString("sensitivity_level", level)
+    fun setSensitivity(level: app.aegis.models.SensitivityLevel) {
+        settings.putString("sensitivity_level", level.name)
     }
 }

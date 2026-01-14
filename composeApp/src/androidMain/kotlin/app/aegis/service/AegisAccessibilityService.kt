@@ -20,6 +20,7 @@ import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 
 import app.aegis.data.settings.AppSettingsRepository
+import app.aegis.models.SensitivityLevel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -32,7 +33,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
     private var currentAnalysisContact = ""
     private var lastInputText = "" // 🛑 Track user's last typed text for Smart Diff
 
-    private val geminiClient = GeminiClient()
+    private val geminiClient: GeminiClient by inject()
     private val settingsRepository: AppSettingsRepository by inject()
     private lateinit var overlayManager: OverlayManager
 
@@ -382,12 +383,12 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
 
         // DECISION MATRIX
         val shouldAnalyze = when (sensitivity) {
-            "LOW" -> {
+            SensitivityLevel.LOW -> {
                 // Strict Battery Saver: Only analyze UNKNOWN contacts if they trigger key scam keywords
                 isUnknown && (localRisk == LocalRisk.HIGH_RISK || localRisk == LocalRisk.SUSPICIOUS)
             }
 
-            "AGGRESSIVE" -> {
+            SensitivityLevel.AGGRESSIVE -> {
                 // Paranoid: Analyze ALL Unknown contacts.
                 // PLUS: Analyze Saved Trusted Contacts if they say something VERY suspicious (Hacked Friend scenario)
                 isUnknown || (localRisk == LocalRisk.HIGH_RISK)
@@ -417,7 +418,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
             // Special Case: A Saved Contact said something suspicious, but we didn't auto-trigger (Low/Balanced mode)
             // Log it, but maybe trust the user unless it's CRITICAL.
             // For now, Balanced mode trusts contacts implicitly unless listed otherwise.
-            if (sensitivity == "BALANCED" && localRisk == LocalRisk.HIGH_RISK) {
+            if (sensitivity == SensitivityLevel.BALANCED && localRisk == LocalRisk.HIGH_RISK) {
                 // Even in Balanced, if "Mom" asks for OTP, we check.
                 runGeminiAnalysis(contactName, stableContent, contentHash, sensitivity)
             } else {
@@ -438,7 +439,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         contactName: String,
         chatContent: String,
         contentHash: Int,
-        sensitivity: String
+        sensitivity: SensitivityLevel
     ) {
 
         // 1. Check if we are analyzing the SAME content (Exact Hash)

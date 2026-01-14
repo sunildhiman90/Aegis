@@ -10,6 +10,7 @@ fun initKoin(appDeclaration: KoinAppDeclaration? = {}) = startKoin {
     appDeclaration?.invoke(this)
     modules(
         platformModule,
-        appModule
+        appModule,
+        networkModule
     )
 }

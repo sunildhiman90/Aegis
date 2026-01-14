@@ -14,47 +14,20 @@ import app.aegis.models.RiskLevel
 import app.aegis.models.ScamVerdict
 import app.aegis.models.parseGeminiJson
 import app.aegis.models.NudityVerdict
+import app.aegis.models.SensitivityLevel
 import app.aegis.models.parseNudityVerdictJson
 import app.aegis.tools.LocalRisk
 import app.aegis.tools.SecurityTools
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.http.headers
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 
-class GeminiClient {
 
-    //TODO, inject via KOIN DI
-    private val client = HttpClient {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-            })
-        }
-        install(Logging) {
-            logger = object : Logger {
-                override fun log(message: String) {
-                    println("HTTP Client:$message")
-                }
-            }
-            //TODO, enable only in debug build
-            level = LogLevel.ALL
-        }
-    }
-
+class GeminiClient(private val client: HttpClient) {
 
 //    private val defaultModel = "gemini-3.0-pro"
 //    private val defaultModelVision = "gemini-3.0-flash"
@@ -70,7 +43,7 @@ class GeminiClient {
      * 1. TEXT MODE (Chat Scams)
      * Restored the "Mental Toolkit" for maximum security accuracy.
      */
-    suspend fun analyze(screenText: String, sensitivity: String = "BALANCED", model: String = defaultModel): ScamVerdict {
+    suspend fun analyze(screenText: String, sensitivity: SensitivityLevel = SensitivityLevel.BALANCED, model: String = defaultModel): ScamVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
 
         // Local Tools Pre-check
@@ -83,8 +56,8 @@ class GeminiClient {
 
         // Sensitivity Instructions
         val sensitivityInstruction = when (sensitivity) {
-            "LOW" -> "SENSITIVITY: LOW. You are a conservative investigator. Only flag this as DANGER if you have 90%+ certainty and concrete evidence (like a known bad link or typical fraud pattern). If unsure, mark SAFE."
-            "AGGRESSIVE" -> "SENSITIVITY: HIGH. You are a paranoid security guard. If there is ANY typical scam pattern (urgency, secrecy, authority, unusual request), flag it immediately. Err on the side of caution."
+            SensitivityLevel.LOW -> "SENSITIVITY: LOW. You are a conservative investigator. Only flag this as DANGER if you have 90%+ certainty and concrete evidence (like a known bad link or typical fraud pattern). If unsure, mark SAFE."
+            SensitivityLevel.AGGRESSIVE -> "SENSITIVITY: HIGH. You are a paranoid security guard. If there is ANY typical scam pattern (urgency, secrecy, authority, unusual request), flag it immediately. Err on the side of caution."
             else -> "SENSITIVITY: BALANCED. Use your best judgment. If you see psychological manipulation or scam indicators, flag it."
         }
 
@@ -127,13 +100,13 @@ class GeminiClient {
      * * accepts 'base64Image' string instead of Bitmap.
      * The Platform code (Android) is responsible for converting the image.
      */
-    suspend fun analyzeImage(base64Image: String, sensitivity: String = "BALANCED", model: String = defaultModelVision): ScamVerdict {
+    suspend fun analyzeImage(base64Image: String, sensitivity: SensitivityLevel = SensitivityLevel.BALANCED, model: String = defaultModelVision): ScamVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return ScamVerdict(RiskLevel.SAFE, "No API Key", 0)
 
         val sensitivityInstruction = when (sensitivity) {
-            "LOW" -> "SENSITIVITY: LOW. Only flag DANGER if you see a clear, undeniable Police Uniform/Badge. If ambiguous, assume SAFE."
-            "AGGRESSIVE" -> "SENSITIVITY: HIGH. Use strict scrutiny. If you see ANY element that looks like a police uniform, cap, or official seal, flag it as DANGER. Better safe than sorry."
+            SensitivityLevel.LOW -> "SENSITIVITY: LOW. Only flag DANGER if you see a clear, undeniable Police Uniform/Badge. If ambiguous, assume SAFE."
+            SensitivityLevel.AGGRESSIVE -> "SENSITIVITY: HIGH. Use strict scrutiny. If you see ANY element that looks like a police uniform, cap, or official seal, flag it as DANGER. Better safe than sorry."
             else -> "SENSITIVITY: BALANCED. Standard check. Flag if you identify a police uniform or ongoing digital arrest setup."
         }
 
@@ -175,13 +148,13 @@ class GeminiClient {
      * Analyzes video frames for nudity and fake feed detection.
      * Returns NudityVerdict for quick boolean checks.
      */
-    suspend fun analyzeForNudity(base64Image: String, sensitivity: String = "BALANCED", model: String = defaultModelVision): NudityVerdict {
+    suspend fun analyzeForNudity(base64Image: String, sensitivity: SensitivityLevel = SensitivityLevel.BALANCED, model: String = defaultModelVision): NudityVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return NudityVerdict(nudity = false, fakeFeed = false, confidence = 0)
 
         val sensitivityInstruction = when (sensitivity) {
-            "LOW" -> "SENSITIVITY: LOW. Only flag explicit nudity. Ignore static artifacts unless obvious."
-            "AGGRESSIVE" -> "SENSITIVITY: HIGH. Flag any suggestive content or partial exposure. Be highly suspicious of any video artifacts indicating a fake feed."
+            SensitivityLevel.LOW -> "SENSITIVITY: LOW. Only flag explicit nudity. Ignore static artifacts unless obvious."
+            SensitivityLevel.AGGRESSIVE -> "SENSITIVITY: HIGH. Flag any suggestive content or partial exposure. Be highly suspicious of any video artifacts indicating a fake feed."
             else -> "SENSITIVITY: BALANCED. Standard detection for nudity and deepfake artifacts."
         }
 
@@ -307,13 +280,13 @@ class GeminiClient {
      * @param model The model to use for analysis
      * @return The verdict of the analysis
      */
-    suspend fun analyzeUrl(url: String, sensitivity: String = "BALANCED", model: String = defaultModelVision): app.aegis.models.PhishingVerdict {
+    suspend fun analyzeUrl(url: String, sensitivity: SensitivityLevel = SensitivityLevel.BALANCED, model: String = defaultModelVision): app.aegis.models.PhishingVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "No API Key", 0)
 
         val sensitivityInstruction = when (sensitivity) {
-            "LOW" -> "SENSITIVITY: LOW. Only flag if it is a KNOWN malicious pattern or unmistakable homograph attack. If unsure, assume SAFE."
-            "AGGRESSIVE" -> "SENSITIVITY: HIGH. Flag ANY suspicious TLD (.xyz, .cc), misuse of free hosting (ngrok, vercel), or mismatch between content and domain. Err on the side of caution."
+            SensitivityLevel.LOW -> "SENSITIVITY: LOW. Only flag if it is a KNOWN malicious pattern or unmistakable homograph attack. If unsure, assume SAFE."
+            SensitivityLevel.AGGRESSIVE -> "SENSITIVITY: HIGH. Flag ANY suspicious TLD (.xyz, .cc), misuse of free hosting (ngrok, vercel), or mismatch between content and domain. Err on the side of caution."
             else -> "SENSITIVITY: BALANCED. Standard phishing detection."
         }
 

@@ -34,14 +34,7 @@ import app.aegis.ui.viewmodel.SettingsViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Sensitivity levels - discrete values only
- */
-enum class SensitivityLevel {
-    LOW,
-    BALANCED,
-    AGGRESSIVE
-}
+import app.aegis.models.SensitivityLevel
 
 /**
  * App Settings Screen - Full screen without bottom navigation
