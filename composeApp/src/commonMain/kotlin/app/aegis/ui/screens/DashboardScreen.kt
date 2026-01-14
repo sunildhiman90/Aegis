@@ -7,23 +7,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.aegis.domain.model.Incident
+import app.aegis.domain.model.IncidentType
 import app.aegis.ui.components.*
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.viewmodel.DashboardViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Main Dashboard Screen
@@ -32,20 +39,21 @@ import app.aegis.ui.theme.AegisTypography
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    userName: String = "Sarah",
-
     hasOverlayPermission: Boolean = true,
     hasAccessibilityPermission: Boolean = true,
     sensitivityLevel: String = "High Protection",
-    trustedContactsCount: Int = 3,
     onSettingsClick: () -> Unit = {},
     onOpenOverlaySettings: () -> Unit = {},
     onOpenAccessibilitySettings: () -> Unit = {},
-    onViewAllActivity: () -> Unit = {}
+    onViewAllActivity: () -> Unit = {},
+    viewModel: DashboardViewModel = koinViewModel()
 ) {
     val colors = AegisTheme.colors
     val scrollState = rememberScrollState()
     val needsSetup = !hasOverlayPermission || !hasAccessibilityPermission
+
+    val latestIncidents by viewModel.latestIncidents.collectAsState()
+    val trustedContactsCount by viewModel.trustedContactsCount.collectAsState()
 
     Scaffold(
         containerColor = colors.background,
@@ -95,6 +103,7 @@ fun DashboardScreen(
                 ActiveProtectionContent(
                     sensitivityLevel = sensitivityLevel,
                     trustedContactsCount = trustedContactsCount,
+                    incidents = latestIncidents,
                     onViewAllActivity = onViewAllActivity
                 )
             }
@@ -106,6 +115,7 @@ fun DashboardScreen(
 private fun ActiveProtectionContent(
     sensitivityLevel: String,
     trustedContactsCount: Int,
+    incidents: List<Incident>,
     onViewAllActivity: () -> Unit
 ) {
     val colors = AegisTheme.colors
@@ -130,13 +140,23 @@ private fun ActiveProtectionContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Your device is monitored and\nprotected from scams.",
+            text = "System operating normally. You\nare protected against threats.",
             style = AegisTypography.bodyMedium,
             color = colors.textSecondary,
             textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Quick Actions Section
+        Text(
+            text = "QUICK ACTIONS",
+            style = AegisTypography.overline,
+            color = colors.textSecondary,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Stats Row
         Row(
@@ -157,7 +177,6 @@ private fun ActiveProtectionContent(
                 modifier = Modifier.weight(1f)
             )
 
-            // Trusted Contacts - Hidden for now as feature is not enabled
             StatCard(
                 icon = {
                     Icon(
@@ -167,8 +186,8 @@ private fun ActiveProtectionContent(
                         modifier = Modifier.size(28.dp)
                     )
                 },
-                title = "Trusted",
-                subtitle = "$trustedContactsCount Contacts",
+                title = "Contacts",
+                subtitle = "$trustedContactsCount Trusted",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -184,58 +203,133 @@ private fun ActiveProtectionContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Sample incidents
-        IncidentLogItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Warning,
-                    contentDescription = null,
-                    tint = colors.error,
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            title = "Blocked Scam Call",
-            description = "Video call attempt blocked",
-            timestamp = "Today\n2:30 PM",
-            iconBackgroundColor = colors.error
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        IncidentLogItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.CheckCircle,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            title = "Scanned Chats",
-            description = "5 safe messages verified",
-            timestamp = "Today\n10:00 AM",
-            iconBackgroundColor = colors.primary
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        IncidentLogItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = null,
-                    tint = colors.textSecondary,
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            title = "System Update",
-            description = "Protection database updated",
-            timestamp = "Yesterday",
-            iconBackgroundColor = colors.textSecondary
-        )
+        if (incidents.isEmpty()) {
+            DashboardIncidentsEmptyState()
+        } else {
+            incidents.forEach { incident ->
+                DashboardIncidentItem(incident = incident)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
     }
+}
+
+/**
+ * Empty state for Incident Log in Dashboard - matches design
+ */
+@Composable
+private fun DashboardIncidentsEmptyState() {
+    val colors = AegisTheme.colors
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.surface)
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Icon with shield and magnifier
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(colors.primary.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(32.dp)
+            )
+            // Small search badge
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(colors.background),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = null,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(12.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "No incidents yet",
+            style = AegisTypography.titleMedium,
+            color = colors.textPrimary
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "Aegis is monitoring your device for threats.",
+            style = AegisTypography.bodySmall,
+            color = colors.textSecondary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Your activity will appear here as we scan your chats and calls.",
+            style = AegisTypography.caption,
+            color = colors.textTertiary,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+/**
+ * Maps Incident to UI for Dashboard
+ */
+@Composable
+private fun DashboardIncidentItem(incident: Incident) {
+    val colors = AegisTheme.colors
+
+    val (icon, iconColor) = when {
+        incident.isBlocked -> Icons.Default.Warning to colors.error
+        incident.type == IncidentType.OTHER -> Icons.Outlined.Refresh to colors.textSecondary
+        incident.type in listOf(IncidentType.SCAM_CALL, IncidentType.PHISHING_LINK, IncidentType.DANGEROUS_APP,
+            IncidentType.POLICE_IMPERSONATION, IncidentType.SEXTORTION) -> Icons.Outlined.Warning to colors.warning
+        else -> Icons.Default.CheckCircle to colors.primary
+    }
+
+    val title = when (incident.type) {
+        IncidentType.SCAM_CALL -> "Blocked Scam Call"
+        IncidentType.PHISHING_LINK -> "Blocked Phishing Link"
+        IncidentType.DANGEROUS_APP -> "Dangerous App Warning"
+        IncidentType.POLICE_IMPERSONATION -> "Police Impersonation Detected"
+        IncidentType.SEXTORTION -> "Sextortion Attempt Blocked"
+        IncidentType.OTHER -> "System Update"
+    }
+
+    IncidentLogItem(
+        icon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
+        },
+        title = title,
+        description = incident.description,
+        timestamp = "",
+        iconBackgroundColor = iconColor,
+        onClick = {}
+    )
 }
 
 @Composable

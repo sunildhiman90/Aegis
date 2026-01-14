@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.viewmodel.ProfileViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Profile Screen - Privacy profile with device info and settings
@@ -32,17 +34,18 @@ import app.aegis.ui.theme.AegisTypography
 fun ProfileScreen(
     isProtected: Boolean = true,
     deviceId: String = "AE-882-991-X",
-    threatsBlocked: Int = 142,
-    dataProcessed: String = "12MB",
     subscriptionType: String = "Plan: Free",
     onCopyId: () -> Unit = {},
     onViewReport: () -> Unit = {},
     onSubscriptionClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onSupportClick: () -> Unit = {}
+    onSupportClick: () -> Unit = {},
+    viewModel: ProfileViewModel = koinViewModel()
 ) {
     val colors = AegisTheme.colors
     val scrollState = rememberScrollState()
+    
+    val privacyStats by viewModel.privacyStats.collectAsState()
 
     Scaffold(
         containerColor = colors.background,
@@ -205,7 +208,7 @@ fun ProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "$threatsBlocked threats blocked locally. $dataProcessed of data processed on-device without cloud upload.",
+                        text = "${privacyStats.totalThreatsBlocked} threats blocked locally. ${privacyStats.dataProcessedMb} of data processed on-device without cloud upload.",
                         style = AegisTypography.bodySmall,
                         color = colors.textSecondary
                     )

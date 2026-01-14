@@ -8,6 +8,8 @@ import app.aegis.domain.repository.IncidentRepository
 import app.aegis.ui.viewmodel.TrustedContactViewModel
 import app.aegis.ui.viewmodel.SettingsViewModel
 import app.aegis.ui.viewmodel.ActivityLogViewModel
+import app.aegis.ui.viewmodel.DashboardViewModel
+import app.aegis.ui.viewmodel.ProfileViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -30,4 +32,7 @@ val appModule = module {
     viewModelOf(::TrustedContactViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::ActivityLogViewModel)
+    viewModelOf(::DashboardViewModel)
+    viewModelOf(::ProfileViewModel)
 }
+

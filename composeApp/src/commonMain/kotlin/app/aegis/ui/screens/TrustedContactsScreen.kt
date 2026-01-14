@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.TrustedContact
 import app.aegis.ui.theme.AegisTheme
@@ -67,18 +68,6 @@ fun TrustedContactsScreen(
                     )
                 )
                 HorizontalDivider(color = colors.divider, thickness = 1.dp)
-            }
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = colors.primary,
-                contentColor = Color(0xFF121212)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Contact"
-                )
             }
         }
     ) { paddingValues ->
@@ -232,27 +221,65 @@ private fun EmptyContactsPlaceholder() {
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize()
+            .padding(horizontal = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = null,
-            tint = colors.textTertiary,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        // Icon container matching Activity screen design
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(colors.surface),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(colors.background),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = colors.primary.copy(alpha = 0.6f),
+                    modifier = Modifier.size(48.dp)
+                )
+                // Badge
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = 8.dp, y = 8.dp)
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(colors.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🛡️",
+                        style = AegisTypography.labelSmall
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
         Text(
-            text = "No trusted contacts yet",
-            style = AegisTypography.titleMedium,
-            color = colors.textSecondary
+            text = "Your Emergency Contacts",
+            style = AegisTypography.headlineMedium,
+            color = colors.textPrimary
         )
-        Spacer(modifier = Modifier.height(8.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Text(
-            text = "Tap the + button to add your first contact",
-            style = AegisTypography.bodySmall,
-            color = colors.textTertiary
+            text = "No trusted contacts added yet. Add family or friends who can receive alerts when a threat is detected.",
+            style = AegisTypography.bodyMedium,
+            color = colors.textSecondary,
+            textAlign = TextAlign.Center
         )
     }
 }

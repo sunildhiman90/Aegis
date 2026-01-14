@@ -23,8 +23,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.AppThemeMode
+import app.aegis.domain.model.TrustedContact
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.viewmodel.SettingsViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Sensitivity levels - discrete values only
@@ -51,12 +54,53 @@ fun SettingsScreen(
     onOpenAccessibilitySettings: () -> Unit = {},
     onViewTrustedContacts: () -> Unit = {},
     onFactoryReset: () -> Unit = {},
-    onThemeModeChange: (AppThemeMode) -> Unit = {}
+    onThemeModeChange: (AppThemeMode) -> Unit = {},
+    viewModel: SettingsViewModel = koinViewModel()
 ) {
     val colors = AegisTheme.colors
     var currentSensitivity by remember { mutableStateOf(sensitivityLevel) }
     var currentThemeMode by remember { mutableStateOf(themeMode) }
     val scrollState = rememberScrollState()
+    
+    val topContacts by viewModel.topContacts.collectAsState()
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    // Factory Reset Confirmation Dialog
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            containerColor = colors.surface,
+            title = {
+                Text(
+                    text = "Factory Reset Aegis",
+                    style = AegisTypography.headlineSmall,
+                    color = colors.error
+                )
+            },
+            text = {
+                Text(
+                    text = "This will delete all data including incidents, trusted contacts, and settings. This action cannot be undone.",
+                    style = AegisTypography.bodyMedium,
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showResetDialog = false
+                        onFactoryReset()
+                    }
+                ) {
+                    Text("Reset Everything", color = colors.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Cancel", color = colors.textSecondary)
+                }
+            }
+        )
+    }
 
     Scaffold(
         containerColor = colors.background,
@@ -334,10 +378,19 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sample trusted contacts
-            TrustedContactItem(name = "Mom", detail = "Mobile • +1 (555) 012-3456")
-            Spacer(modifier = Modifier.height(8.dp))
-            TrustedContactItem(name = "Partner", detail = "Home • +1 (555) 098-7654")
+            // Dynamic trusted contacts from database
+            if (topContacts.isEmpty()) {
+                // Empty state for contacts
+                TrustedContactEmptyState(onViewTrustedContacts)
+            } else {
+                topContacts.forEach { contact ->
+                    TrustedContactItem(
+                        name = contact.name,
+                        detail = "${contact.relationship} • ${contact.phoneNumber}"
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -352,7 +405,7 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
                     .background(colors.surface)
-                    .clickable { onFactoryReset() }
+                    .clickable { showResetDialog = true }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -536,3 +589,58 @@ private fun TrustedContactItem(
         )
     }
 }
+
+/**
+ * Empty state for Trusted Contacts section in Settings
+ */
+@Composable
+private fun TrustedContactEmptyState(onAddContacts: () -> Unit) {
+    val colors = AegisTheme.colors
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(colors.surface)
+            .clickable { onAddContacts() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(colors.primary.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "No contacts yet",
+                style = AegisTypography.titleMedium,
+                color = colors.textPrimary
+            )
+            Text(
+                text = "Tap to see trusted contacts",
+                style = AegisTypography.bodySmall,
+                color = colors.textSecondary
+            )
+        }
+
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = colors.textTertiary
+        )
+    }
+}
+
