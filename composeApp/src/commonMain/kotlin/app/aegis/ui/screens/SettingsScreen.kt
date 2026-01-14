@@ -15,7 +15,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.BatteryStd
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,7 +66,7 @@ fun SettingsScreen(
     var currentSensitivity by remember { mutableStateOf(sensitivityLevel) }
     var currentThemeMode by remember { mutableStateOf(themeMode) }
     val scrollState = rememberScrollState()
-    
+
     val topContacts by viewModel.topContacts.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
 
@@ -148,8 +151,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-
-            // Sensitivity Card with discrete slider
+            // Sensitivity Card with discrete selector
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,6 +159,7 @@ fun SettingsScreen(
                     .background(colors.surface)
                     .padding(16.dp)
             ) {
+                // Title and Icon Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -192,12 +195,12 @@ fun SettingsScreen(
                 ) {
                     SensitivityLevel.entries.forEach { level ->
                         val isSelected = currentSensitivity == level
-                        val displayName = when(level) {
+                        val displayName = when (level) {
                             SensitivityLevel.LOW -> stringResource(Res.string.settings_sensitivity_low)
                             SensitivityLevel.BALANCED -> stringResource(Res.string.settings_sensitivity_balanced)
                             SensitivityLevel.AGGRESSIVE -> stringResource(Res.string.settings_sensitivity_aggressive)
                         }
-                        
+
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
@@ -230,7 +233,61 @@ fun SettingsScreen(
                         }
                     }
                 }
-            }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Info Card
+                val (infoIcon, infoColor, infoBg) = when (currentSensitivity) {
+                    SensitivityLevel.LOW -> Triple(
+                        Icons.Outlined.BatteryStd,
+                        colors.success,
+                        colors.success.copy(alpha = 0.1f)
+                    )
+                    SensitivityLevel.BALANCED -> Triple(
+                        Icons.Outlined.Shield,
+                        colors.primary,
+                        colors.primary.copy(alpha = 0.1f)
+                    )
+                    SensitivityLevel.AGGRESSIVE -> Triple(
+                        Icons.Outlined.Security,
+                        colors.warning,
+                        colors.warning.copy(alpha = 0.1f)
+                    )
+                }
+
+                Surface(
+                    color = infoBg,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = infoIcon,
+                            contentDescription = null,
+                            tint = infoColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        val warningText = when (currentSensitivity) {
+                            SensitivityLevel.LOW -> stringResource(Res.string.settings_sensitivity_low_warning)
+                            SensitivityLevel.BALANCED -> stringResource(Res.string.settings_sensitivity_balanced_warning)
+                            SensitivityLevel.AGGRESSIVE -> stringResource(Res.string.settings_sensitivity_aggressive_warning)
+                        }
+
+                        Text(
+                            text = warningText,
+                            style = AegisTypography.bodySmall,
+                            color = colors.textPrimary
+                        )
+                    }
+                }
+            } // End of Sensitivity Card
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -250,7 +307,9 @@ fun SettingsScreen(
                     )
                 },
                 title = stringResource(Res.string.permission_overlay_title),
-                subtitle = if (hasOverlayPermission) stringResource(Res.string.status_active) else stringResource(Res.string.status_disabled),
+                subtitle = if (hasOverlayPermission) stringResource(Res.string.status_active) else stringResource(
+                    Res.string.status_disabled
+                ),
                 subtitleColor = if (hasOverlayPermission) colors.success else colors.textSecondary,
                 checked = hasOverlayPermission,
                 onCheckedChange = { onOpenOverlaySettings() }
@@ -269,7 +328,9 @@ fun SettingsScreen(
                     )
                 },
                 title = stringResource(Res.string.permission_accessibility_title),
-                subtitle = if (hasAccessibilityPermission) stringResource(Res.string.status_active) else stringResource(Res.string.status_action_needed),
+                subtitle = if (hasAccessibilityPermission) stringResource(Res.string.status_active) else stringResource(
+                    Res.string.status_action_needed
+                ),
                 subtitleColor = if (hasAccessibilityPermission) colors.success else colors.warning,
                 checked = hasAccessibilityPermission,
                 onCheckedChange = { onOpenAccessibilitySettings() },
@@ -442,9 +503,10 @@ fun SettingsScreen(
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-        }
+        } // End of Main Column
     }
 }
+
 
 @Composable
 private fun SectionTitle(

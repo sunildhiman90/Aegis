@@ -74,6 +74,7 @@ fun App(
 
             // Full-screen destinations (no bottom nav)
             composable<SettingsRoute> {
+                val settingsViewModel = koinInject<app.aegis.ui.viewmodel.SettingsViewModel>()
                 SettingsScreen(
                     onBackClick = { mainNavController.popBackStack() },
                     hasOverlayPermission = hasOverlayPermission,
@@ -81,6 +82,10 @@ fun App(
                     onOpenOverlaySettings = onOpenOverlaySettings,
                     onOpenAccessibilitySettings = onOpenAccessibilitySettings,
                     themeMode = themeMode,
+                    sensitivityLevel = settingsViewModel.getSensitivity(),
+                    onSensitivityChange = { level ->
+                        settingsViewModel.setSensitivity(level)
+                    },
                     onThemeModeChange = { mode ->
                         themeMode = mode  // Update local state for immediate UI update
                         settingsRepository.setThemeMode(mode)  // Persist to storage

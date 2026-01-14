@@ -82,4 +82,13 @@ class AppSettingsRepository(
     fun clearThemePreference() {
         settings.remove(KEY_IS_DARK_THEME)
     }
+
+    // Sensitivity Level
+    fun getSensitivity(): String {
+        return settings.getString("sensitivity_level", "BALANCED")
+    }
+
+    fun setSensitivity(level: String) {
+        settings.putString("sensitivity_level", level)
+    }
 }

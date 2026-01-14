@@ -70,7 +70,7 @@ class GeminiClient {
      * 1. TEXT MODE (Chat Scams)
      * Restored the "Mental Toolkit" for maximum security accuracy.
      */
-    suspend fun analyze(screenText: String, model: String = defaultModel): ScamVerdict {
+    suspend fun analyze(screenText: String, sensitivity: String = "BALANCED", model: String = defaultModel): ScamVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
 
         // Local Tools Pre-check
@@ -81,6 +81,13 @@ class GeminiClient {
             LocalRisk.SAFE -> "Local Regex Tool found no pattern."
         }
 
+        // Sensitivity Instructions
+        val sensitivityInstruction = when (sensitivity) {
+            "LOW" -> "SENSITIVITY: LOW. You are a conservative investigator. Only flag this as DANGER if you have 90%+ certainty and concrete evidence (like a known bad link or typical fraud pattern). If unsure, mark SAFE."
+            "AGGRESSIVE" -> "SENSITIVITY: HIGH. You are a paranoid security guard. If there is ANY typical scam pattern (urgency, secrecy, authority, unusual request), flag it immediately. Err on the side of caution."
+            else -> "SENSITIVITY: BALANCED. Use your best judgment. If you see psychological manipulation or scam indicators, flag it."
+        }
+
         // 🛑 CRITICAL: Keep this detailed prompt. Do not shorten it.
         val prompt = """
             You are Aegis, an Autonomous Security Investigator.
@@ -88,6 +95,7 @@ class GeminiClient {
             [CASE FILE]
             - Raw Text: "$screenText"
             - Tool Report: $toolOutput
+            - Operation Mode: $sensitivityInstruction
             
             [YOUR MISSION]
             Investigate the "Raw Text" for potential fraud, coercion, or scams.
@@ -119,12 +127,22 @@ class GeminiClient {
      * * accepts 'base64Image' string instead of Bitmap.
      * The Platform code (Android) is responsible for converting the image.
      */
-    suspend fun analyzeImage(base64Image: String, model: String = defaultModelVision): ScamVerdict {
+    suspend fun analyzeImage(base64Image: String, sensitivity: String = "BALANCED", model: String = defaultModelVision): ScamVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return ScamVerdict(RiskLevel.SAFE, "No API Key", 0)
 
+        val sensitivityInstruction = when (sensitivity) {
+            "LOW" -> "SENSITIVITY: LOW. Only flag DANGER if you see a clear, undeniable Police Uniform/Badge. If ambiguous, assume SAFE."
+            "AGGRESSIVE" -> "SENSITIVITY: HIGH. Use strict scrutiny. If you see ANY element that looks like a police uniform, cap, or official seal, flag it as DANGER. Better safe than sorry."
+            else -> "SENSITIVITY: BALANCED. Standard check. Flag if you identify a police uniform or ongoing digital arrest setup."
+        }
+
         val promptText = """
             You are an Indian Cyber-Security Agent. Analyze this video frame for "Digital Arrest" video call scams.
+            
+            [OPERATION MODE]
+            $sensitivityInstruction
+            
             Look for:
             1. People wearing Khaki uniforms or Police caps.
             2. Backgrounds that look like Police Stations, Flags, or Official Seals.
@@ -157,12 +175,21 @@ class GeminiClient {
      * Analyzes video frames for nudity and fake feed detection.
      * Returns NudityVerdict for quick boolean checks.
      */
-    suspend fun analyzeForNudity(base64Image: String, model: String = defaultModelVision): NudityVerdict {
+    suspend fun analyzeForNudity(base64Image: String, sensitivity: String = "BALANCED", model: String = defaultModelVision): NudityVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return NudityVerdict(nudity = false, fakeFeed = false, confidence = 0)
 
+        val sensitivityInstruction = when (sensitivity) {
+            "LOW" -> "SENSITIVITY: LOW. Only flag explicit nudity. Ignore static artifacts unless obvious."
+            "AGGRESSIVE" -> "SENSITIVITY: HIGH. Flag any suggestive content or partial exposure. Be highly suspicious of any video artifacts indicating a fake feed."
+            else -> "SENSITIVITY: BALANCED. Standard detection for nudity and deepfake artifacts."
+        }
+
         val promptText = """
             URGENT SAFETY ANALYSIS: Analyze this video call screenshot for sextortion/blackmail threats.
+            
+            [OPERATION MODE]
+            $sensitivityInstruction
             
             CHECK FOR NUDITY:
             - Is there ANY exposed human body parts visible? (breasts, genitals, buttocks)
@@ -280,13 +307,22 @@ class GeminiClient {
      * @param model The model to use for analysis
      * @return The verdict of the analysis
      */
-    suspend fun analyzeUrl(url: String, model: String = defaultModelVision): app.aegis.models.PhishingVerdict {
+    suspend fun analyzeUrl(url: String, sensitivity: String = "BALANCED", model: String = defaultModelVision): app.aegis.models.PhishingVerdict {
         val apiKey = AegisConfig.GEMINI_API_KEY
         if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "No API Key", 0)
+
+        val sensitivityInstruction = when (sensitivity) {
+            "LOW" -> "SENSITIVITY: LOW. Only flag if it is a KNOWN malicious pattern or unmistakable homograph attack. If unsure, assume SAFE."
+            "AGGRESSIVE" -> "SENSITIVITY: HIGH. Flag ANY suspicious TLD (.xyz, .cc), misuse of free hosting (ngrok, vercel), or mismatch between content and domain. Err on the side of caution."
+            else -> "SENSITIVITY: BALANCED. Standard phishing detection."
+        }
 
         // 🛑 CRITICAL PROMPT: Detects Phishing & Drafts Report
         val promptText = """
             You are a Cyber-Security Analyst. Investigate this URL for phishing/scam activity.
+            
+            [OPERATION MODE]
+            $sensitivityInstruction
             
             URL: "$url"
             

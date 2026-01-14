@@ -37,5 +37,18 @@ class SettingsViewModel(
     fun setThemeMode(mode: AppThemeMode) {
         settingsRepository.setThemeMode(mode)
     }
+
+    fun getSensitivity(): app.aegis.ui.screens.SensitivityLevel {
+        val stored = settingsRepository.getSensitivity()
+        return try {
+            app.aegis.ui.screens.SensitivityLevel.valueOf(stored)
+        } catch (e: Exception) {
+            app.aegis.ui.screens.SensitivityLevel.BALANCED
+        }
+    }
+
+    fun setSensitivity(level: app.aegis.ui.screens.SensitivityLevel) {
+        settingsRepository.setSensitivity(level.name)
+    }
 }
 
