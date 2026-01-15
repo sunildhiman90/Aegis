@@ -2,6 +2,7 @@ package app.aegis.ui.screens
 
 import aegis.composeapp.generated.resources.*
 import androidx.compose.foundation.background
+import kotlinx.datetime.Clock as KClock
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,13 +26,16 @@ import app.aegis.domain.model.TrustedContact
 import app.aegis.ui.theme.AegisTheme
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.TrustedContactViewModel
+import app.aegis.utils.DateUtils
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * Trusted Contacts Screen - Manage emergency contacts
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun TrustedContactsScreen(
     onBackClick: () -> Unit = {},
@@ -119,11 +123,11 @@ fun TrustedContactsScreen(
             onDismiss = { showAddDialog = false },
             onAdd = { name, phone, relationship ->
                 val newContact = TrustedContact(
-                    id = System.currentTimeMillis().toString(),
+                    id = DateUtils.getCurrentTimestamp().toString(),
                     name = name,
                     phoneNumber = phone,
                     relationship = relationship,
-                    addedAt = System.currentTimeMillis()
+                    addedAt = DateUtils.getCurrentTimestamp()
                 )
                 viewModel.addContact(newContact)
                 showAddDialog = false

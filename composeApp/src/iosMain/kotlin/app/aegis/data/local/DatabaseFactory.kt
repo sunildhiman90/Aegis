@@ -8,7 +8,7 @@ fun getDatabaseBuilder(): RoomDatabase.Builder<AegisDatabase> {
     val dbFilePath = NSHomeDirectory() + "/aegis.db"
     return Room.databaseBuilder<AegisDatabase>(
         name = dbFilePath,
-        factory = { AegisDatabase::class.instantiateImpl() } // This requires the instantiatedImpl from KSP? No, Room KMP differs.
+        factory = { AegisDatabaseConstructor.initialize() }
     )
 }
 // Note: Room KMP on iOS usually requires `instantiateImpl` if using the KSP generated code directly? 

@@ -37,6 +37,13 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+
+            // Export lifecycle libraries to fix undefined symbols
+            export(libs.androidx.lifecycle.viewmodelCompose)
+            export(libs.androidx.lifecycle.runtimeCompose)
+            export(libs.kotlinx.datetime)
+
+            linkerOpts.add("-lsqlite3")
         }
     }
     
@@ -59,8 +66,8 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
+            api(libs.androidx.lifecycle.viewmodelCompose)
+            api(libs.androidx.lifecycle.runtimeCompose)
 
             // --- Ktor & Serialization ---
             implementation(libs.ktor.client.core)
@@ -76,7 +83,7 @@ kotlin {
             implementation(libs.multiplatform.settings)
             
             // DateTime
-            implementation(libs.kotlinx.datetime)
+            api(libs.kotlinx.datetime)
 
             // Room
             implementation(libs.room.runtime)

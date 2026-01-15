@@ -1,12 +1,15 @@
 package app.aegis.domain.model
 
-import kotlinx.datetime.Clock
+import app.aegis.utils.DateUtils
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-data class Incident(
+@OptIn(ExperimentalTime::class)
+data class Incident constructor(
     val id: String,
     val type: IncidentType,
     val description: String,
-    val timestamp: Long = Clock.System.now().toEpochMilliseconds(),
+    val timestamp: Long = DateUtils.getCurrentTimestamp(),
     val isBlocked: Boolean = false,
     val severity: IncidentSeverity = IncidentSeverity.MEDIUM
 )

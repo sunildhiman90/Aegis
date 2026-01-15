@@ -12,10 +12,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Clock as KClock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 /**
  * Filter types for activity log
@@ -37,6 +38,7 @@ data class GroupedIncidents(
 /**
  * ViewModel for Activity Log screen
  */
+@OptIn(kotlin.time.ExperimentalTime::class)
 class ActivityLogViewModel(
     private val repository: IncidentRepository
 ) : ViewModel() {
