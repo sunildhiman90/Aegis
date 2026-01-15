@@ -21,7 +21,7 @@ data class PrivacyReportStats(
     val dangerousAppsBlocked: Int = 0,
     val sextortionBlocked: Int = 0,
     val policeImpersonationBlocked: Int = 0,
-    val dataProcessedMb: String = "0MB"
+    val dataProcessedMb: String = "0MB",
 )
 
 /**
@@ -29,9 +29,8 @@ data class PrivacyReportStats(
  */
 class ProfileViewModel(
     incidentRepository: IncidentRepository,
-    deviceIdProvider: DeviceIdProvider
+    deviceIdProvider: DeviceIdProvider,
 ) : ViewModel() {
-
     /**
      * Actual device ID from platform
      */
@@ -40,13 +39,15 @@ class ProfileViewModel(
     /**
      * Privacy report stats calculated from incidents
      */
-    val privacyStats: StateFlow<PrivacyReportStats> = incidentRepository.getAllIncidents()
-        .map { incidents -> calculateStats(incidents) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = PrivacyReportStats()
-        )
+    val privacyStats: StateFlow<PrivacyReportStats> =
+        incidentRepository
+            .getAllIncidents()
+            .map { incidents -> calculateStats(incidents) }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = PrivacyReportStats(),
+            )
 
     private fun calculateStats(incidents: List<Incident>): PrivacyReportStats {
         val blocked = incidents.filter { it.isBlocked }
@@ -58,7 +59,7 @@ class ProfileViewModel(
             sextortionBlocked = blocked.count { it.type == IncidentType.SEXTORTION },
             policeImpersonationBlocked = blocked.count { it.type == IncidentType.POLICE_IMPERSONATION },
             // Estimate data processed based on incidents scanned
-            dataProcessedMb = "${(incidents.size * 0.5).toInt()}MB"
+            dataProcessedMb = "${(incidents.size * 0.5).toInt()}MB",
         )
     }
 }

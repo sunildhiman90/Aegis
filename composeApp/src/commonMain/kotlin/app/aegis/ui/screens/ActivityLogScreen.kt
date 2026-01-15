@@ -35,9 +35,7 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivityLogScreen(
-    viewModel: ActivityLogViewModel = koinViewModel()
-) {
+fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
     val colors = AegisTheme.colors
     val scrollState = rememberScrollState()
 
@@ -54,58 +52,64 @@ fun ActivityLogScreen(
                         Text(
                             text = stringResource(Res.string.nav_activity),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary
+                            color = colors.textPrimary,
                         )
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = colors.background
-                    )
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = colors.background,
+                        ),
                 )
                 // Divider below action bar
                 HorizontalDivider(color = colors.divider, thickness = 1.dp)
             }
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             // Filter Chips
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 ActivityFilter.entries.forEach { filter ->
-                    val label = when (filter) {
-                        ActivityFilter.ALL -> stringResource(Res.string.activity_filter_all)
-                        ActivityFilter.THREATS -> stringResource(Res.string.activity_filter_threats)
-                        ActivityFilter.SAFE_SCANS -> stringResource(Res.string.activity_filter_safe)
-                    }
-                    
+                    val label =
+                        when (filter) {
+                            ActivityFilter.ALL -> stringResource(Res.string.activity_filter_all)
+                            ActivityFilter.THREATS -> stringResource(Res.string.activity_filter_threats)
+                            ActivityFilter.SAFE_SCANS -> stringResource(Res.string.activity_filter_safe)
+                        }
+
                     FilterChip(
                         selected = selectedFilter == filter,
                         onClick = { viewModel.setFilter(filter) },
                         label = {
                             Text(
                                 text = label,
-                                style = AegisTypography.labelMedium
+                                style = AegisTypography.labelMedium,
                             )
                         },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = colors.primary,
-                            selectedLabelColor = Color.White,
-                            containerColor = colors.surface,
-                            labelColor = colors.textSecondary
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            borderColor = colors.cardBorder,
-                            selectedBorderColor = colors.primary,
-                            enabled = true,
-                            selected = selectedFilter == filter
-                        )
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = colors.primary,
+                                selectedLabelColor = Color.White,
+                                containerColor = colors.surface,
+                                labelColor = colors.textSecondary,
+                            ),
+                        border =
+                            FilterChipDefaults.filterChipBorder(
+                                borderColor = colors.cardBorder,
+                                selectedBorderColor = colors.primary,
+                                enabled = true,
+                                selected = selectedFilter == filter,
+                            ),
                     )
                 }
             }
@@ -115,10 +119,11 @@ fun ActivityLogScreen(
                 ActivityEmptyState()
             } else {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(horizontal = 20.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 20.dp),
                 ) {
                     groupedIncidents.forEach { group ->
                         ActivityDateHeader(dateLabel = group.dateLabel)
@@ -147,56 +152,61 @@ private fun ActivityEmptyState() {
     val colors = AegisTheme.colors
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 40.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         // Icon container matching design
         Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(colors.surface),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(colors.surface),
+            contentAlignment = Alignment.Center,
         ) {
             // Outer shadow effect
             Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(colors.background),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(colors.background),
+                contentAlignment = Alignment.Center,
             ) {
                 // List icon placeholder
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     repeat(3) {
                         Box(
-                            modifier = Modifier
-                                .width(32.dp)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(colors.primary.copy(alpha = 0.6f))
+                            modifier =
+                                Modifier
+                                    .width(32.dp)
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(colors.primary.copy(alpha = 0.6f)),
                         )
                     }
                 }
                 // Shield badge
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .offset(x = 8.dp, y = 8.dp)
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(colors.primary),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .offset(x = 8.dp, y = 8.dp)
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(colors.primary),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "🛡️",
-                        style = AegisTypography.labelSmall
+                        style = AegisTypography.labelSmall,
                     )
                 }
             }
@@ -207,7 +217,7 @@ private fun ActivityEmptyState() {
         Text(
             text = stringResource(Res.string.activity_empty_title),
             style = AegisTypography.headlineMedium,
-            color = colors.textPrimary
+            color = colors.textPrimary,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -216,7 +226,7 @@ private fun ActivityEmptyState() {
             text = stringResource(Res.string.activity_empty_message),
             style = AegisTypography.bodyMedium,
             color = colors.textSecondary,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -224,16 +234,17 @@ private fun ActivityEmptyState() {
 @Composable
 private fun ActivityDateHeader(dateLabel: String) {
     val colors = AegisTheme.colors
-    val text = when (dateLabel) {
-        "TODAY" -> stringResource(Res.string.activity_today)
-        "YESTERDAY" -> stringResource(Res.string.activity_yesterday)
-        else -> dateLabel
-    }
-    
+    val text =
+        when (dateLabel) {
+            "TODAY" -> stringResource(Res.string.activity_today)
+            "YESTERDAY" -> stringResource(Res.string.activity_yesterday)
+            else -> dateLabel
+        }
+
     Text(
         text = text,
         style = AegisTypography.labelMedium,
-        color = colors.textSecondary
+        color = colors.textSecondary,
     )
 }
 
@@ -245,7 +256,7 @@ private fun IncidentLogItemFromData(incident: Incident) {
     val colors = AegisTheme.colors
 
     val (icon, iconColor) = getIncidentIconAndColor(incident.type, incident.isBlocked, colors)
-    
+
     // Determine title resource
     val titleRes = getIncidentTitleRes(incident.type)
 
@@ -255,14 +266,14 @@ private fun IncidentLogItemFromData(incident: Incident) {
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconColor,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
         },
         title = stringResource(titleRes),
         description = incident.description,
         timestamp = "", // This would use stringResource(Res.string.time_minutes_ago, ...) if dynamic
         iconBackgroundColor = iconColor,
-        onClick = {}
+        onClick = {},
     )
 }
 
@@ -270,21 +281,34 @@ private fun IncidentLogItemFromData(incident: Incident) {
  * Get icon and color based on incident type
  */
 @Composable
-private fun getIncidentIconAndColor(type: IncidentType, isBlocked: Boolean, colors: app.aegis.ui.theme.AegisColorScheme): Pair<androidx.compose.ui.graphics.vector.ImageVector, Color> {
-    return when {
+private fun getIncidentIconAndColor(
+    type: IncidentType,
+    isBlocked: Boolean,
+    colors: app.aegis.ui.theme.AegisColorScheme,
+): Pair<androidx.compose.ui.graphics.vector.ImageVector, Color> =
+    when {
         isBlocked -> Icons.Default.Warning to colors.error
+
         type == IncidentType.OTHER -> Icons.Outlined.Refresh to colors.primary
-        type in listOf(IncidentType.SCAM_CALL, IncidentType.PHISHING_LINK, IncidentType.DANGEROUS_APP, 
-            IncidentType.POLICE_IMPERSONATION, IncidentType.SEXTORTION) -> Icons.Default.Warning to colors.warning
+
+        type in
+            listOf(
+                IncidentType.SCAM_CALL,
+                IncidentType.PHISHING_LINK,
+                IncidentType.DANGEROUS_APP,
+                IncidentType.POLICE_IMPERSONATION,
+                IncidentType.SEXTORTION,
+            )
+        -> Icons.Default.Warning to colors.warning
+
         else -> Icons.Default.CheckCircle to colors.success
     }
-}
 
 /**
  * Get string resource for incident title
  */
-private fun getIncidentTitleRes(type: IncidentType): StringResource {
-    return when (type) {
+private fun getIncidentTitleRes(type: IncidentType): StringResource =
+    when (type) {
         IncidentType.SCAM_CALL -> Res.string.incident_blocked_scam_call
         IncidentType.PHISHING_LINK -> Res.string.incident_blocked_link
         IncidentType.DANGEROUS_APP -> Res.string.incident_dangerous_app
@@ -292,4 +316,3 @@ private fun getIncidentTitleRes(type: IncidentType): StringResource {
         IncidentType.SEXTORTION -> Res.string.incident_sextortion
         IncidentType.OTHER -> Res.string.incident_system_update
     }
-}

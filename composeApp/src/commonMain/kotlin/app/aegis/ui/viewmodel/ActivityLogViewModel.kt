@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock as KClock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import kotlinx.datetime.Clock as KClock
 
 /**
  * Filter types for activity log
@@ -24,7 +24,7 @@ import kotlin.time.Clock
 enum class ActivityFilter {
     ALL,
     THREATS,
-    SAFE_SCANS
+    SAFE_SCANS,
 }
 
 /**
@@ -32,7 +32,7 @@ enum class ActivityFilter {
  */
 data class GroupedIncidents(
     val dateLabel: String,
-    val incidents: List<Incident>
+    val incidents: List<Incident>,
 )
 
 /**
@@ -40,42 +40,45 @@ data class GroupedIncidents(
  */
 @OptIn(kotlin.time.ExperimentalTime::class)
 class ActivityLogViewModel(
-    private val repository: IncidentRepository
+    private val repository: IncidentRepository,
 ) : ViewModel() {
-
     private val _selectedFilter = MutableStateFlow(ActivityFilter.ALL)
     val selectedFilter: StateFlow<ActivityFilter> = _selectedFilter.asStateFlow()
 
-    private val allIncidents: StateFlow<List<Incident>> = repository.getAllIncidents()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    private val allIncidents: StateFlow<List<Incident>> =
+        repository
+            .getAllIncidents()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList(),
+            )
 
-    val filteredIncidents: StateFlow<List<Incident>> = combine(
-        allIncidents,
-        _selectedFilter
-    ) { incidents, filter ->
-        when (filter) {
-            ActivityFilter.ALL -> incidents
-            ActivityFilter.THREATS -> incidents.filter { it.isBlocked || it.type in threatTypes }
-            ActivityFilter.SAFE_SCANS -> incidents.filter { !it.isBlocked && it.type !in threatTypes }
-        }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
-
-    val groupedIncidents: StateFlow<List<GroupedIncidents>> = filteredIncidents
-        .combine(MutableStateFlow(Unit)) { incidents, _ ->
-            groupByDate(incidents)
+    val filteredIncidents: StateFlow<List<Incident>> =
+        combine(
+            allIncidents,
+            _selectedFilter,
+        ) { incidents, filter ->
+            when (filter) {
+                ActivityFilter.ALL -> incidents
+                ActivityFilter.THREATS -> incidents.filter { it.isBlocked || it.type in threatTypes }
+                ActivityFilter.SAFE_SCANS -> incidents.filter { !it.isBlocked && it.type !in threatTypes }
+            }
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
+            initialValue = emptyList(),
         )
+
+    val groupedIncidents: StateFlow<List<GroupedIncidents>> =
+        filteredIncidents
+            .combine(MutableStateFlow(Unit)) { incidents, _ ->
+                groupByDate(incidents)
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList(),
+            )
 
     fun setFilter(filter: ActivityFilter) {
         _selectedFilter.value = filter
@@ -94,18 +97,25 @@ class ActivityLogViewModel(
         val now = Clock.System.now()
         val timeZone = TimeZone.currentSystemDefault()
         val today = now.toLocalDateTime(timeZone).date
-        val yesterday = Instant.fromEpochMilliseconds(now.toEpochMilliseconds() - 86400000)
-            .toLocalDateTime(timeZone).date
+        val yesterday =
+            kotlin.time.Instant
+                .fromEpochMilliseconds(now.toEpochMilliseconds() - 86400000)
+                .toLocalDateTime(timeZone)
+                .date
 
-        val grouped = incidents.groupBy { incident ->
-            val incidentDate = Instant.fromEpochMilliseconds(incident.timestamp)
-                .toLocalDateTime(timeZone).date
-            when {
-                incidentDate == today -> "TODAY"
-                incidentDate == yesterday -> "YESTERDAY"
-                else -> incidentDate.toString().uppercase()
+        val grouped =
+            incidents.groupBy { incident ->
+                val incidentDate =
+                    Instant
+                        .fromEpochMilliseconds(incident.timestamp)
+                        .toLocalDateTime(timeZone)
+                        .date
+                when {
+                    incidentDate == today -> "TODAY"
+                    incidentDate == yesterday -> "YESTERDAY"
+                    else -> incidentDate.toString().uppercase()
+                }
             }
-        }
 
         // Sort groups: TODAY first, then YESTERDAY, then dates in descending order
         return grouped.entries
@@ -117,18 +127,17 @@ class ActivityLogViewModel(
                     b.key == "YESTERDAY" -> 1
                     else -> b.key.compareTo(a.key)
                 }
-            }
-            .map { GroupedIncidents(it.key, it.value) }
+            }.map { GroupedIncidents(it.key, it.value) }
     }
 
     companion object {
-        private val threatTypes = setOf(
-            IncidentType.SCAM_CALL,
-            IncidentType.PHISHING_LINK,
-            IncidentType.DANGEROUS_APP,
-            IncidentType.POLICE_IMPERSONATION,
-            IncidentType.SEXTORTION
-        )
+        private val threatTypes =
+            setOf(
+                IncidentType.SCAM_CALL,
+                IncidentType.PHISHING_LINK,
+                IncidentType.DANGEROUS_APP,
+                IncidentType.POLICE_IMPERSONATION,
+                IncidentType.SEXTORTION,
+            )
     }
 }
-

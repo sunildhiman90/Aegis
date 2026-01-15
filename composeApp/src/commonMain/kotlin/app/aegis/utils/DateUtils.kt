@@ -10,10 +10,12 @@ object DateUtils {
 
     fun getLocalDateTime(
         timeZone: TimeZone =
-            TimeZone.currentSystemDefault()
-    ): String {
-        return Clock.System.now().toLocalDateTime(timeZone).toString()
-    }
+            TimeZone.currentSystemDefault(),
+    ): String =
+        Clock.System
+            .now()
+            .toLocalDateTime(timeZone)
+            .toString()
 
     fun getCurrentTimestamp() = Clock.System.now().toEpochMilliseconds()
 }

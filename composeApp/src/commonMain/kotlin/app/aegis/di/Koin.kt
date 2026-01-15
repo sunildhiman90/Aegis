@@ -6,11 +6,12 @@ import org.koin.dsl.KoinAppDeclaration
 /**
  * Initialize Koin for dependency injection
  */
-fun initKoin(appDeclaration: KoinAppDeclaration? = {}) = startKoin {
-    appDeclaration?.invoke(this)
-    modules(
-        platformModule,
-        appModule,
-        networkModule
-    )
-}
+fun initKoin(appDeclaration: KoinAppDeclaration? = {}) =
+    startKoin {
+        appDeclaration?.invoke(this)
+        modules(
+            platformModule,
+            appModule,
+            networkModule,
+        )
+    }

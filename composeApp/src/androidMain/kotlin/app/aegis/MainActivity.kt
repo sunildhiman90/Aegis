@@ -1,10 +1,10 @@
 package app.aegis
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.provider.Settings
-import android.accessibilityservice.AccessibilityServiceInfo
-import android.content.res.Configuration
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -44,12 +44,13 @@ class MainActivity : ComponentActivity() {
                 // Re-check permissions when resuming from settings
                 val lifecycleOwner = LocalLifecycleOwner.current
                 DisposableEffect(lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        if (event == Lifecycle.Event.ON_RESUME) {
-                            hasOverlayPermission = checkOverlayPermission()
-                            hasAccessibilityPermission = checkAccessibilityPermission()
+                    val observer =
+                        LifecycleEventObserver { _, event ->
+                            if (event == Lifecycle.Event.ON_RESUME) {
+                                hasOverlayPermission = checkOverlayPermission()
+                                hasAccessibilityPermission = checkAccessibilityPermission()
+                            }
                         }
-                    }
                     lifecycleOwner.lifecycle.addObserver(observer)
                     onDispose {
                         lifecycleOwner.lifecycle.removeObserver(observer)
@@ -62,10 +63,11 @@ class MainActivity : ComponentActivity() {
                     onOpenOverlaySettings = {
                         if (!checkOverlayPermission()) {
                             try {
-                                val intent = Intent(
-                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    "package:$packageName".toUri()
-                                )
+                                val intent =
+                                    Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        "package:$packageName".toUri(),
+                                    )
                                 startActivity(intent)
                             } catch (e: Exception) {
                                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
@@ -79,21 +81,20 @@ class MainActivity : ComponentActivity() {
                     },
                     onUpdateStatusBar = {
                         setStatusBarColor(isPrimaryStatusBar = false)
-                    }
+                    },
                 )
             }
         }
     }
 
-    private fun checkOverlayPermission(): Boolean {
-        return Settings.canDrawOverlays(this)
-    }
+    private fun checkOverlayPermission(): Boolean = Settings.canDrawOverlays(this)
 
     private fun checkAccessibilityPermission(): Boolean {
         val accessibilityManager = getSystemService(ACCESSIBILITY_SERVICE) as? AccessibilityManager
-        val enabledServices = accessibilityManager?.getEnabledAccessibilityServiceList(
-            AccessibilityServiceInfo.FEEDBACK_ALL_MASK
-        ) ?: emptyList()
+        val enabledServices =
+            accessibilityManager?.getEnabledAccessibilityServiceList(
+                AccessibilityServiceInfo.FEEDBACK_ALL_MASK,
+            ) ?: emptyList()
 
         return enabledServices.any {
             it.resolveInfo?.serviceInfo?.packageName == packageName
@@ -113,11 +114,12 @@ class MainActivity : ComponentActivity() {
 
         // Determine actual dark theme based on mode
         val themeMode = settingsRepository.getThemeMode()
-        val isDarkTheme = when (themeMode) {
-            app.aegis.domain.model.AppThemeMode.LIGHT -> false
-            app.aegis.domain.model.AppThemeMode.DARK -> true
-            app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> isSystemDarkTheme
-        }
+        val isDarkTheme =
+            when (themeMode) {
+                app.aegis.domain.model.AppThemeMode.LIGHT -> false
+                app.aegis.domain.model.AppThemeMode.DARK -> true
+                app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> isSystemDarkTheme
+            }
 
         val statusBarStyle =
             if (isPrimaryStatusBar) {

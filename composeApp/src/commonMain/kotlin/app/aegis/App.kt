@@ -26,7 +26,7 @@ fun App(
     hasAccessibilityPermission: Boolean = false,
     onOpenOverlaySettings: () -> Unit = {},
     onOpenAccessibilitySettings: () -> Unit = {},
-    onUpdateStatusBar: () -> Unit = {}
+    onUpdateStatusBar: () -> Unit = {},
 ) {
     // Initialize Repository
     val settingsRepository = koinInject<AppSettingsRepository>()
@@ -34,11 +34,12 @@ fun App(
     // Theme mode with System Default support - reactive state
     val systemDarkTheme = isSystemInDarkTheme()
     var themeMode by remember { mutableStateOf(settingsRepository.getThemeMode()) }
-    val isDarkTheme = when (themeMode) {
-        app.aegis.domain.model.AppThemeMode.LIGHT -> false
-        app.aegis.domain.model.AppThemeMode.DARK -> true
-        app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> systemDarkTheme
-    }
+    val isDarkTheme =
+        when (themeMode) {
+            app.aegis.domain.model.AppThemeMode.LIGHT -> false
+            app.aegis.domain.model.AppThemeMode.DARK -> true
+            app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> systemDarkTheme
+        }
 
     AegisTheme(darkTheme = isDarkTheme) {
         val colors = AegisTheme.colors
@@ -46,19 +47,21 @@ fun App(
 
         // Determine start destination
         val isOnboardingComplete = remember { settingsRepository.isOnboardingComplete }
-        val startDestination = if (isOnboardingComplete) {
-            TabsRoute
-        } else {
-            OnboardingRoute
-        }
+        val startDestination =
+            if (isOnboardingComplete) {
+                TabsRoute
+            } else {
+                OnboardingRoute
+            }
 
         // Main NavHost - top-level navigation
         NavHost(
             navController = mainNavController,
             startDestination = startDestination,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colors.background)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(colors.background),
         ) {
             // Tabs container (has its own nested NavHost with bottom navigation)
             composable<TabsRoute> {
@@ -68,7 +71,7 @@ fun App(
                     onNavigateToSettings = { mainNavController.navigate(SettingsRoute) },
                     onOpenOverlaySettings = onOpenOverlaySettings,
                     onOpenAccessibilitySettings = onOpenAccessibilitySettings,
-                    onViewFullReport = { mainNavController.navigate(FullReportRoute) }
+                    onViewFullReport = { mainNavController.navigate(FullReportRoute) },
                 )
             }
 
@@ -87,23 +90,23 @@ fun App(
                         settingsViewModel.setSensitivity(level)
                     },
                     onThemeModeChange = { mode ->
-                        themeMode = mode  // Update local state for immediate UI update
-                        settingsRepository.setThemeMode(mode)  // Persist to storage
-                        onUpdateStatusBar()  // Update status bar colors
+                        themeMode = mode // Update local state for immediate UI update
+                        settingsRepository.setThemeMode(mode) // Persist to storage
+                        onUpdateStatusBar() // Update status bar colors
                     },
-                    onViewTrustedContacts = { mainNavController.navigate(TrustedContactsRoute) }
+                    onViewTrustedContacts = { mainNavController.navigate(TrustedContactsRoute) },
                 )
             }
 
             composable<TrustedContactsRoute> {
                 TrustedContactsScreen(
-                    onBackClick = { mainNavController.popBackStack() }
+                    onBackClick = { mainNavController.popBackStack() },
                 )
             }
 
             composable<FullReportRoute> {
                 FullReportScreen(
-                    onBackClick = { mainNavController.popBackStack() }
+                    onBackClick = { mainNavController.popBackStack() },
                 )
             }
 
@@ -120,7 +123,7 @@ fun App(
                         mainNavController.navigate(TabsRoute) {
                             popUpTo(OnboardingRoute) { inclusive = true }
                         }
-                    }
+                    },
                 )
             }
         }

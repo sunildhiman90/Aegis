@@ -29,7 +29,7 @@ fun TabsScreen(
     onNavigateToSettings: () -> Unit,
     onOpenOverlaySettings: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
-    onViewFullReport: () -> Unit = {}
+    onViewFullReport: () -> Unit = {},
 ) {
     val colors = AegisTheme.colors
     val tabsNavController = rememberNavController()
@@ -37,20 +37,22 @@ fun TabsScreen(
     val currentDestination = navBackStackEntry?.destination
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(colors.background),
         containerColor = colors.background,
         bottomBar = {
             NavigationBar(
                 containerColor = colors.surface,
-                contentColor = colors.textPrimary
+                contentColor = colors.textPrimary,
             ) {
                 bottomNavItems.forEach { item ->
-                    val selected = currentDestination?.hierarchy?.any {
-                        it.hasRoute(item.route::class)
-                    } == true
-                    
+                    val selected =
+                        currentDestination?.hierarchy?.any {
+                            it.hasRoute(item.route::class)
+                        } == true
+
                     val label = stringResource(item.labelRes)
 
                     NavigationBarItem(
@@ -67,35 +69,37 @@ fun TabsScreen(
                         icon = {
                             Icon(
                                 imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                contentDescription = label
+                                contentDescription = label,
                             )
                         },
                         label = {
                             Text(
                                 text = label,
-                                style = AegisTypography.labelSmall
+                                style = AegisTypography.labelSmall,
                             )
                         },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = colors.primary,
-                            selectedTextColor = colors.primary,
-                            unselectedIconColor = colors.textSecondary,
-                            unselectedTextColor = colors.textSecondary,
-                            indicatorColor = colors.primary.copy(alpha = 0.1f)
-                        )
+                        colors =
+                            NavigationBarItemDefaults.colors(
+                                selectedIconColor = colors.primary,
+                                selectedTextColor = colors.primary,
+                                unselectedIconColor = colors.textSecondary,
+                                unselectedTextColor = colors.textSecondary,
+                                indicatorColor = colors.primary.copy(alpha = 0.1f),
+                            ),
                     )
                 }
             }
-        }
+        },
     ) { _ ->
         // Nested NavHost for tabs - no padding needed, screens handle their own scrolling
         NavHost(
             navController = tabsNavController,
             startDestination = DashboardRoute,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colors.background)
-                .padding(bottom = 64.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(colors.background)
+                    .padding(bottom = 64.dp),
         ) {
             composable<DashboardRoute> {
                 DashboardScreen(
@@ -112,7 +116,7 @@ fun TabsScreen(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
                 )
             }
 
@@ -125,7 +129,7 @@ fun TabsScreen(
                 ProfileScreen(
                     isProtected = isProtected,
                     onSettingsClick = onNavigateToSettings,
-                    onViewReport = onViewFullReport
+                    onViewReport = onViewFullReport,
                 )
             }
         }

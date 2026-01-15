@@ -11,7 +11,7 @@ data class Incident constructor(
     val description: String,
     val timestamp: Long = DateUtils.getCurrentTimestamp(),
     val isBlocked: Boolean = false,
-    val severity: IncidentSeverity = IncidentSeverity.MEDIUM
+    val severity: IncidentSeverity = IncidentSeverity.MEDIUM,
 )
 
 enum class IncidentType {
@@ -20,9 +20,12 @@ enum class IncidentType {
     DANGEROUS_APP,
     POLICE_IMPERSONATION,
     SEXTORTION,
-    OTHER
+    OTHER,
 }
 
 enum class IncidentSeverity {
-    LOW, MEDIUM, HIGH, CRITICAL
+    LOW,
+    MEDIUM,
+    HIGH,
+    CRITICAL,
 }

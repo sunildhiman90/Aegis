@@ -12,20 +12,20 @@ import android.view.accessibility.AccessibilityNodeInfo
 import app.aegis.ai.gemini.GeminiClient
 import app.aegis.ai.gemini.types.Source
 import app.aegis.data.TrustRepository
+import app.aegis.data.settings.AppSettingsRepository
 import app.aegis.helper.ScreenshotHelper
 import app.aegis.models.RiskLevel
+import app.aegis.models.SensitivityLevel
 import app.aegis.tools.LocalRisk
 import app.aegis.tools.SecurityTools
 import kotlinx.coroutines.*
-import java.io.ByteArrayOutputStream
-
-import app.aegis.data.settings.AppSettingsRepository
-import app.aegis.models.SensitivityLevel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import java.io.ByteArrayOutputStream
 
-class AegisAccessibilityService : AccessibilityService(), KoinComponent {
-
+class AegisAccessibilityService :
+    AccessibilityService(),
+    KoinComponent {
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
     private var analysisJob: Job? = null // 🛑 STORE THE CURRENT JOB
     private var currentAnalysisHash = 0 // Track what content is currently being analyzed
@@ -49,31 +49,36 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
     // 🛡️ SEXTORTION SHIELD - Continuous frame analysis
     private var sextortionAnalysisJob: Job? = null
     private var isInVideoCall = false
-    private var lastCallActivityTime = 0L  // Track when we last saw actual call evidence
+    private var lastCallActivityTime = 0L // Track when we last saw actual call evidence
     private var lastAudioWarningTime = 0L
 
     private val CALL_STATE_TIMEOUT =
-        15_000L  // 15 seconds - if no WhatsApp activity, assume call ended
+        15_000L // 15 seconds - if no WhatsApp activity, assume call ended
 
     // 📱 VIDEO CALL DETECTION - Caller tracking
-    private var pendingVideoCallCaller = ""  // Store caller name from notification
+    private var pendingVideoCallCaller = "" // Store caller name from notification
     private var hasShownCameraWarning = false // Ensure warning shows only once per call
     private var cameraWarningShownTime: Long =
         0 // Debounce to prevent reset during notification->pickup transition
 
-    private val SUPPORTED_PACKAGES = setOf(
-        "com.whatsapp",
-        "com.whatsapp.w4b",
-        "com.google.android.apps.messaging",
-        "org.telegram.messenger",
-        "com.samsung.android.messaging"
-    )
+    private val SUPPORTED_PACKAGES =
+        setOf(
+            "com.whatsapp",
+            "com.whatsapp.w4b",
+            "com.google.android.apps.messaging",
+            "org.telegram.messenger",
+            "com.samsung.android.messaging",
+        )
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         overlayManager = OverlayManager(this)
         screenshotHelper =
-            ScreenshotHelper(this, java.util.concurrent.Executors.newSingleThreadExecutor())
+            ScreenshotHelper(
+                this,
+                java.util.concurrent.Executors
+                    .newSingleThreadExecutor(),
+            )
         Log.d("Aegis", "✅ Service Online")
     }
 
@@ -103,13 +108,16 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                     val notification = event.parcelableData as? android.app.Notification
                     if (notification != null) {
                         val extras = notification.extras
-                        val title = extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)
-                            ?.toString() ?: ""
+                        val title =
+                            extras
+                                ?.getCharSequence(android.app.Notification.EXTRA_TITLE)
+                                ?.toString() ?: ""
                         val text =
                             extras?.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString()
                                 ?: ""
                         val bigText =
-                            extras?.getCharSequence(android.app.Notification.EXTRA_BIG_TEXT)
+                            extras
+                                ?.getCharSequence(android.app.Notification.EXTRA_BIG_TEXT)
                                 ?.toString() ?: ""
                         notificationText = "$title $text $bigText".trim()
                     }
@@ -127,10 +135,16 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                 // ═══════════════════════════════════════════════════════════
                 // CALL ENDED/MISSED/DECLINED DETECTION → Stop Analysis
                 // ═══════════════════════════════════════════════════════════
-                val callEndedIndicators = listOf(
-                    "call ended", "ended", "missed video call",
-                    "missed call", "declined", "no answer", "missed"
-                )
+                val callEndedIndicators =
+                    listOf(
+                        "call ended",
+                        "ended",
+                        "missed video call",
+                        "missed call",
+                        "declined",
+                        "no answer",
+                        "missed",
+                    )
                 if (callEndedIndicators.any { notificationText.contains(it, ignoreCase = true) }) {
                     Log.d("Aegis", "📴 CALL ENDED/MISSED: $notificationText")
                     if (isInVideoCall) {
@@ -146,17 +160,22 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                 // WhatsApp shows "Ongoing video call" notification when call is active.
                 // This is the RELIABLE signal that user answered the call.
                 // IMPORTANT: Show camera warning IMMEDIATELY to protect user!
-                val ongoingIndicators = listOf(
-                    "ongoing video call", "ongoing call", "video call in progress",
-                    "tap to return", "return to call"
-                )
+                val ongoingIndicators =
+                    listOf(
+                        "ongoing video call",
+                        "ongoing call",
+                        "video call in progress",
+                        "tap to return",
+                        "return to call",
+                    )
                 if (ongoingIndicators.any { notificationText.contains(it, ignoreCase = true) }) {
                     Log.d("Aegis", "📞 ONGOING VIDEO CALL DETECTED: $notificationText")
 
                     if (!isInVideoCall) {
-                        val caller = pendingVideoCallCaller.ifEmpty {
-                            extractCallerFromNotification(notificationText).ifEmpty { "Unknown Caller" }
-                        }
+                        val caller =
+                            pendingVideoCallCaller.ifEmpty {
+                                extractCallerFromNotification(notificationText).ifEmpty { "Unknown Caller" }
+                            }
 
                         // Show camera warning IMMEDIATELY - user's face may already be exposed!
                         Log.d("Aegis", "🛡️ Showing camera warning for: $caller")
@@ -186,7 +205,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                         // Call ended/missed - stop everything and clear state
                         Log.d(
                             "Aegis",
-                            "🛑 Call ended/missed notification: $notificationText. Clearing state."
+                            "🛑 Call ended/missed notification: $notificationText. Clearing state.",
                         )
                         stopSextortionAnalysis()
                         overlayManager.hideShield() // Hide any showing warning
@@ -200,18 +219,18 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                         pendingVideoCallCaller = extractCallerFromNotification(notificationText)
                         Log.d(
                             "Aegis",
-                            "🔔 INCOMING VIDEO CALL: $notificationText, caller=$pendingVideoCallCaller"
+                            "🔔 INCOMING VIDEO CALL: $notificationText, caller=$pendingVideoCallCaller",
                         )
 
                         // 🛡️ STALE FLAG CHECK
-                        // If the flag is TRUE, but it's been > 15 seconds since we showed it, 
+                        // If the flag is TRUE, but it's been > 15 seconds since we showed it,
                         // this is likely a NEW call (or a re-dial). Force reset.
                         if (hasShownCameraWarning) {
                             val timeSinceShown = System.currentTimeMillis() - cameraWarningShownTime
                             if (timeSinceShown > 15000) {
                                 Log.d(
                                     "Aegis",
-                                    "♻️ Stale camera warning flag detected (>15s). Resetting for new incoming call."
+                                    "♻️ Stale camera warning flag detected (>15s). Resetting for new incoming call.",
                                 )
                                 hasShownCameraWarning = false
                             }
@@ -233,7 +252,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                         } else {
                             Log.d(
                                 "Aegis",
-                                "✅ Saved contact: $pendingVideoCallCaller - skipping camera warning"
+                                "✅ Saved contact: $pendingVideoCallCaller - skipping camera warning",
                             )
                         }
                         return
@@ -243,7 +262,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         }
 
         // 1. GLOBAL CHECKS & BATTERY OPTIMIZATION 🔋
-        // 
+        //
         // SPECIAL CASE: PiP (Picture-in-Picture) Mode
         // When WhatsApp video call is minimized to a small floating window,
         // accessibility events come from the home screen/launcher, not WhatsApp.
@@ -263,12 +282,12 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                     stopSextortionAnalysis()
                     return
                 }
-                */
+                 */
                 // Still within call - continue PiP mode handling
                 // Still within timeout - continue PiP mode handling
                 Log.d(
                     "Aegis",
-                    "📞 PiP mode detected: continuing video call analysis despite package=$currentPackage"
+                    "📞 PiP mode detected: continuing video call analysis despite package=$currentPackage",
                 )
             } else {
                 return // Not in a call - ignore events from other apps
@@ -339,7 +358,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
             if (historyStats < 300) {
                 Log.d(
                     "Aegis",
-                    "User typed: '$userInput' (History len: $historyStats). Starting conversation -> SAFE."
+                    "User typed: '$userInput' (History len: $historyStats). Starting conversation -> SAFE.",
                 )
                 return
             }
@@ -352,7 +371,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         val contentHash = stableContent.hashCode()
 
         if (contentHash == lastProcessedHash) return // 🔋 CPU Saver: Static Screen
-        if (isScreenSnoozed(contentHash)) return    // User dismissed this specific text
+        if (isScreenSnoozed(contentHash)) return // User dismissed this specific text
 
         // Update state
         lastProcessedHash = contentHash
@@ -382,24 +401,25 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         val localRisk = SecurityTools.analyzeLocally(stableContent)
 
         // DECISION MATRIX
-        val shouldAnalyze = when (sensitivity) {
-            SensitivityLevel.LOW -> {
-                // Strict Battery Saver: Only analyze UNKNOWN contacts if they trigger key scam keywords
-                isUnknown && (localRisk == LocalRisk.HIGH_RISK || localRisk == LocalRisk.SUSPICIOUS)
-            }
+        val shouldAnalyze =
+            when (sensitivity) {
+                SensitivityLevel.LOW -> {
+                    // Strict Battery Saver: Only analyze UNKNOWN contacts if they trigger key scam keywords
+                    isUnknown && (localRisk == LocalRisk.HIGH_RISK || localRisk == LocalRisk.SUSPICIOUS)
+                }
 
-            SensitivityLevel.AGGRESSIVE -> {
-                // Paranoid: Analyze ALL Unknown contacts.
-                // PLUS: Analyze Saved Trusted Contacts if they say something VERY suspicious (Hacked Friend scenario)
-                isUnknown || (localRisk == LocalRisk.HIGH_RISK)
-            }
+                SensitivityLevel.AGGRESSIVE -> {
+                    // Paranoid: Analyze ALL Unknown contacts.
+                    // PLUS: Analyze Saved Trusted Contacts if they say something VERY suspicious (Hacked Friend scenario)
+                    isUnknown || (localRisk == LocalRisk.HIGH_RISK)
+                }
 
-            else -> { // BALANCED (Default)
-                // Analyze ALL Unknown contacts (standard behavior).
-                // Ignore Saved contacts unless explicitly suspicious (handled below for standard safety)
-                isUnknown
+                else -> { // BALANCED (Default)
+                    // Analyze ALL Unknown contacts (standard behavior).
+                    // Ignore Saved contacts unless explicitly suspicious (handled below for standard safety)
+                    isUnknown
+                }
             }
-        }
 
         if (shouldAnalyze) {
             // 🔋 GATEKEEPER: Don't waste money/battery analyzing "Hi" or "Ok" unless urgent
@@ -410,10 +430,9 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
 
             Log.d(
                 "Aegis",
-                "⚠️ Analysis Triggered [Sensitivity: $sensitivity, Risk: $localRisk]. Analyzing..."
+                "⚠️ Analysis Triggered [Sensitivity: $sensitivity, Risk: $localRisk]. Analyzing...",
             )
             runGeminiAnalysis(contactName, stableContent, contentHash, sensitivity)
-
         } else if (!isUnknown && localRisk != LocalRisk.SAFE) {
             // Special Case: A Saved Contact said something suspicious, but we didn't auto-trigger (Low/Balanced mode)
             // Log it, but maybe trust the user unless it's CRITICAL.
@@ -424,7 +443,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
             } else {
                 Log.d(
                     "Aegis",
-                    "Safe contact '$contactName' passed local checks (Trust Score increased)."
+                    "Safe contact '$contactName' passed local checks (Trust Score increased).",
                 )
                 TrustRepository.increaseTrustScore(contactName)
             }
@@ -439,9 +458,8 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         contactName: String,
         chatContent: String,
         contentHash: Int,
-        sensitivity: SensitivityLevel
+        sensitivity: SensitivityLevel,
     ) {
-
         // 1. Check if we are analyzing the SAME content (Exact Hash)
         if (analysisJob?.isActive == true && currentAnalysisHash == contentHash) {
             return
@@ -471,19 +489,23 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
             Log.d("Aegis", "Analysis manually stopped by user.")
         })
 
-        analysisJob = serviceScope.launch {
-            val verdict = geminiClient.analyze(chatContent, sensitivity)
-            if (!isActive) return@launch
+        analysisJob =
+            serviceScope.launch {
+                val verdict = geminiClient.analyze(chatContent, sensitivity)
+                if (!isActive) return@launch
 
-            if (verdict.riskLevel == RiskLevel.DANGER) {
-                showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
-            } else {
-                overlayManager.hideShield()
+                if (verdict.riskLevel == RiskLevel.DANGER) {
+                    showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
+                } else {
+                    overlayManager.hideShield()
+                }
             }
-        }
     }
 
-    private fun isSimilar(text1: String, text2: String): Boolean {
+    private fun isSimilar(
+        text1: String,
+        text2: String,
+    ): Boolean {
         // Optimization: identical strings
         if (text1 == text2) return true
 
@@ -520,7 +542,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         reason: String,
         contactName: String,
         contentHash: Int,
-        sources: List<Source> = emptyList()
+        sources: List<Source> = emptyList(),
     ) {
         overlayManager.showShield(
             reason = reason,
@@ -540,7 +562,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                 // 3. Hide UI
                 overlayManager.hideShield()
             },
-            sources = sources
+            sources = sources,
         )
     }
 
@@ -587,7 +609,10 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         return ""
     }
 
-    private fun traverseNode(node: AccessibilityNodeInfo?, sb: StringBuilder) {
+    private fun traverseNode(
+        node: AccessibilityNodeInfo?,
+        sb: StringBuilder,
+    ) {
         if (node == null) return
 
         // 🛑 EXCLUDE INPUT BOXES: We only analyze incoming messages, not what user is typing (Privacy + Optimization)
@@ -614,19 +639,22 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         stable = stable.replace(Regex("\\b\\d{1,2}\\s[A-Za-z]{3}\\b"), "") // 12 Oct
 
         // 3. Remove Delivery Status
-        stable = stable.replace(
-            Regex("\\b(Read|Delivered|Sent|Sending)\\b", RegexOption.IGNORE_CASE),
-            ""
-        )
+        stable =
+            stable.replace(
+                Regex("\\b(Read|Delivered|Sent|Sending)\\b", RegexOption.IGNORE_CASE),
+                "",
+            )
         stable = stable.replace(Regex("\\b(Sent via SMS|MMS)\\b", RegexOption.IGNORE_CASE), "")
 
         // 4. Remove Dynamic Contact Status (Top bar updates)
-        stable = stable.replace(
-            Regex(
-                "\\b(Online|Typing\\.\\.\\.|recording audio\\.\\.\\.|Last seen.*?)\\b",
-                RegexOption.IGNORE_CASE
-            ), ""
-        )
+        stable =
+            stable.replace(
+                Regex(
+                    "\\b(Online|Typing\\.\\.\\.|recording audio\\.\\.\\.|Last seen.*?)\\b",
+                    RegexOption.IGNORE_CASE,
+                ),
+                "",
+            )
 
         return stable
     }
@@ -644,7 +672,10 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         } ?: "Unknown"
     }
 
-    private fun collectPossibleTitles(node: AccessibilityNodeInfo?, list: MutableList<String>) {
+    private fun collectPossibleTitles(
+        node: AccessibilityNodeInfo?,
+        list: MutableList<String>,
+    ) {
         if (node == null || list.size > 3) return
         if (!node.text.isNullOrEmpty()) {
             val text = node.text.toString()
@@ -677,7 +708,6 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
     // The `isInVideoCall` flag tracks this state across accessibility events.
     // ---------------------------------------------------------
     private fun detectVideoCallScam(rootNode: AccessibilityNodeInfo): Boolean {
-
         // ═══════════════════════════════════════════════════════════════════
         // EXIT CONDITION #1: User returned to chat screen (call definitely ended)
         // ═══════════════════════════════════════════════════════════════════
@@ -708,13 +738,17 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         // ═══════════════════════════════════════════════════════════════════
         // STEP 2: Detect INCOMING video call (ringing, not yet answered)
         // ═══════════════════════════════════════════════════════════════════
-        val isIncomingVideoCall = screenText.any {
-            it.contains("Incoming video call", ignoreCase = true) ||
-                    (it.contains("WhatsApp video call", ignoreCase = true) && it.contains(
-                        "Decline",
-                        ignoreCase = true
-                    ))
-        }
+        val isIncomingVideoCall =
+            screenText.any {
+                it.contains("Incoming video call", ignoreCase = true) ||
+                    (
+                        it.contains("WhatsApp video call", ignoreCase = true) &&
+                            it.contains(
+                                "Decline",
+                                ignoreCase = true,
+                            )
+                    )
+            }
 
         // ═══════════════════════════════════════════════════════════════════
         // STEP 3: Detect ACTIVE video call (already connected OR connecting)
@@ -726,16 +760,17 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         // 4. "Leave call" button (definitive indicator)
         val hasCallTimer =
             screenText.any { it.matches(Regex("^\\d{1,2}:\\d{2}(:\\d{2})?$")) } // "0:06" or "1:23:45"
-        val hasCallControls = screenText.any {
-            it.contains("mute", ignoreCase = true) ||
+        val hasCallControls =
+            screenText.any {
+                it.contains("mute", ignoreCase = true) ||
                     it.contains("camera", ignoreCase = true) ||
                     it.contains("end call", ignoreCase = true) ||
                     it.contains("speaker", ignoreCase = true) ||
                     it.contains("switch camera", ignoreCase = true) ||
                     it.contains("video off", ignoreCase = true) ||
                     it.contains("microphone", ignoreCase = true) ||
-                    it.contains("Leave call", ignoreCase = true)  // Definitive indicator
-        }
+                    it.contains("Leave call", ignoreCase = true) // Definitive indicator
+            }
         val isConnecting = screenText.any { it.equals("Connecting", ignoreCase = true) }
         val isEncryptedVideoCall =
             screenText.any { it.contains("encrypted video call", ignoreCase = true) }
@@ -743,20 +778,23 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
 
         // Negative indicator: Screen has "Accept" or "Decline" buttons (Incoming call screen)
         // Even if it says "encrypted video call", if these buttons are here, it's NOT active yet.
-        val hasIncomingCallButtons = screenText.any {
-            it.contains("Accept call", ignoreCase = true) ||
+        val hasIncomingCallButtons =
+            screenText.any {
+                it.contains("Accept call", ignoreCase = true) ||
                     it.contains("Decline call", ignoreCase = true) ||
                     it.contains("slide to answer", ignoreCase = true)
-        }
+            }
 
         // Negative Indicator: Chat Screen (has text input)
-        val hasMessageInput = screenText.any {
-            it.contains("Type a message", ignoreCase = true) ||
+        val hasMessageInput =
+            screenText.any {
+                it.contains("Type a message", ignoreCase = true) ||
                     it.equals("Message", ignoreCase = true)
-        }
+            }
 
         // Negative Indicator: Main List (has tabs)
-        val hasMainTabs = screenText.any { it.equals("Chats", ignoreCase = true) } &&
+        val hasMainTabs =
+            screenText.any { it.equals("Chats", ignoreCase = true) } &&
                 screenText.any { it.equals("Calls", ignoreCase = true) }
 
         // EXIT CONDITION #2: Main App List (Chats/Calls tabs)
@@ -770,19 +808,22 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         }
 
         // Active call if ANY of these combinations AND distinct lack of incoming call buttons:
-        val isActiveVideoCall = ((hasCallTimer && hasCallControls) ||  // Established call
-                (isConnecting && hasCallControls) ||   // Connecting phase
-                isEncryptedVideoCall ||                // WhatsApp video call text
-                hasLeaveCall) &&                       // Definitive "Leave call" button
-                !hasIncomingCallButtons &&             // EXCLUDE incoming call screens
-                !hasMessageInput &&                    // EXCLUDE chat thread
-                !hasMainTabs                           // EXCLUDE chat list
+        val isActiveVideoCall =
+            (
+                (hasCallTimer && hasCallControls) || // Established call
+                    (isConnecting && hasCallControls) || // Connecting phase
+                    isEncryptedVideoCall || // WhatsApp video call text
+                    hasLeaveCall
+            ) && // Definitive "Leave call" button
+                !hasIncomingCallButtons && // EXCLUDE incoming call screens
+                !hasMessageInput && // EXCLUDE chat thread
+                !hasMainTabs // EXCLUDE chat list
 
         Log.d(
             "Aegis",
             "📞 Video call check: isActive=$isActiveVideoCall, hasIncomingBtns=$hasIncomingCallButtons, hasTimer=$hasCallTimer, hasControls=$hasCallControls, isEncrypted=$isEncryptedVideoCall, screenText=${
                 screenText.take(10)
-            }"
+            }",
         )
 
         // ═══════════════════════════════════════════════════════════════════
@@ -804,16 +845,17 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
             return false
         }
 
-        val callerId = screenText.firstOrNull { text ->
-            val cleanText = text.trim()
-            !cleanText.equals("incoming video call", ignoreCase = true) &&
+        val callerId =
+            screenText.firstOrNull { text ->
+                val cleanText = text.trim()
+                !cleanText.equals("incoming video call", ignoreCase = true) &&
                     !cleanText.equals("whatsapp video call", ignoreCase = true) &&
                     !cleanText.equals("decline", ignoreCase = true) &&
                     !cleanText.equals("answer", ignoreCase = true) &&
                     !cleanText.contains("mute", ignoreCase = true) &&
                     !cleanText.contains("camera", ignoreCase = true) &&
                     cleanText.length > 2
-        } ?: "Unknown"
+            } ?: "Unknown"
 
         // 3. Is it an Unknown Number? (High Risk) - Apply Zero-Trust for BOTH threats
         if (isPotentialRisk(callerId)) {
@@ -853,25 +895,30 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
         val screenText = mutableListOf<String>()
         collectAllText(rootNode, screenText)
 
-        val isIncomingAudioCall = screenText.any {
-            it.contains("Incoming voice call", ignoreCase = true) ||
-                    (it.contains("WhatsApp voice call", ignoreCase = true) && it.contains(
-                        "Decline",
-                        ignoreCase = true
-                    ))
-        }
+        val isIncomingAudioCall =
+            screenText.any {
+                it.contains("Incoming voice call", ignoreCase = true) ||
+                    (
+                        it.contains("WhatsApp voice call", ignoreCase = true) &&
+                            it.contains(
+                                "Decline",
+                                ignoreCase = true,
+                            )
+                    )
+            }
 
         if (!isIncomingAudioCall) return false
 
-        val callerId = screenText.firstOrNull { text ->
-            val cleanText = text.trim()
-            !cleanText.equals("incoming voice call", ignoreCase = true) &&
+        val callerId =
+            screenText.firstOrNull { text ->
+                val cleanText = text.trim()
+                !cleanText.equals("incoming voice call", ignoreCase = true) &&
                     !cleanText.equals("whatsapp voice call", ignoreCase = true) &&
                     !cleanText.equals("decline", ignoreCase = true) &&
                     !cleanText.equals("answer", ignoreCase = true) &&
                     !cleanText.equals("swipe up to accept", ignoreCase = true) &&
                     cleanText.length > 2
-        } ?: "Unknown"
+            } ?: "Unknown"
 
         if (isPotentialRisk(callerId)) {
             Log.d("Aegis", "📞 Unknown Audio Call Detected: $callerId")
@@ -881,7 +928,7 @@ class AegisAccessibilityService : AccessibilityService(), KoinComponent {
                 overlayManager.showWarning(
                     text = """⚠️ Unknown Caller: $callerId
 DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
-                    onDismiss = {}
+                    onDismiss = {},
                 )
             }
             return true
@@ -897,6 +944,7 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
      * Determines if a string is likely a raw phone number (Unknown)
      * or a saved contact name (Trusted).
      */
+
     /**
      * Determines if a contact is POTENTIALLY RISKY.
      * Returns TRUE if:
@@ -905,13 +953,30 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
      */
     private fun isPotentialRisk(contactName: String): Boolean {
         // 1. Check for "Official" Keywords (Scammers use these in saved names)
-        val suspiciousKeywords = listOf(
-            "Bank", "Support", "Service", "Customer", "Care", // Banking
-            "Police", "CBI", "Officer", "Inspector", "Cyber", "Crime", // Digital Arrest
-            "FedEx", "DHL", "Customs", // Courier Scams
-            "Lottery", "Winner", "Prize", // Lottery Scams
-            "Investment", "Crypto", "Stock", "Trading" // Investment Scams
-        )
+        val suspiciousKeywords =
+            listOf(
+                "Bank",
+                "Support",
+                "Service",
+                "Customer",
+                "Care", // Banking
+                "Police",
+                "CBI",
+                "Officer",
+                "Inspector",
+                "Cyber",
+                "Crime", // Digital Arrest
+                "FedEx",
+                "DHL",
+                "Customs", // Courier Scams
+                "Lottery",
+                "Winner",
+                "Prize", // Lottery Scams
+                "Investment",
+                "Crypto",
+                "Stock",
+                "Trading", // Investment Scams
+            )
 
         if (suspiciousKeywords.any { contactName.contains(it, ignoreCase = true) }) {
             Log.d("Aegis", "🚨 DETECTED SUSPICIOUS NAME: '$contactName'. Treating as High Risk.")
@@ -925,9 +990,10 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         val clean = contactName.trim()
 
         // Explicit Indicators
-        if (clean.contains("Unknown", true) || clean.contains(
+        if (clean.contains("Unknown", true) ||
+            clean.contains(
                 "Private",
-                true
+                true,
             ) || clean.contains("Spam", true)
         ) {
             return true
@@ -959,7 +1025,7 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         // Try pattern: "[Name] WhatsApp video call"
         val beforeMatch =
             Regex("(.+?)\\s+(?:WhatsApp\\s+)?video\\s+call", RegexOption.IGNORE_CASE).find(
-                notificationText
+                notificationText,
             )
         if (beforeMatch != null) {
             val name = beforeMatch.groupValues[1].trim()
@@ -971,7 +1037,10 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         return "Unknown Caller"
     }
 
-    private fun collectAllText(node: AccessibilityNodeInfo?, list: MutableList<String>) {
+    private fun collectAllText(
+        node: AccessibilityNodeInfo?,
+        list: MutableList<String>,
+    ) {
         if (node == null) return
         if (!node.isVisibleToUser) return // Skip hidden elements (like buttons behind the call screen)
 
@@ -1009,15 +1078,17 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
      */
     private fun attemptCameraOff(rootNode: AccessibilityNodeInfo): Boolean {
         // Try WhatsApp camera toggle button (multiple possible IDs)
-        val cameraButtonIds = listOf(
-            "com.whatsapp:id/btn_camera_off",
-            "com.whatsapp:id/camera_btn",
-            "com.whatsapp:id/call_camera"
-        )
+        val cameraButtonIds =
+            listOf(
+                "com.whatsapp:id/btn_camera_off",
+                "com.whatsapp:id/camera_btn",
+                "com.whatsapp:id/call_camera",
+            )
 
         for (buttonId in cameraButtonIds) {
             val cameraBtn = rootNode.findAccessibilityNodeInfosByViewId(buttonId)
-            if (cameraBtn?.firstOrNull()
+            if (cameraBtn
+                    ?.firstOrNull()
                     ?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
             ) {
                 Log.d("Aegis", "✅ Camera disabled via $buttonId")
@@ -1040,7 +1111,7 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         if (sextortionAnalysisJob?.isActive == true) return
 
         isInVideoCall = true
-        lastCallActivityTime = System.currentTimeMillis()  // Initialize timeout tracking
+        lastCallActivityTime = System.currentTimeMillis() // Initialize timeout tracking
 
         // 🛡️ CAMERA WARNING - Show only if not already shown AND unknown caller
         if (!hasShownCameraWarning && isPotentialRisk(callerId)) {
@@ -1055,136 +1126,147 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                 "Aegis",
                 "ℹ️ Camera warning skipped (shown=$hasShownCameraWarning, unknown=${
                     isPotentialRisk(
-                        callerId
+                        callerId,
                     )
-                })"
+                })",
             )
         }
 
         Log.d("Aegis", "🛡️ Starting Video Call Protection (Sextortion + Digital Arrest)")
 
-        sextortionAnalysisJob = serviceScope.launch {
-            var consecutiveSafeFrames = 0  // Counter for early termination
-            // Stop after 3 consecutive safe frames (approx 3 seconds of non-suspicious content)
-            // This prevents the analysis from stopping just because of a brief moment of safety.
-            val safeFramesThreshold = 3
+        sextortionAnalysisJob =
+            serviceScope.launch {
+                var consecutiveSafeFrames = 0 // Counter for early termination
+                // Stop after 3 consecutive safe frames (approx 3 seconds of non-suspicious content)
+                // This prevents the analysis from stopping just because of a brief moment of safety.
+                val safeFramesThreshold = 3
 
-            while (isActive && isInVideoCall) {
-                try {
-                    // ═══════════════════════════════════════════════════════════
-                    // CHECK FOR ACTIVE OVERLAY (Camera Warning / Shield)
-                    // ═══════════════════════════════════════════════════════════
-                    // If our own warning/shield is showing, don't analyze it!
-                    if (overlayManager.isShowing) {
-                        Log.d("Aegis", "🛡️ Overlay visible, skipping analysis frame...")
-                        delay(1000)
-                        continue
-                    }
-
-                    // ═══════════════════════════════════════════════════════════
-                    // SKIP ANALYSIS IF LOCK SCREEN DETECTED
-                    // ═══════════════════════════════════════════════════════════
-                    // When user is on lock screen entering PIN/password/fingerprint,
-                    // don't waste API calls or count safe frames. Wait for unlock.
-                    val rootNode = rootInActiveWindow
-                    if (rootNode != null) {
-                        val textList = mutableListOf<String>()
-                        collectAllText(rootNode, textList)
-                        val screenText = textList.joinToString(" ").lowercase()
-                        val lockScreenIndicators = listOf(
-                            "enter pin", "enter your pin", "enter password", "enter your password",
-                            "fingerprint", "face unlock", "unlock", "swipe to unlock",
-                            "pattern", "draw pattern", "enter passcode"
-                        )
-                        if (lockScreenIndicators.any { screenText.contains(it) }) {
-                            Log.d("Aegis", "🔒 Lock screen detected, skipping analysis frame...")
-                            // Update activity time - lock screen counts as "still in call"
-                            // This prevents the timeout from triggering during PIN entry
-                            lastCallActivityTime = System.currentTimeMillis()
-                            delay(1000)  // Wait a bit before checking again
-                            continue  // Don't count, don't analyze
-                        }
-                    }
-
-                    val bitmap = screenshotHelper.captureScreen()
-                    if (bitmap != null) {
-                        val base64 = encodeBitmapToBase64(bitmap)
-
-                        val sensitivity = settingsRepository.getSensitivity()
-
-                        // 1. Check for NUDITY (Sextortion)
-                        val nudityVerdict = geminiClient.analyzeForNudity(base64, sensitivity)
-                        Log.d(
-                            "Aegis",
-                            "📸 Nudity check: ${nudityVerdict.nudity}, fake=${nudityVerdict.fakeFeed}, confidence=${nudityVerdict.confidence}"
-                        )
-
-                        if (nudityVerdict.nudity) {
-                            Log.d("Aegis", "🚨 NUDITY DETECTED! Ending call immediately.")
-                            autoEndCall("Sextortion attempt - Explicit content detected")
-                            break
+                while (isActive && isInVideoCall) {
+                    try {
+                        // ═══════════════════════════════════════════════════════════
+                        // CHECK FOR ACTIVE OVERLAY (Camera Warning / Shield)
+                        // ═══════════════════════════════════════════════════════════
+                        // If our own warning/shield is showing, don't analyze it!
+                        if (overlayManager.isShowing) {
+                            Log.d("Aegis", "🛡️ Overlay visible, skipping analysis frame...")
+                            delay(1000)
+                            continue
                         }
 
-                        // 2. Check for POLICE IMPERSONATION (Digital Arrest) 
-                        // Uses existing analyzeImage which looks for "Police Uniforms"
-                        val scamVerdict = geminiClient.analyzeImage(base64, sensitivity)
-                        Log.d(
-                            "Aegis",
-                            "👮 Police check: ${scamVerdict.riskLevel}, reason=${scamVerdict.reason}"
-                        )
+                        // ═══════════════════════════════════════════════════════════
+                        // SKIP ANALYSIS IF LOCK SCREEN DETECTED
+                        // ═══════════════════════════════════════════════════════════
+                        // When user is on lock screen entering PIN/password/fingerprint,
+                        // don't waste API calls or count safe frames. Wait for unlock.
+                        val rootNode = rootInActiveWindow
+                        if (rootNode != null) {
+                            val textList = mutableListOf<String>()
+                            collectAllText(rootNode, textList)
+                            val screenText = textList.joinToString(" ").lowercase()
+                            val lockScreenIndicators =
+                                listOf(
+                                    "enter pin",
+                                    "enter your pin",
+                                    "enter password",
+                                    "enter your password",
+                                    "fingerprint",
+                                    "face unlock",
+                                    "unlock",
+                                    "swipe to unlock",
+                                    "pattern",
+                                    "draw pattern",
+                                    "enter passcode",
+                                )
+                            if (lockScreenIndicators.any { screenText.contains(it) }) {
+                                Log.d("Aegis", "🔒 Lock screen detected, skipping analysis frame...")
+                                // Update activity time - lock screen counts as "still in call"
+                                // This prevents the timeout from triggering during PIN entry
+                                lastCallActivityTime = System.currentTimeMillis()
+                                delay(1000) // Wait a bit before checking again
+                                continue // Don't count, don't analyze
+                            }
+                        }
 
-                        if (scamVerdict.riskLevel == RiskLevel.DANGER) {
-                            Log.d("Aegis", "🚨 DIGITAL ARREST DETECTED! ${scamVerdict.reason}")
-                            consecutiveSafeFrames = 0  // Reset counter on threat detection
-                            overlayManager.showShield(
-                                reason = "🚨 DIGITAL ARREST SCAM\n${scamVerdict.reason}",
-                                contactName = callerId,
-                                sources = scamVerdict.sources,
-                                onDismiss = { overlayManager.hideShield() },
-                                onUnlock = { overlayManager.hideShield() }
-                            )
-                            // Don't auto-end for digital arrest, let user decide
-                        } else if (scamVerdict.riskLevel == RiskLevel.SAFE && !nudityVerdict.fakeFeed) {
-                            // ═══════════════════════════════════════════════════════════════
-                            // SMART EARLY TERMINATION
-                            // ═══════════════════════════════════════════════════════════════
-                            // If we get consecutive SAFE verdicts (no nudity, no scam, no fake feed),
-                            // the user likely ended the call or is on a non-video screen.
-                            // Lock screen frames are skipped above, so 3 safe frames = call ended.
-                            consecutiveSafeFrames++
+                        val bitmap = screenshotHelper.captureScreen()
+                        if (bitmap != null) {
+                            val base64 = encodeBitmapToBase64(bitmap)
+
+                            val sensitivity = settingsRepository.getSensitivity()
+
+                            // 1. Check for NUDITY (Sextortion)
+                            val nudityVerdict = geminiClient.analyzeForNudity(base64, sensitivity)
                             Log.d(
                                 "Aegis",
-                                "✅ Safe frame detected ($consecutiveSafeFrames/$safeFramesThreshold)"
+                                "📸 Nudity check: ${nudityVerdict.nudity}, fake=${nudityVerdict.fakeFeed}, confidence=${nudityVerdict.confidence}",
                             )
 
-                            if (consecutiveSafeFrames >= safeFramesThreshold) {
-                                Log.d(
-                                    "Aegis",
-                                    "🛑 $safeFramesThreshold consecutive safe frames. Assuming call ended, stopping analysis."
-                                )
-                                stopSextortionAnalysis()
+                            if (nudityVerdict.nudity) {
+                                Log.d("Aegis", "🚨 NUDITY DETECTED! Ending call immediately.")
+                                autoEndCall("Sextortion attempt - Explicit content detected")
                                 break
                             }
-                        } else {
-                            consecutiveSafeFrames = 0  // Reset on any non-safe verdict
-                        }
 
-                        // 3. Warn about fake/recorded video
-                        if (nudityVerdict.fakeFeed) {
-                            Log.d("Aegis", "⚠️ Possible fake/recorded video feed detected")
-                            consecutiveSafeFrames = 0  // Reset counter - still suspicious
-                            overlayManager.showWarning(
-                                "⚠️ Video may be pre-recorded",
-                                onDismiss = {})
+                            // 2. Check for POLICE IMPERSONATION (Digital Arrest)
+                            // Uses existing analyzeImage which looks for "Police Uniforms"
+                            val scamVerdict = geminiClient.analyzeImage(base64, sensitivity)
+                            Log.d(
+                                "Aegis",
+                                "👮 Police check: ${scamVerdict.riskLevel}, reason=${scamVerdict.reason}",
+                            )
+
+                            if (scamVerdict.riskLevel == RiskLevel.DANGER) {
+                                Log.d("Aegis", "🚨 DIGITAL ARREST DETECTED! ${scamVerdict.reason}")
+                                consecutiveSafeFrames = 0 // Reset counter on threat detection
+                                overlayManager.showShield(
+                                    reason = "🚨 DIGITAL ARREST SCAM\n${scamVerdict.reason}",
+                                    contactName = callerId,
+                                    sources = scamVerdict.sources,
+                                    onDismiss = { overlayManager.hideShield() },
+                                    onUnlock = { overlayManager.hideShield() },
+                                )
+                                // Don't auto-end for digital arrest, let user decide
+                            } else if (scamVerdict.riskLevel == RiskLevel.SAFE && !nudityVerdict.fakeFeed) {
+                                // ═══════════════════════════════════════════════════════════════
+                                // SMART EARLY TERMINATION
+                                // ═══════════════════════════════════════════════════════════════
+                                // If we get consecutive SAFE verdicts (no nudity, no scam, no fake feed),
+                                // the user likely ended the call or is on a non-video screen.
+                                // Lock screen frames are skipped above, so 3 safe frames = call ended.
+                                consecutiveSafeFrames++
+                                Log.d(
+                                    "Aegis",
+                                    "✅ Safe frame detected ($consecutiveSafeFrames/$safeFramesThreshold)",
+                                )
+
+                                if (consecutiveSafeFrames >= safeFramesThreshold) {
+                                    Log.d(
+                                        "Aegis",
+                                        "🛑 $safeFramesThreshold consecutive safe frames. Assuming call ended, stopping analysis.",
+                                    )
+                                    stopSextortionAnalysis()
+                                    break
+                                }
+                            } else {
+                                consecutiveSafeFrames = 0 // Reset on any non-safe verdict
+                            }
+
+                            // 3. Warn about fake/recorded video
+                            if (nudityVerdict.fakeFeed) {
+                                Log.d("Aegis", "⚠️ Possible fake/recorded video feed detected")
+                                consecutiveSafeFrames = 0 // Reset counter - still suspicious
+                                overlayManager.showWarning(
+                                    "⚠️ Video may be pre-recorded",
+                                    onDismiss = {},
+                                )
+                            }
                         }
+                    } catch (e: Exception) {
+                        Log.e("Aegis", "Frame analysis error: ${e.message}")
                     }
-                } catch (e: Exception) {
-                    Log.e("Aegis", "Frame analysis error: ${e.message}")
-                }
 
-                delay(1000) // 1 FPS
+                    delay(1000) // 1 FPS
+                }
             }
-        }
     }
 
     /**
@@ -1245,7 +1327,7 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
             reason = "🚨 SEXTORTION ATTEMPT BLOCKED\n$reason",
             contactName = "Unknown Caller",
             onDismiss = { overlayManager.hideShield() },
-            onUnlock = { overlayManager.hideShield() }
+            onUnlock = { overlayManager.hideShield() },
         )
     }
 
@@ -1261,19 +1343,25 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
             val path = Path()
             path.moveTo(centerX, centerY)
 
-            val gesture = GestureDescription.Builder()
-                .addStroke(GestureDescription.StrokeDescription(path, 0, 100))
-                .build()
+            val gesture =
+                GestureDescription
+                    .Builder()
+                    .addStroke(GestureDescription.StrokeDescription(path, 0, 100))
+                    .build()
 
-            dispatchGesture(gesture, object : GestureResultCallback() {
-                override fun onCompleted(gestureDescription: GestureDescription?) {
-                    Log.d("Aegis", "👆 Tap dispatched to reveal controls")
-                }
+            dispatchGesture(
+                gesture,
+                object : GestureResultCallback() {
+                    override fun onCompleted(gestureDescription: GestureDescription?) {
+                        Log.d("Aegis", "👆 Tap dispatched to reveal controls")
+                    }
 
-                override fun onCancelled(gestureDescription: GestureDescription?) {
-                    Log.d("Aegis", "❌ Tap gesture cancelled")
-                }
-            }, null)
+                    override fun onCancelled(gestureDescription: GestureDescription?) {
+                        Log.d("Aegis", "❌ Tap gesture cancelled")
+                    }
+                },
+                null,
+            )
         } catch (e: Exception) {
             Log.e("Aegis", "Failed to dispatch tap: ${e.message}")
         }
@@ -1292,11 +1380,12 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
             // Criteria for "End Call" button
             val isEndButton =
                 text.contains("end call") || text.contains("hang up") || text.contains("decline") ||
-                        desc.contains("end call") || desc.contains("hang up") || desc.contains("decline") ||
-                        desc.contains("end") || // Simple "End" often works
-                        viewId.contains("end_call") || viewId.contains("hangup") || viewId.contains(
-                    "reject"
-                )
+                    desc.contains("end call") || desc.contains("hang up") || desc.contains("decline") ||
+                    desc.contains("end") || // Simple "End" often works
+                    viewId.contains("end_call") || viewId.contains("hangup") ||
+                    viewId.contains(
+                        "reject",
+                    )
 
             if (isEndButton) {
                 val clicked = node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
@@ -1321,33 +1410,39 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
     // 🎣 PHISHING SCAM IMPLEMENTATION
     // ---------------------------------------------------------
     private fun extractUrls(text: String): List<String> {
-        val urlRegex = Regex(
-            "(https?://[\\w\\-\\.]+\\.[a-z]{2,}(/[\\w\\- ./?%&=]*)?)",
-            RegexOption.IGNORE_CASE
-        )
+        val urlRegex =
+            Regex(
+                "(https?://[\\w\\-\\.]+\\.[a-z]{2,}(/[\\w\\- ./?%&=]*)?)",
+                RegexOption.IGNORE_CASE,
+            )
         return urlRegex.findAll(text).map { it.value }.toList()
     }
 
     private fun isWhitelisted(url: String): Boolean {
         return try {
-            val host = android.net.Uri.parse(url).host ?: return false
-            val safeDomains = listOf(
-                "google.com",
-                "youtube.com",
-                "facebook.com",
-                "instagram.com",
-                "whatsapp.com",
-                "wikipedia.org",
-                "amazon.in",
-                "flipkart.com",
-                "apple.com",
-                "microsoft.com"
-            )
-            safeDomains.any {
-                host.equals(it, ignoreCase = true) || host.endsWith(
-                    ".$it",
-                    ignoreCase = true
+            val host =
+                android.net.Uri
+                    .parse(url)
+                    .host ?: return false
+            val safeDomains =
+                listOf(
+                    "google.com",
+                    "youtube.com",
+                    "facebook.com",
+                    "instagram.com",
+                    "whatsapp.com",
+                    "wikipedia.org",
+                    "amazon.in",
+                    "flipkart.com",
+                    "apple.com",
+                    "microsoft.com",
                 )
+            safeDomains.any {
+                host.equals(it, ignoreCase = true) ||
+                    host.endsWith(
+                        ".$it",
+                        ignoreCase = true,
+                    )
             }
         } catch (e: Exception) {
             false
@@ -1362,39 +1457,45 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         // ⚡️ IMMEDIATE FEEDBACK: Warn the user effectively "Wait, I'm checking"
         overlayManager.showWarning(
             "🔍 Wait, I'm checking this link for scams/phishing...",
-            onDismiss = {})
+            onDismiss = {},
+        )
 
-        analysisJob = serviceScope.launch {
-            val sensitivity = settingsRepository.getSensitivity()
-            val verdict = geminiClient.analyzeUrl(url, sensitivity)
-            if (!isActive) return@launch
+        analysisJob =
+            serviceScope.launch {
+                val sensitivity = settingsRepository.getSensitivity()
+                val verdict = geminiClient.analyzeUrl(url, sensitivity)
+                if (!isActive) return@launch
 
-            withContext(Dispatchers.Main) {
-                if (verdict.riskLevel == app.aegis.models.RiskLevel.DANGER) {
-                    overlayManager.showPhishingWarning(
-                        reason = verdict.reason,
-                        url = url,
-                        onReport = { launchReportIntent(verdict) },
-                        onDismiss = { overlayManager.hideShield() },
-                        onTrust = { /* Add to whitelist session */ overlayManager.hideShield() }
-                    )
-                } else {
-                    // ✅ Safe: Remove the yellow warning
-                    overlayManager.hideShield()
+                withContext(Dispatchers.Main) {
+                    if (verdict.riskLevel == app.aegis.models.RiskLevel.DANGER) {
+                        overlayManager.showPhishingWarning(
+                            reason = verdict.reason,
+                            url = url,
+                            onReport = { launchReportIntent(verdict) },
+                            onDismiss = { overlayManager.hideShield() },
+                            onTrust = {
+                                // Add to whitelist session
+                                overlayManager.hideShield()
+                            },
+                        )
+                    } else {
+                        // ✅ Safe: Remove the yellow warning
+                        overlayManager.hideShield()
+                    }
                 }
             }
-        }
     }
 
     private fun launchReportIntent(verdict: app.aegis.models.PhishingVerdict) {
         try {
-            val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
-                data = android.net.Uri.parse("mailto:") // only email apps should handle this
-                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(verdict.recipient))
-                putExtra(android.content.Intent.EXTRA_SUBJECT, verdict.subject)
-                putExtra(android.content.Intent.EXTRA_TEXT, verdict.body)
-                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+            val intent =
+                android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                    data = android.net.Uri.parse("mailto:") // only email apps should handle this
+                    putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(verdict.recipient))
+                    putExtra(android.content.Intent.EXTRA_SUBJECT, verdict.subject)
+                    putExtra(android.content.Intent.EXTRA_TEXT, verdict.body)
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
             startActivity(intent)
             Log.d("Aegis", "🚀 Report Intent Launched to ${verdict.recipient}")
         } catch (e: Exception) {
@@ -1406,5 +1507,4 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         stopSextortionAnalysis()
         serviceScope.cancel()
     }
-
 }

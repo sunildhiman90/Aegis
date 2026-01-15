@@ -29,10 +29,10 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -46,17 +46,16 @@ kotlin {
             linkerOpts.add("-lsqlite3")
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.ktor.client.android)
-            
+
             // Koin Android
             implementation(libs.koin.android)
-
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -75,20 +74,20 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kermit)
-            
+
             // Navigation
             implementation(libs.navigation.compose)
 
             // Settings
             implementation(libs.multiplatform.settings)
-            
+
             // DateTime
             api(libs.kotlinx.datetime)
 
             // Room
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
-            
+
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -106,12 +105,21 @@ kotlin {
 
 android {
     namespace = "app.aegis"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "app.aegis"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -140,7 +148,6 @@ dependencies {
     add("kspIosSimulatorArm64", libs.room.compiler)
 }
 
-
 buildkonfig {
     packageName = "app.aegis"
     objectName = "AegisConfig"
@@ -150,7 +157,7 @@ buildkonfig {
         buildConfigField(
             com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
             "GEMINI_API_KEY",
-            System.getenv("GEMINI_API_KEY") ?: localProperties.getProperty("GEMINI_API_KEY")
+            System.getenv("GEMINI_API_KEY") ?: localProperties.getProperty("GEMINI_API_KEY"),
         )
     }
 }

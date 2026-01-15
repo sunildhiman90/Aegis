@@ -41,11 +41,11 @@ fun ProfileScreen(
     onSubscriptionClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onSupportClick: () -> Unit = {},
-    viewModel: ProfileViewModel = koinViewModel()
+    viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val colors = AegisTheme.colors
     val scrollState = rememberScrollState()
-    
+
     val privacyStats by viewModel.privacyStats.collectAsState()
     val deviceId = viewModel.deviceId
 
@@ -58,41 +58,45 @@ fun ProfileScreen(
                         Text(
                             text = stringResource(Res.string.profile_title),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary
+                            color = colors.textPrimary,
                         )
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = colors.background
-                    )
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = colors.background,
+                        ),
                 )
                 HorizontalDivider(color = colors.divider, thickness = 1.dp)
             }
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(scrollState)
+                    .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Protection Status
             Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        if (isProtected)
-                            Brush.linearGradient(listOf(colors.success, colors.success.copy(alpha = 0.7f)))
-                        else
-                            Brush.linearGradient(listOf(colors.warning, colors.warning.copy(alpha = 0.7f)))
-                    ),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            if (isProtected) {
+                                Brush.linearGradient(listOf(colors.success, colors.success.copy(alpha = 0.7f)))
+                            } else {
+                                Brush.linearGradient(listOf(colors.warning, colors.warning.copy(alpha = 0.7f)))
+                            },
+                        ),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "🛡️",
-                    style = AegisTypography.displayMedium
+                    style = AegisTypography.displayMedium,
                 )
             }
 
@@ -101,38 +105,47 @@ fun ProfileScreen(
             Text(
                 text = if (isProtected) stringResource(Res.string.profile_protected) else stringResource(Res.string.profile_at_risk),
                 style = AegisTypography.headlineMedium,
-                color = if (isProtected) colors.success else colors.warning
+                color = if (isProtected) colors.success else colors.warning,
             )
 
             Text(
-                text = if (isProtected) stringResource(Res.string.profile_system_active) else stringResource(Res.string.profile_system_inactive),
+                text =
+                    if (isProtected) {
+                        stringResource(
+                            Res.string.profile_system_active,
+                        )
+                    } else {
+                        stringResource(Res.string.profile_system_inactive)
+                    },
                 style = AegisTypography.bodyMedium,
                 color = colors.textSecondary,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // Device ID Card
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colors.surface)
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(colors.surface)
+                        .padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(colors.primary)
+                        modifier =
+                            Modifier
+                                .size(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(colors.primary),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(Res.string.profile_device_id),
                         style = AegisTypography.overline,
-                        color = colors.textSecondary
+                        color = colors.textSecondary,
                     )
                 }
 
@@ -141,7 +154,7 @@ fun ProfileScreen(
                 Text(
                     text = deviceId,
                     style = AegisTypography.headlineSmall,
-                    color = colors.textPrimary
+                    color = colors.textPrimary,
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -150,10 +163,11 @@ fun ProfileScreen(
                     onClick = onCopyId,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.primary,
-                        contentColor = Color.White
-                    )
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = colors.primary,
+                            contentColor = Color.White,
+                        ),
                 ) {
                     Text(stringResource(Res.string.profile_copy_id), style = AegisTypography.button)
                 }
@@ -165,7 +179,7 @@ fun ProfileScreen(
                     style = AegisTypography.caption,
                     color = colors.textTertiary,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
@@ -173,44 +187,51 @@ fun ProfileScreen(
 
             // Privacy Report Card
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                colors.primary.copy(alpha = 0.3f),
-                                colors.trustBadge.copy(alpha = 0.2f)
-                            )
-                        )
-                    )
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors =
+                                    listOf(
+                                        colors.primary.copy(alpha = 0.3f),
+                                        colors.trustBadge.copy(alpha = 0.2f),
+                                    ),
+                            ),
+                        ).padding(16.dp),
             ) {
                 Text(
                     text = stringResource(Res.string.profile_privacy_report),
                     style = AegisTypography.titleLarge,
-                    color = colors.textPrimary
+                    color = colors.textPrimary,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(colors.background.copy(alpha = 0.5f))
-                        .padding(16.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(colors.background.copy(alpha = 0.5f))
+                            .padding(16.dp),
                 ) {
                     Text(
                         text = stringResource(Res.string.profile_local_processing),
                         style = AegisTypography.titleMedium,
-                        color = colors.textPrimary
+                        color = colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(Res.string.profile_threats_blocked, privacyStats.totalThreatsBlocked, privacyStats.dataProcessedMb),
+                        text =
+                            stringResource(
+                                Res.string.profile_threats_blocked,
+                                privacyStats.totalThreatsBlocked,
+                                privacyStats.dataProcessedMb,
+                            ),
                         style = AegisTypography.bodySmall,
-                        color = colors.textSecondary
+                        color = colors.textSecondary,
                     )
                 }
 
@@ -220,7 +241,7 @@ fun ProfileScreen(
                     text = stringResource(Res.string.profile_view_report),
                     style = AegisTypography.labelMedium,
                     color = colors.primary,
-                    modifier = Modifier.clickable { onViewReport() }
+                    modifier = Modifier.clickable { onViewReport() },
                 )
             }
 
@@ -231,7 +252,7 @@ fun ProfileScreen(
                 text = stringResource(Res.string.profile_general),
                 style = AegisTypography.titleLarge,
                 color = colors.textPrimary,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -242,7 +263,7 @@ fun ProfileScreen(
                 subtitle = subscriptionType,
                 actionText = stringResource(Res.string.profile_upgrade),
                 actionColor = colors.primary,
-                onClick = onSubscriptionClick
+                onClick = onSubscriptionClick,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -250,7 +271,7 @@ fun ProfileScreen(
             ProfileMenuItem(
                 icon = Icons.Default.Settings,
                 title = stringResource(Res.string.profile_settings),
-                onClick = onSettingsClick
+                onClick = onSettingsClick,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -259,7 +280,7 @@ fun ProfileScreen(
                 icon = Icons.Default.Email,
                 title = stringResource(Res.string.profile_support),
                 subtitle = stringResource(Res.string.profile_encrypted_channel),
-                onClick = onSupportClick
+                onClick = onSupportClick,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -268,7 +289,7 @@ fun ProfileScreen(
             Text(
                 text = stringResource(Res.string.profile_version, "2.4.1", "8821"),
                 style = AegisTypography.caption,
-                color = colors.textTertiary
+                color = colors.textTertiary,
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -283,24 +304,25 @@ private fun ProfileMenuItem(
     subtitle: String? = null,
     actionText: String? = null,
     actionColor: Color = Color.Unspecified,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val colors = AegisTheme.colors
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(colors.surface)
-            .clickable { onClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(colors.surface)
+                .clickable { onClick() }
+                .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             tint = colors.textSecondary,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
         )
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -309,13 +331,13 @@ private fun ProfileMenuItem(
             Text(
                 text = title,
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary
+                color = colors.textPrimary,
             )
             if (subtitle != null) {
                 Text(
                     text = subtitle,
                     style = AegisTypography.bodySmall,
-                    color = colors.textSecondary
+                    color = colors.textSecondary,
                 )
             }
         }
@@ -324,7 +346,7 @@ private fun ProfileMenuItem(
             Text(
                 text = actionText,
                 style = AegisTypography.labelMedium,
-                color = actionColor
+                color = actionColor,
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -332,7 +354,7 @@ private fun ProfileMenuItem(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            tint = colors.textTertiary
+            tint = colors.textTertiary,
         )
     }
 }
