@@ -186,7 +186,7 @@ fun CameraWarningOverlay(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Your camera has been disabled for safety.",
+                            text = "Aegis AI advises covering your camera",
                             fontSize = 17.sp,
                             color = Color(0xFF475569), // slate-600
                             textAlign = TextAlign.Center,
@@ -257,7 +257,7 @@ fun CameraWarningOverlay(
                 }
             }
         }
-        
+
         // Top Encrypted badge (Simulated)
         Box(
             modifier = Modifier
@@ -265,7 +265,12 @@ fun CameraWarningOverlay(
                 .padding(top = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(14.dp))
+                Icon(
+                    Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.size(14.dp)
+                )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text("End-to-end encrypted", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
             }

@@ -41,7 +41,7 @@ fun ScamShield(
     onSourceClick: (Source) -> Unit
 ) {
     val scrollState = rememberScrollState()
-    
+
     // Pulsing animation for the main icon
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
@@ -62,7 +62,7 @@ fun ScamShield(
                 Brush.verticalGradient(
                     colors = listOf(
                         Color(0xFF450a0a), // Darker red top
-                        Color(0xFF220606), 
+                        Color(0xFF220606),
                         Color(0xFF110505)  // Almost black bottom
                     )
                 )
@@ -139,7 +139,7 @@ fun ScamShield(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Aegis AI has interrupted this call.",
+                text = "Aegis AI has flagged this call as suspicious.",
                 color = Color(0xFFFECACA), // red-200
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center
@@ -169,7 +169,12 @@ fun ScamShield(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.SmartToy, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("AI ANALYSIS REPORT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(
+                                "AI ANALYSIS REPORT",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
                         }
                         Box(
                             modifier = Modifier
@@ -194,7 +199,7 @@ fun ScamShield(
                             .verticalScroll(scrollState)
                     ) {
                         Row(modifier = Modifier.fillMaxWidth()) {
-                             // Threat Visual (Placeholder)
+                            // Threat Visual (Placeholder)
                             Box(
                                 modifier = Modifier
                                     .size(80.dp)
@@ -202,9 +207,14 @@ fun ScamShield(
                                     .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.VideocamOff, contentDescription = null, tint = Color.White.copy(alpha = 0.5f), modifier = Modifier.size(32.dp))
+                                Icon(
+                                    Icons.Default.VideocamOff,
+                                    contentDescription = null,
+                                    tint = Color.White.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(32.dp)
+                                )
                             }
-                            
+
                             Spacer(modifier = Modifier.width(16.dp))
 
                             Column {
@@ -212,13 +222,26 @@ fun ScamShield(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("Scam Risk", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                                    Text("99% CONFIDENCE", color = Color(0xFFF87171), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        "Scam Risk",
+                                        color = Color.White,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        "99% CONFIDENCE",
+                                        color = Color(0xFFF87171),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFF7F1D1D).copy(alpha = 0.5f)))
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().height(1.dp)
+                                        .background(Color(0xFF7F1D1D).copy(alpha = 0.5f))
+                                )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                
+
                                 Text(
                                     text = reason,
                                     color = Color(0xFFFECACA), // red-200
@@ -243,7 +266,12 @@ fun ScamShield(
                     .shadow(8.dp, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(Icons.Default.CallEnd, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+                Icon(
+                    Icons.Default.CallEnd,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     "BLOCK & END CALL",
@@ -267,7 +295,7 @@ fun ScamShield(
                     .clickable { onUnlock() }
                     .padding(8.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }

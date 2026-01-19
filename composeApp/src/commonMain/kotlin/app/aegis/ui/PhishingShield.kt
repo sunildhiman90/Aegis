@@ -67,7 +67,7 @@ fun PhishingShield(
                 Brush.verticalGradient(
                     colors = listOf(
                         Color(0xFF450a0a), // Darker red top
-                        Color(0xFF220606), 
+                        Color(0xFF220606),
                         Color(0xFF110505)  // Almost black bottom
                     )
                 )
@@ -144,7 +144,7 @@ fun PhishingShield(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Aegis AI has blocked this site.",
+                text = "Aegis AI identified this link as malicious.",
                 color = Color(0xFFFECACA), // red-200
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center
@@ -174,7 +174,12 @@ fun PhishingShield(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.SmartToy, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("AI ANALYSIS REPORT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(
+                                "AI ANALYSIS REPORT",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
                         }
                         Box(
                             modifier = Modifier
@@ -207,7 +212,12 @@ fun PhishingShield(
                                 .padding(12.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Link, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
+                                Icon(
+                                    Icons.Default.Link,
+                                    contentDescription = null,
+                                    tint = Color(0xFFEF4444),
+                                    modifier = Modifier.size(16.dp)
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = url,
@@ -219,7 +229,7 @@ fun PhishingShield(
                                 )
                             }
                         }
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Reason
@@ -231,13 +241,23 @@ fun PhishingShield(
                                     .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.2f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Dangerous, contentDescription = null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.Dangerous,
+                                    contentDescription = null,
+                                    tint = Color.White.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
-                            
+
                             Spacer(modifier = Modifier.width(16.dp))
 
                             Column {
-                                Text("Detection Reason", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Detection Reason",
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = reason,
@@ -263,7 +283,12 @@ fun PhishingShield(
                     .shadow(8.dp, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(Icons.Default.Report, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
+                Icon(
+                    Icons.Default.Report,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(horizontalAlignment = Alignment.Start) {
                     Text(
@@ -280,9 +305,9 @@ fun PhishingShield(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Secondary Button (Dismiss)
             Button(
                 onClick = onDismiss,
@@ -308,7 +333,7 @@ fun PhishingShield(
                     .clickable { onTrust() }
                     .padding(8.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
