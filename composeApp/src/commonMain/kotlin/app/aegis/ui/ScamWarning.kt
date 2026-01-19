@@ -21,6 +21,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import aegis.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
+
 /**
  * Yellow caution banner for non-blocking warnings.
  * Matches design: cautionary_text_banner
@@ -31,7 +34,7 @@ fun ScamWarning(
     onDismiss: () -> Unit
 ) {
     var isVisible by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(Unit) {
         isVisible = true
     }
@@ -55,19 +58,19 @@ fun ScamWarning(
             // Icon
             Icon(
                 imageVector = Icons.Default.Warning,
-                contentDescription = "Warning",
+                contentDescription = stringResource(Res.string.cd_warning),
                 tint = Color.Black, // warning-text
                 modifier = Modifier.size(24.dp)
             )
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             // Content
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Suspicious Pattern Detected",
+                    text = stringResource(Res.string.scam_warning_title),
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
@@ -83,7 +86,7 @@ fun ScamWarning(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Learn more",
+                    text = stringResource(Res.string.scam_warning_learn_more),
                     color = Color.Black.copy(alpha = 0.6f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -91,9 +94,9 @@ fun ScamWarning(
                     modifier = Modifier.clickable { /* TODO: Open help */ }
                 )
             }
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             // Close Button
             IconButton(
                 onClick = onDismiss,
@@ -104,7 +107,7 @@ fun ScamWarning(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Dismiss",
+                    contentDescription = stringResource(Res.string.cd_dismiss),
                     tint = Color.Black,
                     modifier = Modifier.size(16.dp)
                 )

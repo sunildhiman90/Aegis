@@ -30,6 +30,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.aegis.ai.gemini.types.Source
+import aegis.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ScamShield(
@@ -93,7 +95,7 @@ fun ScamShield(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "CRITICAL ALERT",
+                        text = stringResource(Res.string.scam_shield_critical_alert),
                         color = Color(0xFFEF4444),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -130,7 +132,7 @@ fun ScamShield(
 
             // Headlines
             Text(
-                text = "DANGER\nDETECTED",
+                text = stringResource(Res.string.scam_shield_danger_detected),
                 color = Color.White,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Black,
@@ -139,7 +141,7 @@ fun ScamShield(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Aegis AI has flagged this call as suspicious.",
+                text = stringResource(Res.string.scam_shield_flagged_call),
                 color = Color(0xFFFECACA), // red-200
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center
@@ -170,7 +172,7 @@ fun ScamShield(
                             Icon(Icons.Default.SmartToy, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "AI ANALYSIS REPORT",
+                                stringResource(Res.string.scam_shield_ai_report),
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
@@ -181,7 +183,12 @@ fun ScamShield(
                                 .background(Color(0xFFDC2626), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text("MATCH FOUND", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                stringResource(Res.string.scam_shield_match_found),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
 
@@ -274,7 +281,7 @@ fun ScamShield(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    "BLOCK & END CALL",
+                    stringResource(Res.string.overlay_block_end_call),
                     color = Color.White,
                     fontWeight = FontWeight.Black,
                     fontSize = 20.sp,
@@ -286,7 +293,7 @@ fun ScamShield(
 
             // False Alarm Link
             Text(
-                text = "False Alarm (I trust this person)",
+                text = stringResource(Res.string.scam_shield_false_alarm),
                 color = Color(0xFF9CA3AF), // gray-400
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,

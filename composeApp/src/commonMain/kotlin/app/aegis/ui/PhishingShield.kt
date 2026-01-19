@@ -32,6 +32,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import aegis.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Phishing warning overlay.
@@ -98,7 +100,7 @@ fun PhishingShield(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "PHISHING ALERT",
+                        text = stringResource(Res.string.phishing_shield_title),
                         color = Color(0xFFEF4444),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -134,8 +136,9 @@ fun PhishingShield(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Headlines
+            // Headlines
             Text(
-                text = "MALICIOUS\nLINK",
+                text = stringResource(Res.string.phishing_shield_malicious_link),
                 color = Color.White,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Black,
@@ -144,7 +147,7 @@ fun PhishingShield(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Aegis AI identified this link as malicious.",
+                text = stringResource(Res.string.phishing_shield_identified_message),
                 color = Color(0xFFFECACA), // red-200
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center
@@ -175,7 +178,7 @@ fun PhishingShield(
                             Icon(Icons.Default.SmartToy, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "AI ANALYSIS REPORT",
+                                stringResource(Res.string.scam_shield_ai_report),
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
@@ -186,7 +189,12 @@ fun PhishingShield(
                                 .background(Color(0xFFDC2626), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text("THREAT DETECTED", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                stringResource(Res.string.phishing_shield_threat_detected),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
 
@@ -253,7 +261,7 @@ fun PhishingShield(
 
                             Column {
                                 Text(
-                                    "Detection Reason",
+                                    stringResource(Res.string.phishing_shield_detection_reason),
                                     color = Color.White,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
@@ -292,13 +300,13 @@ fun PhishingShield(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(horizontalAlignment = Alignment.Start) {
                     Text(
-                        "REPORT & TAKEDOWN",
+                        stringResource(Res.string.phishing_shield_report_takedown),
                         color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 16.sp
                     )
                     Text(
-                        "Help protect others from this scam",
+                        stringResource(Res.string.phishing_shield_help_protect),
                         color = Color.White.copy(alpha = 0.8f),
                         fontWeight = FontWeight.Normal,
                         fontSize = 10.sp
@@ -317,14 +325,14 @@ fun PhishingShield(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Dismiss (Don't open)", color = Color.White)
+                Text(stringResource(Res.string.phishing_shield_dismiss), color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // False Alarm Link
             Text(
-                text = "False Alarm (Proceed to site)",
+                text = stringResource(Res.string.phishing_shield_false_alarm),
                 color = Color(0xFF9CA3AF), // gray-400
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,

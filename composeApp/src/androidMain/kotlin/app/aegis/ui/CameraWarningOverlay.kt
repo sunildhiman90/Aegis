@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import aegis.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Full-screen overlay warning user to cover their camera before answering.
@@ -69,13 +71,13 @@ fun CameraWarningOverlay(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Unknown Number",
+                    text = stringResource(Res.string.camera_overlay_unknown_number),
                     color = Color.White,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Ringing...",
+                    text = stringResource(Res.string.camera_overlay_ringing),
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = 16.sp
                 )
@@ -170,7 +172,7 @@ fun CameraWarningOverlay(
                             Spacer(modifier = Modifier.height(20.dp))
 
                             Text(
-                                text = "Unknown Caller Detected",
+                                text = stringResource(Res.string.overlay_unknown_caller),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
@@ -186,7 +188,7 @@ fun CameraWarningOverlay(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Aegis AI advises covering your camera",
+                            text = stringResource(Res.string.overlay_camera_disabled),
                             fontSize = 17.sp,
                             color = Color(0xFF475569), // slate-600
                             textAlign = TextAlign.Center,
@@ -209,7 +211,7 @@ fun CameraWarningOverlay(
                             Icon(Icons.Default.Visibility, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "I Understand, Reveal Camera",
+                                text = stringResource(Res.string.overlay_reveal_camera),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -224,7 +226,7 @@ fun CameraWarningOverlay(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = "Keep Camera Off",
+                                text = stringResource(Res.string.overlay_keep_camera_off),
                                 color = Color(0xFF64748B), // slate-500
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp
@@ -246,7 +248,7 @@ fun CameraWarningOverlay(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "POWERED BY AEGIS SAFETY",
+                                text = stringResource(Res.string.overlay_powered_by),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF0F172A),
@@ -272,7 +274,11 @@ fun CameraWarningOverlay(
                     modifier = Modifier.size(14.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("End-to-end encrypted", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+                Text(
+                    stringResource(Res.string.camera_overlay_encrypted),
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 12.sp
+                )
             }
         }
     }

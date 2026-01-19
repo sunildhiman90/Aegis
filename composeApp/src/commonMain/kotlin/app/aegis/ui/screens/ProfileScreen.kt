@@ -35,7 +35,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     isProtected: Boolean = true,
-    subscriptionType: String = "Plan: Free",
+    subscriptionType: String? = null,
     onCopyId: () -> Unit = {},
     onViewReport: () -> Unit = {},
     onSubscriptionClick: () -> Unit = {},
@@ -260,7 +260,7 @@ fun ProfileScreen(
             ProfileMenuItem(
                 icon = Icons.Default.Star,
                 title = stringResource(Res.string.profile_subscription),
-                subtitle = subscriptionType,
+                subtitle = subscriptionType ?: stringResource(Res.string.profile_plan_free),
                 actionText = stringResource(Res.string.profile_upgrade),
                 actionColor = colors.primary,
                 onClick = onSubscriptionClick,

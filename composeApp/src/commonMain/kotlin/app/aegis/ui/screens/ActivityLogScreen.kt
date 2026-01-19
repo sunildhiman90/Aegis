@@ -205,7 +205,7 @@ private fun ActivityEmptyState() {
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "🛡️",
+                        text = stringResource(Res.string.emoji_shield),
                         style = AegisTypography.labelSmall,
                     )
                 }
@@ -292,14 +292,14 @@ private fun getIncidentIconAndColor(
         type == IncidentType.OTHER -> Icons.Outlined.Refresh to colors.primary
 
         type in
-            listOf(
-                IncidentType.SCAM_CALL,
-                IncidentType.PHISHING_LINK,
-                IncidentType.DANGEROUS_APP,
-                IncidentType.POLICE_IMPERSONATION,
-                IncidentType.SEXTORTION,
-            )
-        -> Icons.Default.Warning to colors.warning
+                listOf(
+                    IncidentType.SCAM_CALL,
+                    IncidentType.PHISHING_LINK,
+                    IncidentType.DANGEROUS_APP,
+                    IncidentType.POLICE_IMPERSONATION,
+                    IncidentType.SEXTORTION,
+                )
+            -> Icons.Default.Warning to colors.warning
 
         else -> Icons.Default.CheckCircle to colors.success
     }

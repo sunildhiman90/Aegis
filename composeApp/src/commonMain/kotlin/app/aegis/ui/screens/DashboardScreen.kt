@@ -43,7 +43,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun DashboardScreen(
     hasOverlayPermission: Boolean = true,
     hasAccessibilityPermission: Boolean = true,
-    sensitivityLevel: String = "High Protection",
+    sensitivityLevel: String? = null,
     onSettingsClick: () -> Unit = {},
     onOpenOverlaySettings: () -> Unit = {},
     onOpenAccessibilitySettings: () -> Unit = {},
@@ -105,7 +105,7 @@ fun DashboardScreen(
                 )
             } else {
                 ActiveProtectionContent(
-                    sensitivityLevel = sensitivityLevel,
+                    sensitivityLevel = sensitivityLevel ?: stringResource(Res.string.dashboard_high_protection),
                     trustedContactsCount = trustedContactsCount,
                     incidents = latestIncidents,
                     onViewAllActivity = onViewAllActivity,
@@ -154,7 +154,7 @@ private fun ActiveProtectionContent(
 
         // Quick Actions Section
         Text(
-            text = "QUICK ACTIONS", // Missing in strings.xml, will add it
+            text = stringResource(Res.string.dashboard_quick_actions),
             style = AegisTypography.overline,
             color = colors.textSecondary,
             modifier = Modifier.fillMaxWidth(),
@@ -281,7 +281,7 @@ private fun DashboardIncidentsEmptyState() {
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Aegis is monitoring your device for threats.", // This string might be missing too
+            text = stringResource(Res.string.dashboard_monitoring_desc),
             style = AegisTypography.bodySmall,
             color = colors.textSecondary,
             textAlign = TextAlign.Center,
@@ -312,14 +312,14 @@ private fun DashboardIncidentItem(incident: Incident) {
             incident.type == IncidentType.OTHER -> Icons.Outlined.Refresh to colors.textSecondary
 
             incident.type in
-                listOf(
-                    IncidentType.SCAM_CALL,
-                    IncidentType.PHISHING_LINK,
-                    IncidentType.DANGEROUS_APP,
-                    IncidentType.POLICE_IMPERSONATION,
-                    IncidentType.SEXTORTION,
-                )
-            -> Icons.Outlined.Warning to colors.warning
+                    listOf(
+                        IncidentType.SCAM_CALL,
+                        IncidentType.PHISHING_LINK,
+                        IncidentType.DANGEROUS_APP,
+                        IncidentType.POLICE_IMPERSONATION,
+                        IncidentType.SEXTORTION,
+                    )
+                -> Icons.Outlined.Warning to colors.warning
 
             else -> Icons.Default.CheckCircle to colors.primary
         }
@@ -387,7 +387,7 @@ private fun SetupRequiredContent(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "🛡️",
+                    text = stringResource(Res.string.emoji_shield),
                     style = AegisTypography.displayMedium,
                 )
             }
@@ -395,12 +395,12 @@ private fun SetupRequiredContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Protection:", // Can optimize
+                text = stringResource(Res.string.dashboard_protection_label),
                 style = AegisTypography.headlineSmall,
                 color = colors.textPrimary,
             )
             Text(
-                text = stringResource(Res.string.dashboard_protection_inactive).split("\n")[1], // Reuse logic or separate string
+                text = stringResource(Res.string.dashboard_protection_inactive).split("\n")[1],
                 style = AegisTypography.headlineLarge,
                 color = colors.textPrimary,
             )
@@ -428,7 +428,8 @@ private fun SetupRequiredContent(
                     modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text( // String format with param
+                Text(
+                    // String format with param
                     text = stringResource(Res.string.dashboard_issues_found, issuesCount),
                     style = AegisTypography.titleMedium,
                     color = colors.warning,

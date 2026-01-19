@@ -32,6 +32,8 @@
     <string name="dashboard_protection_label">Protection:</string>
     <string name="dashboard_status_inactive">INACTIVE</string>
     <string name="dashboard_status_active">ACTIVE</string>
+    <string name="dashboard_monitoring_desc">Aegis is monitoring your device for threats.</string>
+    <string name="dashboard_high_protection">High Protection</string>
     
     <!-- Permissions -->
     <string name="permission_overlay_title">Enable Screen Overlay</string>
@@ -53,22 +55,22 @@
     <string name="activity_empty_message">All scanned messages, calls, and links will be logged here with timestamps.</string>
     
     <!-- Incident Types -->
-    <string name="incident_blocked_scam_call">Blocked Scam Call</string>
-    <string name="incident_video_call_blocked">Video call attempt blocked</string>
+    <string name="incident_blocked_scam_call">Flagged Scam Call</string>
+    <string name="incident_video_call_blocked">Video call attempt flagged</string>
     <string name="incident_scanned_chats">Scanned Chats</string>
     <string name="incident_safe_messages">%1$d safe messages verified</string>
     <string name="incident_system_update">System Update</string>
     <string name="incident_database_updated">Protection database updated</string>
-    <string name="incident_blocked_link">Blocked Suspicious Link</string>
+    <string name="incident_blocked_link">Flagged Suspicious Link</string>
     <string name="incident_daily_scan">Daily Scan Completed</string>
     <string name="incident_no_issues">No issues found</string>
     <string name="incident_unknown_caller">Unknown Caller Detected</string>
     <string name="incident_wifi_verified">Wi-Fi Network Verified</string>
     <string name="incident_definitions_updated">Definitions Updated</string>
-    <string name="incident_phishing_link">Phishing Link Blocked</string>
-    <string name="incident_sextortion">Sextortion Attempt Blocked</string>
-    <string name="incident_police_impersonation">Police Impersonation Blocked</string>
-    <string name="incident_dangerous_app">Dangerous App Blocked</string>
+    <string name="incident_phishing_link">Phishing Link Flagged</string>
+    <string name="incident_sextortion">Sextortion Attempt Flagged</string>
+    <string name="incident_police_impersonation">Police Impersonation Flagged</string>
+    <string name="incident_dangerous_app">Dangerous App Flagged</string>
     <string name="incident_safe_scan">Safe Scan</string>
     
     <!-- Profile Screen -->
@@ -82,7 +84,7 @@
     <string name="profile_id_note">This anonymous ID is used for encrypted support requests only.</string>
     <string name="profile_privacy_report">Privacy Report</string>
     <string name="profile_local_processing">Local Processing Summary</string>
-    <string name="profile_threats_blocked">%1$d threats blocked locally. %2$s of data processed on-device without cloud upload.</string>
+    <string name="profile_threats_blocked">%1$d threats flagged locally. %2$s of data processed on-device without cloud upload.</string>
     <string name="profile_view_report">View Full Report</string>
     <string name="profile_general">General</string>
     <string name="profile_subscription">Subscription</string>
@@ -91,17 +93,18 @@
     <string name="profile_support">Support</string>
     <string name="profile_encrypted_channel">Encrypted Channel</string>
     <string name="profile_version">Aegis v%1$s (Build %2$s)</string>
+    <string name="profile_plan_free">Plan: Free</string>
     
     <!-- Full Report Screen -->
     <string name="full_report_title">Privacy Report</string>
-    <string name="full_report_total_threats_blocked">Total Threats Blocked</string>
+    <string name="full_report_total_threats_blocked">Total Threats Flagged</string>
     <string name="full_report_local_processing">All processing happens locally on your device</string>
-    <string name="full_report_threats_blocked">THREATS BLOCKED</string>
-    <string name="full_report_scam_calls">Scam Calls Blocked</string>
-    <string name="full_report_phishing_links">Phishing Links Blocked</string>
-    <string name="full_report_sextortion">Sextortion Attempts Blocked</string>
-    <string name="full_report_police_impersonation">Police Impersonation Blocked</string>
-    <string name="full_report_dangerous_apps">Dangerous Apps Blocked</string>
+    <string name="full_report_threats_blocked">THREATS FLAGGED</string>
+    <string name="full_report_scam_calls">Scam Calls Flagged</string>
+    <string name="full_report_phishing_links">Phishing Links Flagged</string>
+    <string name="full_report_sextortion">Sextortion Attempts Flagged</string>
+    <string name="full_report_police_impersonation">Police Impersonation Flagged</string>
+    <string name="full_report_dangerous_apps">Dangerous Apps Flagged</string>
     <string name="full_report_processing_summary">PROCESSING SUMMARY</string>
     <string name="full_report_data_processed">Data Processed On-Device</string>
     <string name="full_report_no_cloud">No cloud uploads</string>
@@ -156,15 +159,15 @@
     <string name="overlay_danger_title">DANGER DETECTED</string>
     <string name="overlay_danger_message">Aegis has detected a potential threat.</string>
     <string name="overlay_scam_warning_title">Scam Warning</string>
-    <string name="overlay_block_call">Block Call</string>
+    <string name="overlay_block_call">End Call</string>
     <string name="overlay_dismiss">Dismiss</string>
     <string name="overlay_report">Report</string>
     <string name="overlay_unknown_caller">Unknown Caller Detected</string>
-    <string name="overlay_camera_disabled">Your camera has been disabled for safety.</string>
+    <string name="overlay_camera_disabled">Aegis AI advises covering your camera</string>
     <string name="overlay_reveal_camera">I Understand, Reveal Camera</string>
     <string name="overlay_keep_camera_off">Keep Camera Off</string>
     <string name="overlay_powered_by">POWERED BY AEGIS SAFETY</string>
-    <string name="overlay_block_end_call">BLOCK &amp; END CALL</string>
+    <string name="overlay_block_end_call">END CALL</string>
     <string name="overlay_view_analysis">VIEW DETAILED ANALYSIS</string>
     <string name="overlay_ai_report">AI Report</string>
     <string name="overlay_critical">CRITICAL</string>
@@ -174,6 +177,30 @@
     <string name="overlay_impersonation">Impersonation</string>
     <string name="overlay_risk_score">Risk Score</string>
     <string name="overlay_aegis_protection_active">AEGIS PROTECTION ACTIVE</string>
+    
+    <!-- Shield Strings -->
+    <string name="scam_shield_critical_alert">CRITICAL ALERT</string>
+    <string name="scam_shield_danger_detected">DANGER\nDETECTED</string>
+    <string name="scam_shield_flagged_call">Aegis AI has flagged this call as suspicious.</string>
+    <string name="scam_shield_ai_report">AI ANALYSIS REPORT</string>
+    <string name="scam_shield_match_found">MATCH FOUND</string>
+    <string name="scam_shield_risk_label">Scam Risk</string>
+    <string name="scam_shield_confidence_label">CONFIDENCE</string>
+    <string name="scam_shield_false_alarm">False Alarm (I trust this person)</string>
+    
+    <string name="phishing_shield_title">PHISHING ALERT</string>
+    <string name="phishing_shield_malicious_link">MALICIOUS\nLINK</string>
+    <string name="phishing_shield_identified_message">Aegis AI identified this link as malicious.</string>
+    <string name="phishing_shield_threat_detected">THREAT DETECTED</string>
+    <string name="phishing_shield_detection_reason">Detection Reason</string>
+    <string name="phishing_shield_report_takedown">REPORT &amp; TAKEDOWN</string>
+    <string name="phishing_shield_help_protect">Help protect others from this scam</string>
+    <string name="phishing_shield_dismiss">Dismiss (Don\'t open)</string>
+    <string name="phishing_shield_false_alarm">False Alarm (Proceed to site)</string>
+    
+    <string name="camera_overlay_unknown_number">Unknown Number</string>
+    <string name="camera_overlay_ringing">Ringing...</string>
+    <string name="camera_overlay_encrypted">End-to-end encrypted</string>
     
     <!-- Onboarding -->
     <string name="onboarding_title_1">Identify Scammers</string>
@@ -195,7 +222,7 @@
     <string name="mock_message_content">URGENT: Your account has been flagged. Click here to verify immediately.</string>
     <string name="mock_scam_badge">SCAM</string>
     <string name="mock_analyzing">Analyzing patterns...</string>
-    <string name="mock_camera_blocked">CAMERA BLOCKED</string>
+    <string name="mock_camera_blocked">CAMERA HIDDEN</string>
 
     <!-- Common Actions -->
     <string name="action_cancel">Cancel</string>
@@ -218,4 +245,17 @@
     <string name="status_active">Active</string>
     <string name="status_disabled">Disabled</string>
     <string name="status_action_needed">Action Needed</string>
+
+    <!-- Scam Warning -->
+    <string name="scam_warning_title">Suspicious Pattern Detected</string>
+    <string name="scam_warning_learn_more">Learn more</string>
+    <string name="cd_warning">Warning</string>
+    <string name="cd_dismiss">Dismiss</string>
+
+    <!-- Icons & Defaults -->
+    <string name="emoji_shield">🛡️</string>
+    <string name="emoji_camera_blocked">📵</string>
+    <string name="emoji_magnifier">🔍</string>
+    <string name="default_contact_relationship">Contact</string>
+
 </resources>

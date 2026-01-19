@@ -151,9 +151,9 @@ fun OnboardingScreen(
             val isLastPage = pagerState.currentPage == pages.size - 1
 
             AegisPrimaryButton(
-                text = if (isLastPage) stringResource(Res.string.onboarding_enable_protection) 
-                       else if (pagerState.currentPage == 0) stringResource(Res.string.onboarding_continue) 
-                       else stringResource(Res.string.onboarding_next),
+                text = if (isLastPage) stringResource(Res.string.onboarding_enable_protection)
+                else if (pagerState.currentPage == 0) stringResource(Res.string.onboarding_continue)
+                else stringResource(Res.string.onboarding_next),
                 onClick = {
                     if (isLastPage) {
                         onComplete()
@@ -264,7 +264,11 @@ private fun MockChatUI() {
                     style = AegisTypography.titleSmall,
                     color = colors.textPrimary
                 )
-                Text(stringResource(Res.string.mock_message_time), style = AegisTypography.caption, color = colors.textTertiary)
+                Text(
+                    stringResource(Res.string.mock_message_time),
+                    style = AegisTypography.caption,
+                    color = colors.textTertiary
+                )
             }
         }
 
@@ -349,7 +353,7 @@ private fun ShieldHandUI() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "🛡️",
+            text = stringResource(Res.string.emoji_shield),
             style = AegisTypography.displayLarge.copy(fontSize = AegisTypography.displayLarge.fontSize * 2)
         )
     }
@@ -376,7 +380,7 @@ private fun CameraBlockedUI() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "📵",
+                text = stringResource(Res.string.emoji_camera_blocked),
                 style = AegisTypography.displayMedium
             )
         }

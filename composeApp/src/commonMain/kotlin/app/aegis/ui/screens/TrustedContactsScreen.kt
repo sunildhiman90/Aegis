@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.TrustedContact
@@ -84,7 +86,7 @@ fun TrustedContactsScreen(
                 .padding(horizontal = 20.dp)
                 .padding(top = 16.dp)
         ) {
-            
+
             Text(
                 text = stringResource(Res.string.trusted_contacts_list_title, contacts.size),
                 style = AegisTypography.overline,
@@ -240,7 +242,7 @@ private fun EmptyContactsPlaceholder() {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "🛡️",
+                        text = stringResource(Res.string.emoji_shield),
                         style = AegisTypography.labelSmall
                     )
                 }
@@ -276,36 +278,45 @@ private fun AddContactDialog(
     var phone by remember { mutableStateOf("") }
     var relationship by remember { mutableStateOf("") }
 
+    val addActionText = stringResource(Res.string.action_add)
+    val cancelActionText = stringResource(Res.string.action_cancel)
+    val dialogTitle = stringResource(Res.string.trusted_add_dialog_title)
+    val nameLabel = stringResource(Res.string.trusted_add_name_label)
+    val phoneLabel = stringResource(Res.string.trusted_add_phone_label)
+    val relationshipLabel = stringResource(Res.string.trusted_add_relationship_label)
+    val defaultRelationship = stringResource(Res.string.default_contact_relationship)
+
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = colors.surface,
         title = {
             Text(
-                text = stringResource(Res.string.trusted_add_dialog_title),
+                text = dialogTitle,
                 style = AegisTypography.headlineSmall,
                 color = colors.textPrimary
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text(stringResource(Res.string.trusted_add_name_label)) },
+                    label = { Text(nameLabel) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = { Text(stringResource(Res.string.trusted_add_phone_label)) },
+                    label = { Text(phoneLabel) },
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = relationship,
                     onValueChange = { relationship = it },
-                    label = { Text(stringResource(Res.string.trusted_add_relationship_label)) },
+                    label = { Text(relationshipLabel) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -315,7 +326,7 @@ private fun AddContactDialog(
             TextButton(
                 onClick = {
                     if (name.isNotBlank() && phone.isNotBlank()) {
-                        onAdd(name, phone, relationship.ifBlank { "Contact" })
+                        onAdd(name, phone, relationship.ifBlank { defaultRelationship })
                     }
                 },
                 enabled = name.isNotBlank() && phone.isNotBlank()
