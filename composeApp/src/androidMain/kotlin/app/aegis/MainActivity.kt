@@ -31,54 +31,52 @@ class MainActivity : ComponentActivity() {
         setStatusBarColor(isPrimaryStatusBar = false)
 
         setContent {
-            KoinContext {
-                // Permission states with actual checking
-                var hasOverlayPermission by remember { mutableStateOf(checkOverlayPermission()) }
-                var hasAccessibilityPermission by remember { mutableStateOf(checkAccessibilityPermission()) }
+            // Permission states with actual checking
+            var hasOverlayPermission by remember { mutableStateOf(checkOverlayPermission()) }
+            var hasAccessibilityPermission by remember { mutableStateOf(checkAccessibilityPermission()) }
 
-                // Re-check permissions when resuming from settings
-                val lifecycleOwner = LocalLifecycleOwner.current
-                DisposableEffect(lifecycleOwner) {
-                    val observer =
-                        LifecycleEventObserver { _, event ->
-                            if (event == Lifecycle.Event.ON_RESUME) {
-                                hasOverlayPermission = checkOverlayPermission()
-                                hasAccessibilityPermission = checkAccessibilityPermission()
-                            }
+            // Re-check permissions when resuming from settings
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer =
+                    LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            hasOverlayPermission = checkOverlayPermission()
+                            hasAccessibilityPermission = checkAccessibilityPermission()
                         }
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
                     }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
                 }
-
-                App(
-                    hasOverlayPermission = hasOverlayPermission,
-                    hasAccessibilityPermission = hasAccessibilityPermission,
-                    onOpenOverlaySettings = {
-                        if (!checkOverlayPermission()) {
-                            try {
-                                val intent =
-                                    Intent(
-                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                        "package:$packageName".toUri(),
-                                    )
-                                startActivity(intent)
-                            } catch (e: Exception) {
-                                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                                startActivity(intent)
-                            }
-                        }
-                    },
-                    onOpenAccessibilitySettings = {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                        startActivity(intent)
-                    },
-                    onUpdateStatusBar = {
-                        setStatusBarColor(isPrimaryStatusBar = false)
-                    },
-                )
             }
+
+            App(
+                hasOverlayPermission = hasOverlayPermission,
+                hasAccessibilityPermission = hasAccessibilityPermission,
+                onOpenOverlaySettings = {
+                    if (!checkOverlayPermission()) {
+                        try {
+                            val intent =
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    "package:$packageName".toUri(),
+                                )
+                            startActivity(intent)
+                        } catch (e: Exception) {
+                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                            startActivity(intent)
+                        }
+                    }
+                },
+                onOpenAccessibilitySettings = {
+                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                    startActivity(intent)
+                },
+                onUpdateStatusBar = {
+                    setStatusBarColor(isPrimaryStatusBar = false)
+                },
+            )
         }
     }
 
