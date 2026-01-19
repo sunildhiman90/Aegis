@@ -110,9 +110,9 @@ class ActivityLogViewModel(
                         .fromEpochMilliseconds(incident.timestamp)
                         .toLocalDateTime(timeZone)
                         .date
-                when {
-                    incidentDate == today -> "TODAY"
-                    incidentDate == yesterday -> "YESTERDAY"
+                when (incidentDate) {
+                    today -> "TODAY"
+                    yesterday -> "YESTERDAY"
                     else -> incidentDate.toString().uppercase()
                 }
             }

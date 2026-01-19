@@ -17,9 +17,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.aegis.data.settings.AppSettingsRepository
-import app.aegis.di.initKoin
 import org.koin.android.ext.android.get
-import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
 
@@ -28,10 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        // Initialize Koin
-        initKoin {
-            androidContext(this@MainActivity)
-        }
+
 
         setStatusBarColor(isPrimaryStatusBar = false)
 
