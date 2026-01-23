@@ -132,6 +132,16 @@
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_theme_system">System</string>
     <string name="settings_section_contacts">TRUSTED CONTACTS</string>
+    
+    <!-- Language Settings -->
+    <string name="language">Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="text_language_english">English</string>
+    <string name="text_language_spanish">Spanish</string>
+    <string name="text_language_french">French</string>
+    <string name="text_language_hindi">Hindi</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_desc">Choose your preferred language.</string>
     <string name="settings_no_contacts">No contacts yet</string>
     <string name="settings_no_contacts_desc">Tap to see trusted contacts</string>
     <string name="settings_section_advanced">ADVANCED</string>

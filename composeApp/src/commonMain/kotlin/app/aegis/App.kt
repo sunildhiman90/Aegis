@@ -41,90 +41,102 @@ fun App(
             app.aegis.domain.model.AppThemeMode.SYSTEM_DEFAULT -> systemDarkTheme
         }
 
-    AegisTheme(darkTheme = isDarkTheme) {
-        val colors = AegisTheme.colors
-        val mainNavController = rememberNavController()
+    // Language state - reactive to changes
+    var appCurrentLanguageCode by remember { mutableStateOf(settingsRepository.getLanguageCode()) }
 
-        // Determine start destination
-        val isOnboardingComplete = remember { settingsRepository.isOnboardingComplete }
-        val startDestination =
-            if (isOnboardingComplete) {
-                TabsRoute
-            } else {
-                OnboardingRoute
-            }
+    // Language change callback
+    val onCurrentLanguageChange: (String) -> Unit = { code ->
+        appCurrentLanguageCode = code
+        settingsRepository.setLanguageCode(code)
+    }
 
-        // Main NavHost - top-level navigation
-        NavHost(
-            navController = mainNavController,
-            startDestination = startDestination,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(colors.background),
-        ) {
-            // Tabs container (has its own nested NavHost with bottom navigation)
-            composable<TabsRoute> {
-                TabsScreen(
-                    hasOverlayPermission = hasOverlayPermission,
-                    hasAccessibilityPermission = hasAccessibilityPermission,
-                    onNavigateToSettings = { mainNavController.navigate(SettingsRoute) },
-                    onOpenOverlaySettings = onOpenOverlaySettings,
-                    onOpenAccessibilitySettings = onOpenAccessibilitySettings,
-                    onViewFullReport = { mainNavController.navigate(FullReportRoute) },
-                )
-            }
+    app.aegis.ui.localization.LocalizedApp(language = appCurrentLanguageCode) {
+        AegisTheme(darkTheme = isDarkTheme) {
+            val colors = AegisTheme.colors
+            val mainNavController = rememberNavController()
 
-            // Full-screen destinations (no bottom nav)
-            composable<SettingsRoute> {
-                val settingsViewModel = koinInject<app.aegis.ui.viewmodel.SettingsViewModel>()
-                SettingsScreen(
-                    onBackClick = { mainNavController.popBackStack() },
-                    hasOverlayPermission = hasOverlayPermission,
-                    hasAccessibilityPermission = hasAccessibilityPermission,
-                    onOpenOverlaySettings = onOpenOverlaySettings,
-                    onOpenAccessibilitySettings = onOpenAccessibilitySettings,
-                    themeMode = themeMode,
-                    sensitivityLevel = settingsViewModel.getSensitivity(),
-                    onSensitivityChange = { level ->
-                        settingsViewModel.setSensitivity(level)
-                    },
-                    onThemeModeChange = { mode ->
-                        themeMode = mode // Update local state for immediate UI update
-                        settingsRepository.setThemeMode(mode) // Persist to storage
-                        onUpdateStatusBar() // Update status bar colors
-                    },
-                    onViewTrustedContacts = { mainNavController.navigate(TrustedContactsRoute) },
-                )
-            }
+            // Determine start destination
+            val isOnboardingComplete = remember { settingsRepository.isOnboardingComplete }
+            val startDestination =
+                if (isOnboardingComplete) {
+                    TabsRoute
+                } else {
+                    OnboardingRoute
+                }
 
-            composable<TrustedContactsRoute> {
-                TrustedContactsScreen(
-                    onBackClick = { mainNavController.popBackStack() },
-                )
-            }
+            // Main NavHost - top-level navigation
+            NavHost(
+                navController = mainNavController,
+                startDestination = startDestination,
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(colors.background),
+            ) {
+                // Tabs container (has its own nested NavHost with bottom navigation)
+                composable<TabsRoute> {
+                    TabsScreen(
+                        hasOverlayPermission = hasOverlayPermission,
+                        hasAccessibilityPermission = hasAccessibilityPermission,
+                        onNavigateToSettings = { mainNavController.navigate(SettingsRoute) },
+                        onOpenOverlaySettings = onOpenOverlaySettings,
+                        onOpenAccessibilitySettings = onOpenAccessibilitySettings,
+                        onViewFullReport = { mainNavController.navigate(FullReportRoute) },
+                    )
+                }
 
-            composable<FullReportRoute> {
-                FullReportScreen(
-                    onBackClick = { mainNavController.popBackStack() },
-                )
-            }
+                // Full-screen destinations (no bottom nav)
+                composable<SettingsRoute> {
+                    val settingsViewModel = koinInject<app.aegis.ui.viewmodel.SettingsViewModel>()
+                    SettingsScreen(
+                        onBackClick = { mainNavController.popBackStack() },
+                        hasOverlayPermission = hasOverlayPermission,
+                        hasAccessibilityPermission = hasAccessibilityPermission,
+                        onOpenOverlaySettings = onOpenOverlaySettings,
+                        onOpenAccessibilitySettings = onOpenAccessibilitySettings,
+                        themeMode = themeMode,
+                        sensitivityLevel = settingsViewModel.getSensitivity(),
+                        onSensitivityChange = { level ->
+                            settingsViewModel.setSensitivity(level)
+                        },
+                        onThemeModeChange = { mode ->
+                            themeMode = mode // Update local state for immediate UI update
+                            settingsRepository.setThemeMode(mode) // Persist to storage
+                            onUpdateStatusBar() // Update status bar colors
+                        },
+                        onLanguageChange = onCurrentLanguageChange,
+                        onViewTrustedContacts = { mainNavController.navigate(TrustedContactsRoute) },
+                    )
+                }
 
-            composable<OnboardingRoute> {
-                OnboardingScreen(
-                    onSkip = {
-                        settingsRepository.isOnboardingComplete = true
-                        mainNavController.navigate(TabsRoute) {
-                            popUpTo(OnboardingRoute) { inclusive = true }
-                        }
-                    },
-                    onComplete = {
-                        settingsRepository.isOnboardingComplete = true
-                        mainNavController.navigate(TabsRoute) {
-                            popUpTo(OnboardingRoute) { inclusive = true }
-                        }
-                    },
-                )
+                composable<TrustedContactsRoute> {
+                    TrustedContactsScreen(
+                        onBackClick = { mainNavController.popBackStack() },
+                    )
+                }
+
+                composable<FullReportRoute> {
+                    FullReportScreen(
+                        onBackClick = { mainNavController.popBackStack() },
+                    )
+                }
+
+                composable<OnboardingRoute> {
+                    OnboardingScreen(
+                        onSkip = {
+                            settingsRepository.isOnboardingComplete = true
+                            mainNavController.navigate(TabsRoute) {
+                                popUpTo(OnboardingRoute) { inclusive = true }
+                            }
+                        },
+                        onComplete = {
+                            settingsRepository.isOnboardingComplete = true
+                            mainNavController.navigate(TabsRoute) {
+                                popUpTo(OnboardingRoute) { inclusive = true }
+                            }
+                        },
+                    )
+                }
             }
         }
     }

@@ -18,4 +18,13 @@ actual val platformModule =
         }
 
         single { DeviceIdProvider(get()) }
+
+        // Language Helper
+        single<app.aegis.helper.LanguageHelper> {
+            app.aegis.helper.AndroidLanguageHelper(
+                appSettingsRepository = get(),
+                getLanguagesUseCase = get(),
+                context = get()
+            )
+        }
     }

@@ -37,6 +37,11 @@ val appModule = module {
 
     single { AppSettingsRepository() }
 
+    // Use Cases
+    single<app.aegis.domain.usecase.GetLanguagesUseCase> {
+        app.aegis.domain.usecase.GetLanguagesUseCaseImpl()
+    }
+
     // ViewModels
     viewModelOf(::TrustedContactViewModel)
     viewModelOf(::SettingsViewModel)

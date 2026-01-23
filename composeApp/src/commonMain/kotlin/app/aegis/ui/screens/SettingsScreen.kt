@@ -52,6 +52,7 @@ fun SettingsScreen(
     onViewTrustedContacts: () -> Unit = {},
     onFactoryReset: () -> Unit = {},
     onThemeModeChange: (AppThemeMode) -> Unit = {},
+    onLanguageChange: (String) -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val colors = AegisTheme.colors
@@ -61,6 +62,13 @@ fun SettingsScreen(
 
     val topContacts by viewModel.topContacts.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
+
+    // Collect ViewModel states
+    val languageUiState by viewModel.languageUiState.collectAsState()
+    val settingsUiState by viewModel.settingsScreenUiState.collectAsState()
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var selectedLanguage by remember { mutableStateOf("") }
+
 
     // Factory Reset Confirmation Dialog
     if (showResetDialog) {
@@ -466,6 +474,73 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Language Selection
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(colors.surface)
+                        .clickable {
+                            showLanguageDialog = true
+                            selectedLanguage = languageUiState.languages?.find {
+                                it.code == languageUiState.selectedLanguageCode
+                            }?.name ?: "English"
+                        }
+                        .padding(16.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(Res.string.settings_language_title),
+                            style = AegisTypography.titleMedium,
+                            color = colors.textPrimary,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = languageUiState.languages?.find {
+                                it.code == languageUiState.selectedLanguageCode
+                            }?.name ?: "English",
+                            style = AegisTypography.bodySmall,
+                            color = colors.textSecondary,
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = colors.textTertiary,
+                    )
+                }
+            }
+
+            // Language Selection Dialog
+            if (showLanguageDialog) {
+                app.aegis.ui.components.LanguageSelectionDialog(
+                    languages = languageUiState.languages ?: emptyList(),
+                    showDialog = showLanguageDialog,
+                    selectedLanguage = selectedLanguage,
+                    onDismissRequest = {
+                        showLanguageDialog = false
+                    },
+                    onLanguageSelected = { language ->
+                        selectedLanguage = language.name
+                        // Trigger ViewModel event to change language
+                        viewModel.onSettingsScreenUiEvent(
+                            app.aegis.ui.events.SettingsScreenUiEvent.OnCurrentLanguageChange(language.code)
+                        )
+                        // Also trigger the app-level callback
+                        onLanguageChange(language.code)
+                        showLanguageDialog = false
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))

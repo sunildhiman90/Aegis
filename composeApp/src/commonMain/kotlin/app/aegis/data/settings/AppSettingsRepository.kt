@@ -14,6 +14,11 @@ class AppSettingsRepository(
         private const val THEME_MODE_LIGHT = "light"
         private const val THEME_MODE_DARK = "dark"
         private const val THEME_MODE_SYSTEM = "system"
+
+        // Language preferences
+        private const val KEY_LANGUAGE_CODE = "language_code"
+        private const val KEY_LANGUAGE_NAME = "language_name"
+        private const val DEFAULT_LANGUAGE = "en"
     }
 
     // Onboarding
@@ -96,5 +101,22 @@ class AppSettingsRepository(
 
     fun setSensitivity(level: app.aegis.models.SensitivityLevel) {
         settings.putString("sensitivity_level", level.name)
+    }
+
+    // Language preferences
+    fun getLanguageCode(): String {
+        return settings.getString(KEY_LANGUAGE_CODE, DEFAULT_LANGUAGE)
+    }
+
+    fun setLanguageCode(code: String) {
+        settings.putString(KEY_LANGUAGE_CODE, code)
+    }
+
+    fun getLanguageName(): String {
+        return settings.getString(KEY_LANGUAGE_NAME, "English")
+    }
+
+    fun setLanguageName(name: String) {
+        settings.putString(KEY_LANGUAGE_NAME, name)
     }
 }
