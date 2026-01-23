@@ -521,16 +521,15 @@ fun SettingsScreen(
                 }
             }
 
-            // Language Selection Dialog
+            // Language Selection Bottom Sheet
             if (showLanguageDialog) {
-                app.aegis.ui.components.LanguageSelectionDialog(
+                app.aegis.ui.components.LanguageSelectionBottomSheet(
                     languages = languageUiState.languages ?: emptyList(),
-                    showDialog = showLanguageDialog,
-                    selectedLanguage = selectedLanguage,
+                    currentLanguageCode = languageUiState.selectedLanguageCode,
                     onDismissRequest = {
                         showLanguageDialog = false
                     },
-                    onLanguageSelected = { language ->
+                    onApply = { language ->
                         selectedLanguage = language.name
                         // Trigger ViewModel event to change language
                         viewModel.onSettingsScreenUiEvent(
