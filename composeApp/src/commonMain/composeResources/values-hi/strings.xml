@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Aegis</string>
+    
+    <!-- Navigation & Tabs -->
+    <string name="nav_dashboard">डैशबोर्ड</string>
+    <string name="nav_activity">गतिविधि</string>
+    <string name="nav_profile">प्रोफ़ाइल</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="nav_back">वापस</string>
+    
+    <!-- Dashboard Screen -->
+    <string name="dashboard_title">Aegis</string>
+    <string name="dashboard_active_title">Aegis सक्रिय है</string>
+    <string name="dashboard_active_subtitle">आपका डिवाइस निगरानी में है और घोटालों से सुरक्षित है।</string>
+    <string name="dashboard_protection_inactive">सुरक्षा:\nनिष्क्रिय</string>
+    <string name="dashboard_protection_active">सुरक्षा:\nसक्रिय</string>
+    <string name="dashboard_at_risk_message">आपका डिवाइस वर्तमान में जोखिम में है। अनुमतियाँ दिए जाने तक Aegis आपकी सुरक्षा नहीं कर सकता।</string>
+    <string name="dashboard_issues_found">%1$d समस्याएं मिलीं</string>
+    <string name="dashboard_required_permissions">आवश्यक अनुमतियाँ</string>
+    <string name="dashboard_complete_steps">सुरक्षा सक्रिय करने के लिए ये कदम पूरे करें</string>
+    <string name="dashboard_sensitivity">संवेदनशीलता</string>
+    <string name="dashboard_trusted">विश्वसनीय</string>
+    <string name="dashboard_contacts">%1$d कॉन्टैक्ट्स</string>
+    <string name="dashboard_incident_log">घटना रिकॉर्ड</string>
+    <string name="dashboard_view_all">सभी देखें</string>
+    <string name="dashboard_no_incidents_title">अभी तक कोई घटना नहीं</string>
+    <string name="dashboard_no_incidents_message">जब Aegis खतरों का पता लगाएगा या ब्लॉक करेगा, तो वे आपकी समीक्षा के लिए यहां दिखाई देंगे।</string>
+    
+    <string name="dashboard_quick_actions">त्वरित कार्य</string>
+    <string name="dashboard_protection_label">सुरक्षा:</string>
+    <string name="dashboard_status_inactive">निष्क्रिय</string>
+    <string name="dashboard_status_active">सक्रिय</string>
+    <string name="dashboard_monitoring_desc">Aegis आपके डिवाइस को खतरों से बचा रहा है।</string>
+    <string name="dashboard_high_protection">उच्च सुरक्षा</string>
+    
+    <!-- Permissions -->
+    <string name="permission_overlay_title">स्क्रीन ओवरले सक्षम करें</string>
+    <string name="permission_overlay_description">WhatsApp जैसे ऐप्स पर चेतावनियां दिखाने के लिए आवश्यक है ताकि आप घोटाले की चेतावनी न चूकें।</string>
+    <string name="permission_overlay_button">ओवरले सेटिंग्स खोलें →</string>
+    <string name="permission_accessibility_title">स्कैनिंग सक्षम करें</string>
+    <string name="permission_accessibility_description">Aegis को संभावित खतरों के लिए आने वाले टेक्स्ट संदेशों और वेबसाइटों को स्कैन करने की अनुमति देता है।</string>
+    <string name="permission_accessibility_button">एक्सेसिबिलिटी सेटिंग्स खोलें →</string>
+    <string name="permission_privacy_note">Aegis आपकी गोपनीयता को महत्व देता है। इन अनुमतियों का उपयोग केवल डिवाइस पर घोटालों का पता लगाने के लिए किया जाता है और कभी भी आपकी व्यक्तिगत गतिविधि को ट्रैक करने के लिए उपयोग नहीं किया जाता है।</string>
+    
+    <!-- Activity Screen -->
+    <string name="activity_title">गतिविधि</string>
+    <string name="activity_filter_all">सभी</string>
+    <string name="activity_filter_threats">खतरे</string>
+    <string name="activity_filter_safe">सुरक्षित स्कैन</string>
+    <string name="activity_today">आज</string>
+    <string name="activity_yesterday">कल</string>
+    <string name="activity_empty_title">आपकी सुरक्षा डायरी</string>
+    <string name="activity_empty_message">सभी स्कैन किए गए संदेश, कॉल और लिंक समय के साथ यहां लॉग किए जाएंगे।</string>
+    
+    <!-- Incident Types -->
+    <string name="incident_blocked_scam_call">घोटाला कॉल चिह्नित</string>
+    <string name="incident_video_call_blocked">वीडियो कॉल प्रयास चिह्नित</string>
+    <string name="incident_scanned_chats">स्कैन की गई चैट</string>
+    <string name="incident_safe_messages">%1$d सुरक्षित संदेश सत्यापित</string>
+    <string name="incident_system_update">सिस्टम अपडेट</string>
+    <string name="incident_database_updated">सुरक्षा डेटाबेस अपडेट किया गया</string>
+    <string name="incident_blocked_link">संदिग्ध लिंक चिह्नित</string>
+    <string name="incident_daily_scan">दैनिक स्कैन पूर्ण</string>
+    <string name="incident_no_issues">कोई समस्या नहीं मिली</string>
+    <string name="incident_unknown_caller">अज्ञात कॉलर का पता लगा</string>
+    <string name="incident_wifi_verified">वाई-फाई नेटवर्क सत्यापित</string>
+    <string name="incident_definitions_updated">परिभाषाएं अपडेट की गईं</string>
+    <string name="incident_phishing_link">फ़िशिंग लिंक चिह्नित</string>
+    <string name="incident_sextortion">सेक्सटॉर्शन प्रयास चिह्नित</string>
+    <string name="incident_police_impersonation">पुलिस प्रतिरूपण चिह्नित</string>
+    <string name="incident_dangerous_app">खतरनाक ऐप चिह्नित</string>
+    <string name="incident_safe_scan">सुरक्षित स्कैन</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile_title">प्रोफ़ाइल</string>
+    <string name="profile_protected">सुरक्षित</string>
+    <string name="profile_at_risk">जोखिम में</string>
+    <string name="profile_system_active">सिस्टम सक्रिय है और निगरानी कर रहा है</string>
+    <string name="profile_system_inactive">सुरक्षा सक्रिय करने के लिए अनुमतियाँ सेट करें</string>
+    <string name="profile_device_id">डिवाइस आईडी</string>
+    <string name="profile_copy_id">आईडी कॉपी करें</string>
+    <string name="profile_id_note">यह गुमनाम आईडी केवल एन्क्रिप्टेड सहायता अनुरोधों के लिए उपयोग की जाती है।</string>
+    <string name="profile_privacy_report">गोपनीयता रिपोर्ट</string>
+    <string name="profile_local_processing">स्थानीय प्रसंस्करण सारांश</string>
+    <string name="profile_threats_blocked">%1$d खतरे स्थानीय रूप से चिह्नित। %2$s डेटा क्लाउड अपलोड के बिना डिवाइस पर प्रोसेस किया गया।</string>
+    <string name="profile_view_report">पूर्ण रिपोर्ट देखें</string>
+    <string name="profile_general">सामान्य</string>
+    <string name="profile_subscription">सदस्यता</string>
+    <string name="profile_upgrade">अपग्रेड</string>
+    <string name="profile_settings">सेटिंग्स</string>
+    <string name="profile_support">सहायता</string>
+    <string name="profile_encrypted_channel">एन्क्रिप्टेड चैनल</string>
+    <string name="profile_version">Aegis v%1$s (बिल्ड %2$s)</string>
+    <string name="profile_plan_free">योजना: निःशुल्क</string>
+    
+    <!-- Full Report Screen -->
+    <string name="full_report_title">गोपनीयता रिपोर्ट</string>
+    <string name="full_report_total_threats_blocked">कुल खतरे चिह्नित</string>
+    <string name="full_report_local_processing">सभी प्रसंस्करण आपके डिवाइस पर स्थानीय रूप से होता है</string>
+    <string name="full_report_threats_blocked">खतरे चिह्नित</string>
+    <string name="full_report_scam_calls">घोटाला कॉल चिह्नित</string>
+    <string name="full_report_phishing_links">फ़िशिंग लिंक चिह्नित</string>
+    <string name="full_report_sextortion">सेक्सटॉर्शन प्रयास चिह्नित</string>
+    <string name="full_report_police_impersonation">पुलिस प्रतिरूपण चिह्नित</string>
+    <string name="full_report_dangerous_apps">खतरनाक ऐप्स चिह्नित</string>
+    <string name="full_report_processing_summary">प्रसंस्करण सारांश</string>
+    <string name="full_report_data_processed">डिवाइस पर प्रोसेस किया गया डेटा</string>
+    <string name="full_report_no_cloud">कोई क्लाउड अपलोड नहीं</string>
+    <string name="full_report_privacy_assured">गोपनीयता सुनिश्चित</string>
+    <string name="full_report_privacy_message">सभी खतरे का पता लगाना और विश्लेषण आपके डिवाइस पर स्थानीय रूप से होता है। आपका डेटा कभी भी आपके फोन से बाहर नहीं जाता है और कभी भी किसी क्लाउड सर्वर पर अपलोड नहीं होता है।</string>
+    <string name="full_report_privacy_note">Aegis घोटालों से आपकी सुरक्षा करते हुए आपकी गोपनीयता की रक्षा के लिए ऑन-डिवाइस AI मॉडल का उपयोग करता है।</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">ऐप सेटिंग्स</string>
+    <string name="settings_section_protection">सुरक्षा स्तर</string>
+    <string name="settings_sensitivity_title">घोटाला पहचान संवेदनशीलता</string>
+    <string name="settings_sensitivity_desc">AI अज्ञात कॉल को कितनी आक्रामकता से फ़िल्टर करता है, यह समायोजित करें।</string>
+    <string name="settings_sensitivity_low">कम</string>
+    <string name="settings_sensitivity_balanced">संतुलित</string>
+    <string name="settings_sensitivity_aggressive">आक्रामक</string>
+    <string name="settings_sensitivity_low_warning">केवल अज्ञात नंबरों से उच्च जोखिम वाले कीवर्ड का विश्लेषण करता है। बैटरी जीवन के लिए सर्वोत्तम।</string>
+    <string name="settings_sensitivity_balanced_warning">मानक सुरक्षा। सभी अज्ञात नंबरों का विश्लेषण करता है लेकिन सहेजे गए संपर्कों पर भरोसा करता है।</string>
+    <string name="settings_sensitivity_aggressive_warning">अधिकतम सुरक्षा। सभी अज्ञात नंबरों और सहेजे गए संपर्कों से संदिग्ध संदेशों का विश्लेषण करता है।</string>
+    <string name="settings_section_permissions">ऐप अनुमतियाँ</string>
+    <string name="settings_accessibility_note">Aegis को वास्तविक समय में आने वाली कॉल स्क्रीन का विश्लेषण करने के लिए एक्सेसिबिलिटी अनुमतियां आवश्यक हैं।</string>
+    <string name="settings_section_appearance">दिखावट</string>
+    <string name="settings_theme_title">थीम मोड</string>
+    <string name="settings_theme_desc">अपनी पसंदीदा ऐप थीम चुनें।</string>
+    <string name="settings_theme_light">हल्का</string>
+    <string name="settings_theme_dark">गहरा</string>
+    <string name="settings_theme_system">सिस्टम</string>
+    <string name="settings_section_contacts">विश्वसनीय कॉन्टैक्ट्स</string>
+    
+    <!-- Language Settings -->
+    <string name="language">भाषा</string>
+    <string name="select_language">भाषा चुनें</string>
+    <string name="text_language_english">अंग्रेज़ी</string>
+    <string name="text_language_spanish">स्पेनिश</string>
+    <string name="text_language_french">फ्रेंच</string>
+    <string name="text_language_hindi">हिंदी</string>
+    <string name="settings_language_title">भाषा</string>
+    <string name="settings_language_desc">अपनी पसंदीदा भाषा चुनें।</string>
+    <string name="settings_no_contacts">अभी तक कोई कॉन्टैक्ट नहीं</string>
+    <string name="settings_no_contacts_desc">विश्वसनीय कॉन्टैक्ट्स देखने के लिए टैप करें</string>
+    <string name="settings_section_advanced">उन्नत</string>
+    <string name="settings_factory_reset_title">Aegis फ़ैक्टरी रीसेट</string>
+    <string name="settings_factory_reset_message">यह घटनाओं, विश्वसनीय संपर्कों और सेटिंग्स सहित सभी डेटा को हटा देगा। इस क्रिया को पूर्ववत नहीं किया जा सकता।</string>
+    <string name="settings_reset_confirm">सब कुछ रीसेट करें</string>
+    <string name="settings_cancel">रद्द करें</string>
+    <string name="settings_active">सक्रिय</string>
+    <string name="settings_disabled">अक्षम</string>
+    <string name="settings_action_needed">कार्रवाई आवश्यक</string>
+    
+    <!-- Trusted Contacts Screen -->
+    <string name="trusted_contacts_title">विश्वसनीय कॉन्टैक्ट्स</string>
+    <string name="trusted_contacts_list_title">आपके कॉन्टैक्ट्स (%1$d)</string>
+    <string name="trusted_contacts_empty_title">आपके विश्वसनीय कॉन्टैक्ट्स</string>
+    <string name="trusted_contacts_empty_desc">अभी तक कोई विश्वसनीय कॉन्टैक्ट नहीं जोड़े गए हैं। विश्वसनीय कॉन्टैक्ट्स सूची में जोड़े गए कॉन्टैक्ट यहां दिखाई देंगे।</string>
+    <string name="trusted_add_dialog_title">विश्वसनीय कॉन्टैक्ट जोड़ें</string>
+    <string name="trusted_add_name_label">नाम</string>
+    <string name="trusted_add_phone_label">फ़ोन नंबर</string>
+    <string name="trusted_add_relationship_label">संबंध (जैसे, परिवार, मित्र)</string>
+    
+    <!-- Overlays & Warnings -->
+    <string name="overlay_camera_warning_title">कैमरा सक्रिय</string>
+    <string name="overlay_camera_warning_message">Aegis आपकी सुरक्षा के लिए इस वीडियो कॉल की निगरानी कर रहा है।</string>
+    <string name="overlay_danger_title">खतरा पहचाना गया</string>
+    <string name="overlay_danger_message">Aegis ने एक संभावित खतरे का पता लगाया है।</string>
+    <string name="overlay_scam_warning_title">घोटाला चेतावनी</string>
+    <string name="overlay_block_call">कॉल समाप्त करें</string>
+    <string name="overlay_dismiss">खारिज करें</string>
+    <string name="overlay_report">रिपोर्ट करें</string>
+    <string name="overlay_unknown_caller">अज्ञात कॉलर का पता लगा</string>
+    <string name="overlay_camera_disabled">Aegis AI आपके कैमरे को ढकने की सलाह देता है</string>
+    <string name="overlay_reveal_camera">मैं समझता हूँ, कैमरा दिखाएं</string>
+    <string name="overlay_keep_camera_off">कैमरा बंद रखें</string>
+    <string name="overlay_powered_by">AEGIS SAFETY द्वारा संचालित</string>
+    <string name="overlay_block_end_call">कॉल समाप्त करें</string>
+    <string name="overlay_view_analysis">विस्तृत विश्लेषण देखें</string>
+    <string name="overlay_ai_report">AI रिपोर्ट</string>
+    <string name="overlay_critical">महत्वपूर्ण</string>
+    <string name="overlay_caller_identity">कॉलर पहचान</string>
+    <string name="overlay_suspicious">संदिग्ध</string>
+    <string name="overlay_scam_pattern">घोटाला पैटर्न</string>
+    <string name="overlay_impersonation">प्रतिरूपण</string>
+    <string name="overlay_risk_score">जोखिम स्कोर</string>
+    <string name="overlay_aegis_protection_active">AEGIS सुरक्षा सक्रिय</string>
+    
+    <!-- Shield Strings -->
+    <string name="scam_shield_critical_alert">महत्वपूर्ण अलर्ट</string>
+    <string name="scam_shield_danger_detected">खतरा\nपहचाना गया</string>
+    <string name="scam_shield_flagged_call">Aegis AI ने इस कॉल को संदिग्ध के रूप में चिह्नित किया है।</string>
+    <string name="scam_shield_ai_report">AI विश्लेषण रिपोर्ट</string>
+    <string name="scam_shield_match_found">मिलान मिला</string>
+    <string name="scam_shield_risk_label">घोटाला जोखिम</string>
+    <string name="scam_shield_confidence_label">विश्वास</string>
+    <string name="scam_shield_false_alarm">झूठा अलार्म (मुझे इस व्यक्ति पर भरोसा है)</string>
+    
+    <string name="phishing_shield_title">फ़िशिंग अलर्ट</string>
+    <string name="phishing_shield_malicious_link">दुर्भावनापूर्ण\nलिंक</string>
+    <string name="phishing_shield_identified_message">Aegis AI ने इस लिंक को दुर्भावनापूर्ण के रूप में पहचाना है।</string>
+    <string name="phishing_shield_threat_detected">खतरा पहचाना गया</string>
+    <string name="phishing_shield_detection_reason">पहचान कारण</string>
+    <string name="phishing_shield_report_takedown">रिपोर्ट करें &amp; हटाएं</string>
+    <string name="phishing_shield_help_protect">इस घोटाले से दूसरों को बचाने में मदद करें</string>
+    <string name="phishing_shield_dismiss">खारिज करें (न खोलें)</string>
+    <string name="phishing_shield_false_alarm">झूठा अलार्म (साइट पर जाएं)</string>
+    
+    <string name="camera_overlay_unknown_number">अज्ञात नंबर</string>
+    <string name="camera_overlay_ringing">घंटी बज रही है...</string>
+    <string name="camera_overlay_encrypted">एंड-टू-एंड एन्क्रिप्टेड</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">धोखेबाजों की पहचान करें</string>
+    <string name="onboarding_desc_1">Aegis वास्तविक समय में प्रतिरूपणकर्ताओं और नकली एजेंटों के बारे में आपको चेतावनी देने के लिए चैट पैटर्न का विश्लेषण करता है।</string>
+    <string name="onboarding_title_2">सुरक्षित ब्राउजिंग</string>
+    <string name="onboarding_desc_2">हम आपके डेटा को चुराने से पहले दुर्भावनापूर्ण फ़िशिंग साइटों पर जाने से रोकने के लिए आपके संदेशों में लिंक स्कैन करते हैं।</string>
+    <string name="onboarding_title_3">ब्लैकमेल रोकें</string>
+    <string name="onboarding_desc_3">सेक्सटॉर्शन या नकली पुलिस वीडियो कॉल घोटालों को रोकने के लिए हम अज्ञात नंबरों से कॉल के दौरान स्वचालित रूप से आपके कैमरे को छुपाते हैं।</string>
+    <string name="onboarding_title_4">आप तैयार हैं</string>
+    <string name="onboarding_desc_4">Aegis बैकग्राउंड में चलने के लिए तैयार है। पूर्ण सुरक्षा सक्रिय करने के लिए अगली स्क्रीन पर अनुमतियाँ दें।</string>
+    <string name="onboarding_skip">छोड़ें</string>
+    <string name="onboarding_enable_protection">सुरक्षा सक्षम करें</string>
+    <string name="onboarding_continue">जारी रखें</string>
+    <string name="onboarding_next">अगला</string>
+    
+    <!-- Mocks -->
+    <string name="mock_sender_name">अज्ञात प्रेषक</string>
+    <string name="mock_message_time">आज, 2:41 PM</string>
+    <string name="mock_message_content">तत्काल: आपके खाते को चिह्नित किया गया है। तुरंत सत्यापित करने के लिए यहां क्लिक करें।</string>
+    <string name="mock_scam_badge">घोटाला</string>
+    <string name="mock_analyzing">पैटर्न का विश्लेषण...</string>
+    <string name="mock_camera_blocked">कैमरा छुपा हुआ</string>
+
+    <!-- Common Actions -->
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_confirm">पुष्टि करें</string>
+    <string name="action_save">सहेजें</string>
+    <string name="action_delete">हटाएं</string>
+    <string name="action_edit">संपादित करें</string>
+    <string name="action_add">जोड़ें</string>
+    <string name="action_close">बंद करें</string>
+    <string name="action_retry">पुनः प्रयास करें</string>
+    
+    <!-- Time -->
+    <string name="time_today">आज</string>
+    <string name="time_yesterday">कल</string>
+    <string name="time_minutes_ago">%1$d मिनट पहले</string>
+    <string name="time_hours_ago">%1$d घंटे पहले</string>
+    <string name="time_just_now">अभी अभी</string>
+    
+    <!-- Status -->
+    <string name="status_active">सक्रिय</string>
+    <string name="status_disabled">अक्षम</string>
+    <string name="status_action_needed">कार्रवाई आवश्यक</string>
+
+    <!-- Scam Warning -->
+    <string name="scam_warning_title">संदिग्ध पैटर्न पहचाना गया</string>
+    <string name="scam_warning_learn_more">और जानें</string>
+    <string name="cd_warning">चेतावनी</string>
+    <string name="cd_dismiss">खारिज करें</string>
+
+    <!-- Icons & Defaults -->
+    <string name="emoji_shield">🛡️</string>
+    <string name="emoji_camera_blocked">📵</string>
+    <string name="emoji_magnifier">🔍</string>
+    <string name="default_contact_relationship">कॉन्टैक्ट</string>
+
+</resources>

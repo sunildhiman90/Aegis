@@ -18,7 +18,7 @@ class GetLanguagesUseCaseImpl : GetLanguagesUseCase {
             AppLanguageItem(
                 name = getString(Res.string.text_language_english),
                 code = EN,
-                flagDrawable = Res.drawable.uk, 
+                flagDrawable = Res.drawable.uk,
             ),
             AppLanguageItem(
                 name = getString(Res.string.text_language_french),
@@ -28,13 +28,12 @@ class GetLanguagesUseCaseImpl : GetLanguagesUseCase {
             AppLanguageItem(
                 name = getString(Res.string.text_language_hindi),
                 code = HI,
-                flagDrawable = Res.drawable.france,
+                flagDrawable = Res.drawable.ic_hindi,
             ),
             AppLanguageItem(
                 name = getString(Res.string.text_language_spanish),
                 code = SP,
                 flagDrawable = Res.drawable.spain,
             ),
-
         )
 }

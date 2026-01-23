@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Aegis</string>
+    
+    <!-- Navigation & Tabs -->
+    <string name="nav_dashboard">Tableau de bord</string>
+    <string name="nav_activity">Activité</string>
+    <string name="nav_profile">Profil</string>
+    <string name="nav_settings">Paramètres</string>
+    <string name="nav_back">Retour</string>
+    
+    <!-- Dashboard Screen -->
+    <string name="dashboard_title">Aegis</string>
+    <string name="dashboard_active_title">Aegis est Actif</string>
+    <string name="dashboard_active_subtitle">Votre appareil est surveillé et protégé contre les arnaques.</string>
+    <string name="dashboard_protection_inactive">Protection :\nINACTIVE</string>
+    <string name="dashboard_protection_active">Protection :\nACTIVE</string>
+    <string name="dashboard_at_risk_message">Votre appareil est actuellement à risque. Aegis ne peut pas vous protéger tant que les autorisations ne sont pas accordées.</string>
+    <string name="dashboard_issues_found">%1$d Problèmes Trouvés</string>
+    <string name="dashboard_required_permissions">Autorisations Requises</string>
+    <string name="dashboard_complete_steps">Complétez ces étapes pour activer la protection</string>
+    <string name="dashboard_sensitivity">Sensibilité</string>
+    <string name="dashboard_trusted">Fiables</string>
+    <string name="dashboard_contacts">%1$d Contacts</string>
+    <string name="dashboard_incident_log">Journal des Incidents</string>
+    <string name="dashboard_view_all">Tout Voir</string>
+    <string name="dashboard_no_incidents_title">Aucun incident pour le moment</string>
+    <string name="dashboard_no_incidents_message">Lorsque Aegis détectera ou bloquera des menaces, elles apparaîtront ici pour votre examen.</string>
+    
+    <string name="dashboard_quick_actions">ACTIONS RAPIDES</string>
+    <string name="dashboard_protection_label">Protection :</string>
+    <string name="dashboard_status_inactive">INACTIVE</string>
+    <string name="dashboard_status_active">ACTIVE</string>
+    <string name="dashboard_monitoring_desc">Aegis surveille votre appareil contre les menaces.</string>
+    <string name="dashboard_high_protection">Protection Élevée</string>
+    
+    <!-- Permissions -->
+    <string name="permission_overlay_title">Activer la Superposition d\'Écran</string>
+    <string name="permission_overlay_description">Requis pour afficher des avertissements sur des applications comme WhatsApp afin que vous ne manquiez pas les alertes d\'arnaque.</string>
+    <string name="permission_overlay_button">Ouvrir Paramètres de Superposition →</string>
+    <string name="permission_accessibility_title">Activer l\'Analyse</string>
+    <string name="permission_accessibility_description">Permet à Aegis d\'analyser les messages texte entrants et les sites Web pour détecter les menaces potentielles.</string>
+    <string name="permission_accessibility_button">Ouvrir Paramètres d\'Accessibilité →</string>
+    <string name="permission_privacy_note">Aegis valorise votre vie privée. Ces autorisations sont utilisées strictement sur l\'appareil pour détecter les arnaques et ne sont jamais utilisées pour suivre votre activité personnelle.</string>
+    
+    <!-- Activity Screen -->
+    <string name="activity_title">Activité</string>
+    <string name="activity_filter_all">Tout</string>
+    <string name="activity_filter_threats">Menaces</string>
+    <string name="activity_filter_safe">Analyses Sûres</string>
+    <string name="activity_today">AUJOURD\'HUI</string>
+    <string name="activity_yesterday">HIER</string>
+    <string name="activity_empty_title">Votre Journal de Sécurité</string>
+    <string name="activity_empty_message">Tous les messages, appels et liens analysés seront enregistrés ici avec des horodatages.</string>
+    
+    <!-- Incident Types -->
+    <string name="incident_blocked_scam_call">Appel d\'Arnaque Signalé</string>
+    <string name="incident_video_call_blocked">Tentative d\'appel vidéo signalée</string>
+    <string name="incident_scanned_chats">Discussions Analysées</string>
+    <string name="incident_safe_messages">%1$d messages sûrs vérifiés</string>
+    <string name="incident_system_update">Mise à Jour Système</string>
+    <string name="incident_database_updated">Base de données de protection mise à jour</string>
+    <string name="incident_blocked_link">Lien Suspect Signalé</string>
+    <string name="incident_daily_scan">Analyse Quotidienne Terminée</string>
+    <string name="incident_no_issues">Aucun problème trouvé</string>
+    <string name="incident_unknown_caller">Appelant Inconnu Détecté</string>
+    <string name="incident_wifi_verified">Réseau Wi-Fi Vérifié</string>
+    <string name="incident_definitions_updated">Définitions Mises à Jour</string>
+    <string name="incident_phishing_link">Lien de Phishing Signalé</string>
+    <string name="incident_sextortion">Tentative de Sextorsion Signalée</string>
+    <string name="incident_police_impersonation">Usurpation d\'Identité Policière Signalée</string>
+    <string name="incident_dangerous_app">Application Dangereuse Signalée</string>
+    <string name="incident_safe_scan">Analyse Sûre</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile_title">Profil</string>
+    <string name="profile_protected">Protégé</string>
+    <string name="profile_at_risk">À Risque</string>
+    <string name="profile_system_active">Le système est actif et surveille</string>
+    <string name="profile_system_inactive">Configurez les autorisations pour activer la protection</string>
+    <string name="profile_device_id">ID DE L\'APPAREIL</string>
+    <string name="profile_copy_id">Copier l\'ID</string>
+    <string name="profile_id_note">Cet ID anonyme est utilisé uniquement pour les demandes d\'assistance chiffrées.</string>
+    <string name="profile_privacy_report">Rapport de Confidentialité</string>
+    <string name="profile_local_processing">Résumé du Traitement Local</string>
+    <string name="profile_threats_blocked">%1$d menaces signalées localement. %2$s de données traitées sur l\'appareil sans téléchargement dans le cloud.</string>
+    <string name="profile_view_report">Voir le Rapport Complet</string>
+    <string name="profile_general">Général</string>
+    <string name="profile_subscription">Abonnement</string>
+    <string name="profile_upgrade">AMÉLIORER</string>
+    <string name="profile_settings">Paramètres</string>
+    <string name="profile_support">Support</string>
+    <string name="profile_encrypted_channel">Canal Chiffré</string>
+    <string name="profile_version">Aegis v%1$s (Build %2$s)</string>
+    <string name="profile_plan_free">Plan : Gratuit</string>
+    
+    <!-- Full Report Screen -->
+    <string name="full_report_title">Rapport de Confidentialité</string>
+    <string name="full_report_total_threats_blocked">Total des Menaces Signalées</string>
+    <string name="full_report_local_processing">Tout le traitement se fait localement sur votre appareil</string>
+    <string name="full_report_threats_blocked">MENACES SIGNALÉES</string>
+    <string name="full_report_scam_calls">Appels d\'Arnaque Signalés</string>
+    <string name="full_report_phishing_links">Liens de Phishing Signalés</string>
+    <string name="full_report_sextortion">Tentatives de Sextorsion Signalées</string>
+    <string name="full_report_police_impersonation">Usurpation d\'Identité Policière Signalée</string>
+    <string name="full_report_dangerous_apps">Applications Dangereuses Signalées</string>
+    <string name="full_report_processing_summary">RÉSUMÉ DU TRAITEMENT</string>
+    <string name="full_report_data_processed">Données Traitées sur l\'Appareil</string>
+    <string name="full_report_no_cloud">Aucun téléchargement cloud</string>
+    <string name="full_report_privacy_assured">Confidentialité Assurée</string>
+    <string name="full_report_privacy_message">Toute la détection et l\'analyse des menaces se fait localement sur votre appareil. Vos données ne quittent jamais votre téléphone et ne sont jamais téléchargées vers des serveurs cloud.</string>
+    <string name="full_report_privacy_note">Aegis utilise des modèles d\'IA sur l\'appareil pour protéger votre vie privée tout en vous protégeant contre les arnaques.</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">Paramètres de l\'Application</string>
+    <string name="settings_section_protection">NIVEAUX DE PROTECTION</string>
+    <string name="settings_sensitivity_title">Sensibilité de Détection d\'Arnaque</string>
+    <string name="settings_sensitivity_desc">Ajustez l\'agressivité avec laquelle l\'IA filtre les appels inconnus.</string>
+    <string name="settings_sensitivity_low">Faible</string>
+    <string name="settings_sensitivity_balanced">Équilibrée</string>
+    <string name="settings_sensitivity_aggressive">Agressive</string>
+    <string name="settings_sensitivity_low_warning">Analyse uniquement les mots-clés à haut risque provenant de numéros inconnus. Idéal pour l\'autonomie de la batterie.</string>
+    <string name="settings_sensitivity_balanced_warning">Protection standard. Analyse tous les numéros inconnus mais fait confiance aux contacts enregistrés.</string>
+    <string name="settings_sensitivity_aggressive_warning">Sécurité maximale. Analyse TOUS les numéros inconnus et les messages suspects des contacts enregistrés.</string>
+    <string name="settings_section_permissions">AUTORISATIONS D\'APPLICATION</string>
+    <string name="settings_accessibility_note">Les autorisations d\'accessibilité sont nécessaires pour qu\'Aegis analyse les écrans d\'appels entrants en temps réel.</string>
+    <string name="settings_section_appearance">APPARENCE</string>
+    <string name="settings_theme_title">Mode Thème</string>
+    <string name="settings_theme_desc">Choisissez votre thème d\'application préféré.</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+    <string name="settings_theme_system">Système</string>
+    <string name="settings_section_contacts">CONTACTS FIABLES</string>
+    
+    <!-- Language Settings -->
+    <string name="language">Langue</string>
+    <string name="select_language">Sélectionner la Langue</string>
+    <string name="text_language_english">Anglais</string>
+    <string name="text_language_spanish">Espagnol</string>
+    <string name="text_language_french">Français</string>
+    <string name="text_language_hindi">Hindi</string>
+    <string name="settings_language_title">Langue</string>
+    <string name="settings_language_desc">Choisissez votre langue préférée.</string>
+    <string name="settings_no_contacts">Aucun contact pour le moment</string>
+    <string name="settings_no_contacts_desc">Appuyez pour voir les contacts fiables</string>
+    <string name="settings_section_advanced">AVANCÉ</string>
+    <string name="settings_factory_reset_title">Réinitialisation d\'Usine d\'Aegis</string>
+    <string name="settings_factory_reset_message">Cela supprimera toutes les données, y compris les incidents, les contacts fiables et les paramètres. Cette action ne peut pas être annulée.</string>
+    <string name="settings_reset_confirm">Tout Réinitialiser</string>
+    <string name="settings_cancel">Annuler</string>
+    <string name="settings_active">Actif</string>
+    <string name="settings_disabled">Désactivé</string>
+    <string name="settings_action_needed">Action Requise</string>
+    
+    <!-- Trusted Contacts Screen -->
+    <string name="trusted_contacts_title">Contacts Fiables</string>
+    <string name="trusted_contacts_list_title">VOS CONTACTS (%1$d)</string>
+    <string name="trusted_contacts_empty_title">Vos Contacts Fiables</string>
+    <string name="trusted_contacts_empty_desc">Aucun contact fiable ajouté pour le moment. Les contacts ajoutés à la liste fiable apparaîtront ici.</string>
+    <string name="trusted_add_dialog_title">Ajouter un Contact Fiable</string>
+    <string name="trusted_add_name_label">Nom</string>
+    <string name="trusted_add_phone_label">Numéro de Téléphone</string>
+    <string name="trusted_add_relationship_label">Relation (par ex., Famille, Ami)</string>
+    
+    <!-- Overlays & Warnings -->
+    <string name="overlay_camera_warning_title">Caméra Active</string>
+    <string name="overlay_camera_warning_message">Aegis surveille cet appel vidéo pour votre sécurité.</string>
+    <string name="overlay_danger_title">DANGER DÉTECTÉ</string>
+    <string name="overlay_danger_message">Aegis a détecté une menace potentielle.</string>
+    <string name="overlay_scam_warning_title">Avertissement d\'Arnaque</string>
+    <string name="overlay_block_call">Terminer l\'Appel</string>
+    <string name="overlay_dismiss">Ignorer</string>
+    <string name="overlay_report">Signaler</string>
+    <string name="overlay_unknown_caller">Appelant Inconnu Détecté</string>
+    <string name="overlay_camera_disabled">L\'IA d\'Aegis conseille de couvrir votre caméra</string>
+    <string name="overlay_reveal_camera">Je Comprends, Révéler la Caméra</string>
+    <string name="overlay_keep_camera_off">Garder la Caméra Éteinte</string>
+    <string name="overlay_powered_by">PROPULSÉ PAR AEGIS SAFETY</string>
+    <string name="overlay_block_end_call">TERMINER L\'APPEL</string>
+    <string name="overlay_view_analysis">VOIR L\'ANALYSE DÉTAILLÉE</string>
+    <string name="overlay_ai_report">Rapport IA</string>
+    <string name="overlay_critical">CRITIQUE</string>
+    <string name="overlay_caller_identity">Identité de l\'Appelant</string>
+    <string name="overlay_suspicious">Suspect</string>
+    <string name="overlay_scam_pattern">Modèle d\'Arnaque</string>
+    <string name="overlay_impersonation">Usurpation d\'Identité</string>
+    <string name="overlay_risk_score">Score de Risque</string>
+    <string name="overlay_aegis_protection_active">PROTECTION AEGIS ACTIVE</string>
+    
+    <!-- Shield Strings -->
+    <string name="scam_shield_critical_alert">ALERTE CRITIQUE</string>
+    <string name="scam_shield_danger_detected">DANGER\nDÉTECTÉ</string>
+    <string name="scam_shield_flagged_call">L\'IA d\'Aegis a signalé cet appel comme suspect.</string>
+    <string name="scam_shield_ai_report">RAPPORT D\'ANALYSE IA</string>
+    <string name="scam_shield_match_found">CORRESPONDANCE TROUVÉE</string>
+    <string name="scam_shield_risk_label">Risque d\'Arnaque</string>
+    <string name="scam_shield_confidence_label">CONFIANCE</string>
+    <string name="scam_shield_false_alarm">Fausse Alarme (Je fais confiance à cette personne)</string>
+    
+    <string name="phishing_shield_title">ALERTE PHISHING</string>
+    <string name="phishing_shield_malicious_link">LIEN\nMALVEILLANT</string>
+    <string name="phishing_shield_identified_message">L\'IA d\'Aegis a identifié ce lien comme malveillant.</string>
+    <string name="phishing_shield_threat_detected">MENACE DÉTECTÉE</string>
+    <string name="phishing_shield_detection_reason">Raison de Détection</string>
+    <string name="phishing_shield_report_takedown">SIGNALER &amp; RETIRER</string>
+    <string name="phishing_shield_help_protect">Aidez à protéger les autres contre cette arnaque</string>
+    <string name="phishing_shield_dismiss">Ignorer (Ne pas ouvrir)</string>
+    <string name="phishing_shield_false_alarm">Fausse Alarme (Accéder au site)</string>
+    
+    <string name="camera_overlay_unknown_number">Numéro Inconnu</string>
+    <string name="camera_overlay_ringing">Sonnerie...</string>
+    <string name="camera_overlay_encrypted">Chiffrement de bout en bout</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Identifier les Escrocs</string>
+    <string name="onboarding_desc_1">Aegis analyse les modèles de chat pour vous avertir des usurpateurs et des faux agents en temps réel.</string>
+    <string name="onboarding_title_2">Navigation Sécurisée</string>
+    <string name="onboarding_desc_2">Nous analysons les liens dans vos messages pour vous empêcher de visiter des sites de phishing malveillants avant qu\'ils ne volent vos données.</string>
+    <string name="onboarding_title_3">Arrêter le Chantage</string>
+    <string name="onboarding_desc_3">Nous cachons automatiquement votre caméra lors d\'appels provenant de numéros inconnus pour prévenir la sextorsion ou les fausses arnaques par appel vidéo policier.</string>
+    <string name="onboarding_title_4">Vous Êtes Prêt</string>
+    <string name="onboarding_desc_4">Aegis est prêt à s\'exécuter en arrière-plan. Accordez les autorisations sur l\'écran suivant pour activer la protection complète.</string>
+    <string name="onboarding_skip">Passer</string>
+    <string name="onboarding_enable_protection">Activer la Protection</string>
+    <string name="onboarding_continue">Continuer</string>
+    <string name="onboarding_next">Suivant</string>
+    
+    <!-- Mocks -->
+    <string name="mock_sender_name">Expéditeur Inconnu</string>
+    <string name="mock_message_time">Aujourd\'hui, 14h41</string>
+    <string name="mock_message_content">URGENT : Votre compte a été signalé. Cliquez ici pour vérifier immédiatement.</string>
+    <string name="mock_scam_badge">ARNAQUE</string>
+    <string name="mock_analyzing">Analyse des modèles...</string>
+    <string name="mock_camera_blocked">CAMÉRA CACHÉE</string>
+
+    <!-- Common Actions -->
+    <string name="action_cancel">Annuler</string>
+    <string name="action_confirm">Confirmer</string>
+    <string name="action_save">Enregistrer</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_edit">Modifier</string>
+    <string name="action_add">Ajouter</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_retry">Réessayer</string>
+    
+    <!-- Time -->
+    <string name="time_today">Aujourd\'hui</string>
+    <string name="time_yesterday">Hier</string>
+    <string name="time_minutes_ago">Il y a %1$d min</string>
+    <string name="time_hours_ago">Il y a %1$d heures</string>
+    <string name="time_just_now">À l\'instant</string>
+    
+    <!-- Status -->
+    <string name="status_active">Actif</string>
+    <string name="status_disabled">Désactivé</string>
+    <string name="status_action_needed">Action Requise</string>
+
+    <!-- Scam Warning -->
+    <string name="scam_warning_title">Modèle Suspect Détecté</string>
+    <string name="scam_warning_learn_more">En savoir plus</string>
+    <string name="cd_warning">Avertissement</string>
+    <string name="cd_dismiss">Ignorer</string>
+
+    <!-- Icons & Defaults -->
+    <string name="emoji_shield">🛡️</string>
+    <string name="emoji_camera_blocked">📵</string>
+    <string name="emoji_magnifier">🔍</string>
+    <string name="default_contact_relationship">Contact</string>
+
+</resources>
