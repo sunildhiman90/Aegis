@@ -29,9 +29,8 @@ import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.AppThemeMode
 import app.aegis.domain.model.TrustedContact
 import app.aegis.models.SensitivityLevel
-import app.aegis.ui.theme.AegisTheme
-import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.SettingsViewModel
+import app.aegis.ui.theme.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -55,7 +54,7 @@ fun SettingsScreen(
     onLanguageChange: (String) -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     var currentSensitivity by remember { mutableStateOf(sensitivityLevel) }
     var currentThemeMode by remember { mutableStateOf(themeMode) }
     val scrollState = rememberScrollState()
@@ -86,7 +85,7 @@ fun SettingsScreen(
                 Text(
                     text = stringResource(Res.string.settings_factory_reset_message),
                     style = AegisTypography.bodyMedium,
-                    color = colors.textSecondary,
+                    color = colors.onSurfaceVariant,
                 )
             },
             confirmButton = {
@@ -101,7 +100,7 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
-                    Text(stringResource(Res.string.settings_cancel), color = colors.textSecondary)
+                    Text(stringResource(Res.string.settings_cancel), color = colors.onSurfaceVariant)
                 }
             },
         )
@@ -117,7 +116,7 @@ fun SettingsScreen(
                         Text(
                             text = stringResource(Res.string.settings_title),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                     },
                     navigationIcon = {
@@ -125,7 +124,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(Res.string.nav_back),
-                                tint = colors.textPrimary,
+                                tint = colors.onSurface,
                             )
                         }
                     },
@@ -135,7 +134,7 @@ fun SettingsScreen(
                         ),
                 )
                 // Divider below action bar
-                HorizontalDivider(color = colors.divider, thickness = 1.dp)
+                HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp)
             }
         },
     ) { paddingValues ->
@@ -172,13 +171,13 @@ fun SettingsScreen(
                         Text(
                             text = stringResource(Res.string.settings_sensitivity_title),
                             style = AegisTypography.titleMedium,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = stringResource(Res.string.settings_sensitivity_desc),
                             style = AegisTypography.bodySmall,
-                            color = colors.textSecondary,
+                            color = colors.onSurfaceVariant,
                         )
                     }
                     Icon(
@@ -230,7 +229,7 @@ fun SettingsScreen(
                                             if (isSelected) {
                                                 colors.primary
                                             } else {
-                                                colors.cardBorder
+                                                colors.outline
                                             },
                                         ),
                             )
@@ -238,7 +237,7 @@ fun SettingsScreen(
                             Text(
                                 text = displayName,
                                 style = AegisTypography.labelMedium,
-                                color = if (isSelected) colors.primary else colors.textSecondary,
+                                color = if (isSelected) colors.primary else colors.onSurfaceVariant,
                             )
                         }
                     }
@@ -252,7 +251,7 @@ fun SettingsScreen(
                         SensitivityLevel.LOW -> {
                             Triple(
                                 Icons.Outlined.BatteryStd,
-                                colors.success,
+                                colors.success, // Using extension
                                 colors.success.copy(alpha = 0.1f),
                             )
                         }
@@ -268,7 +267,7 @@ fun SettingsScreen(
                         SensitivityLevel.AGGRESSIVE -> {
                             Triple(
                                 Icons.Outlined.Security,
-                                colors.warning,
+                                colors.warning, // Using extension
                                 colors.warning.copy(alpha = 0.1f),
                             )
                         }
@@ -304,7 +303,7 @@ fun SettingsScreen(
                         Text(
                             text = warningText,
                             style = AegisTypography.bodySmall,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                     }
                 }
@@ -336,7 +335,7 @@ fun SettingsScreen(
                             Res.string.status_disabled,
                         )
                     },
-                subtitleColor = if (hasOverlayPermission) colors.success else colors.textSecondary,
+                subtitleColor = if (hasOverlayPermission) colors.success else colors.onSurfaceVariant,
                 checked = hasOverlayPermission,
                 onCheckedChange = { onOpenOverlaySettings() },
             )
@@ -373,7 +372,7 @@ fun SettingsScreen(
             Text(
                 text = stringResource(Res.string.settings_accessibility_note),
                 style = AegisTypography.caption,
-                color = colors.textTertiary,
+                color = colors.textTertiary, // Extension
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -401,13 +400,13 @@ fun SettingsScreen(
                         Text(
                             text = stringResource(Res.string.settings_theme_title),
                             style = AegisTypography.titleMedium,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = stringResource(Res.string.settings_theme_desc),
                             style = AegisTypography.bodySmall,
-                            color = colors.textSecondary,
+                            color = colors.onSurfaceVariant,
                         )
                     }
                     Text(
@@ -461,7 +460,7 @@ fun SettingsScreen(
                                             if (isSelected) {
                                                 colors.primary
                                             } else {
-                                                colors.cardBorder
+                                                colors.outline
                                             },
                                         ),
                             )
@@ -469,7 +468,7 @@ fun SettingsScreen(
                             Text(
                                 text = displayName,
                                 style = AegisTypography.labelMedium,
-                                color = if (isSelected) colors.primary else colors.textSecondary,
+                                color = if (isSelected) colors.primary else colors.onSurfaceVariant,
                             )
                         }
                     }
@@ -502,7 +501,7 @@ fun SettingsScreen(
                         Text(
                             text = stringResource(Res.string.settings_language_title),
                             style = AegisTypography.titleMedium,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -510,7 +509,7 @@ fun SettingsScreen(
                                 it.code == languageUiState.selectedLanguageCode
                             }?.name ?: "English",
                             style = AegisTypography.bodySmall,
-                            color = colors.textSecondary,
+                            color = colors.onSurfaceVariant,
                         )
                     }
                     Icon(
@@ -558,7 +557,7 @@ fun SettingsScreen(
                 // Empty state for contacts
                 TrustedContactEmptyState(onViewTrustedContacts)
             } else {
-                topContacts.forEach { contact ->
+                for (contact in topContacts) {
                     TrustedContactItem(
                         name = contact.name,
                         detail = "${contact.relationship} • ${contact.phoneNumber}",
@@ -620,7 +619,7 @@ private fun SectionTitle(
     action: String? = null,
     onActionClick: (() -> Unit)? = null,
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -630,7 +629,7 @@ private fun SectionTitle(
         Text(
             text = title,
             style = AegisTypography.labelMedium,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
         )
         if (action != null) {
             Text(
@@ -653,7 +652,7 @@ private fun SettingsToggleItem(
     onCheckedChange: (Boolean) -> Unit,
     showWarning: Boolean = false,
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier =
@@ -681,7 +680,7 @@ private fun SettingsToggleItem(
             Text(
                 text = title,
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary,
+                color = colors.onSurface,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (showWarning) {
@@ -708,8 +707,8 @@ private fun SettingsToggleItem(
                 SwitchDefaults.colors(
                     checkedThumbColor = colors.primary,
                     checkedTrackColor = colors.primary.copy(alpha = 0.5f),
-                    uncheckedThumbColor = colors.textSecondary,
-                    uncheckedTrackColor = colors.cardBorder,
+                    uncheckedThumbColor = colors.onSurfaceVariant,
+                    uncheckedTrackColor = colors.outline,
                 ),
         )
     }
@@ -720,7 +719,7 @@ private fun TrustedContactItem(
     name: String,
     detail: String,
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier =
@@ -754,12 +753,12 @@ private fun TrustedContactItem(
             Text(
                 text = name,
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary,
+                color = colors.onSurface,
             )
             Text(
                 text = detail,
                 style = AegisTypography.bodySmall,
-                color = colors.textSecondary,
+                color = colors.onSurfaceVariant,
             )
         }
 
@@ -776,7 +775,7 @@ private fun TrustedContactItem(
  */
 @Composable
 private fun TrustedContactEmptyState(onAddContacts: () -> Unit) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier =
@@ -810,12 +809,12 @@ private fun TrustedContactEmptyState(onAddContacts: () -> Unit) {
             Text(
                 text = stringResource(Res.string.settings_no_contacts),
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary,
+                color = colors.onSurface,
             )
             Text(
                 text = stringResource(Res.string.settings_no_contacts_desc),
                 style = AegisTypography.bodySmall,
-                color = colors.textSecondary,
+                color = colors.onSurfaceVariant,
             )
         }
 

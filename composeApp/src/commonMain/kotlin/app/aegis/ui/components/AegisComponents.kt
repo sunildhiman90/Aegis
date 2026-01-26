@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.aegis.ui.theme.AegisTheme
+import app.aegis.ui.theme.*
 import app.aegis.ui.theme.AegisTypography
 
 /**
@@ -30,7 +30,7 @@ fun AegisPrimaryButton(
     enabled: Boolean = true,
     leadingIcon: ImageVector? = null
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Button(
         onClick = onClick,
@@ -70,13 +70,13 @@ fun AegisCard(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     val cardModifier = modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(16.dp))
         .background(colors.surface)
-        .border(1.dp, colors.cardBorder, RoundedCornerShape(16.dp))
+        .border(1.dp, colors.outline, RoundedCornerShape(16.dp))
         .then(
             if (onClick != null) Modifier.clickable { onClick() }
             else Modifier
@@ -99,7 +99,7 @@ fun StatCard(
     subtitle: String,
     modifier: Modifier = Modifier
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     AegisCard(modifier = modifier) {
         Column(
@@ -111,13 +111,13 @@ fun StatCard(
             Text(
                 text = title,
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary
+                color = colors.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = subtitle,
                 style = AegisTypography.bodySmall,
-                color = colors.textSecondary
+                color = colors.onSurfaceVariant
             )
         }
     }
@@ -136,7 +136,7 @@ fun IncidentLogItem(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier = modifier
@@ -168,13 +168,13 @@ fun IncidentLogItem(
             Text(
                 text = title,
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary
+                color = colors.onSurface
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = description,
                 style = AegisTypography.bodySmall,
-                color = colors.textSecondary
+                color = colors.onSurfaceVariant
             )
         }
 
@@ -198,7 +198,7 @@ fun SectionHeader(
     action: String? = null,
     onActionClick: (() -> Unit)? = null
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -208,7 +208,7 @@ fun SectionHeader(
         Text(
             text = title,
             style = AegisTypography.titleLarge,
-            color = colors.textPrimary
+            color = colors.onSurface
         )
         if (action != null) {
             Text(
@@ -233,7 +233,7 @@ fun PermissionCard(
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = modifier
@@ -259,13 +259,13 @@ fun PermissionCard(
                 Text(
                     text = title,
                     style = AegisTypography.titleMedium,
-                    color = colors.textPrimary
+                    color = colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = description,
                     style = AegisTypography.bodySmall,
-                    color = colors.textSecondary
+                    color = colors.onSurfaceVariant
                 )
             }
         }
@@ -287,7 +287,7 @@ fun ShieldStatusIcon(
     isActive: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val backgroundColor = if (isActive) colors.success else colors.warning
 
     Box(

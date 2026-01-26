@@ -18,12 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.ui.components.AegisPrimaryButton
-import app.aegis.ui.theme.AegisTheme
+import app.aegis.ui.theme.*
 import app.aegis.ui.theme.AegisTypography
+
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -37,7 +39,7 @@ fun OnboardingScreen(
     onSkip: () -> Unit = {},
     onComplete: () -> Unit = {}
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     val pages = listOf(
         OnboardingPage(
@@ -71,89 +73,53 @@ fun OnboardingScreen(
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
+    Box(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(colors.background),
     ) {
-        // Top bar with Skip
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            if (pagerState.currentPage > 0) {
-                IconButton(onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                    }
-                }) {
-                    Icon(
-                        Icons.AutoMirrored.Default.ArrowBack,
-                        contentDescription = stringResource(Res.string.nav_back),
-                        tint = colors.textSecondary
-                    )
-                }
-            } else {
-                Spacer(modifier = Modifier.width(48.dp))
-            }
-
-            TextButton(onClick = onSkip) {
-                Text(
-                    text = stringResource(Res.string.onboarding_skip),
-                    style = AegisTypography.labelMedium,
-                    color = colors.textSecondary
-                )
-            }
-        }
-
         // Pager
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.fillMaxSize(),
         ) { page ->
             OnboardingPageContent(
                 page = pages[page],
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier,
             )
         }
 
-        // Bottom section
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        // Indicators and Buttons
+        Row(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(32.dp)
+                    .navigationBarsPadding(), // Avoid overlap with safe area
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Page indicators
+            // Pager Indicators
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(bottom = 32.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                repeat(pages.size) { index ->
+                repeat(pages.size) { iteration ->
+                    val color = if (pagerState.currentPage == iteration) colors.primary else colors.onSurfaceVariant.copy(alpha = 0.5f)
                     Box(
                         modifier = Modifier
-                            .size(if (index == pagerState.currentPage) 24.dp else 8.dp, 8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(
-                                if (index == pagerState.currentPage)
-                                    colors.primary
-                                else
-                                    colors.textTertiary
-                            )
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(color)
                     )
                 }
             }
 
-            // Button
+            // Next/Done Button
             val isLastPage = pagerState.currentPage == pages.size - 1
-
-            AegisPrimaryButton(
-                text = if (isLastPage) stringResource(Res.string.onboarding_enable_protection)
-                else if (pagerState.currentPage == 0) stringResource(Res.string.onboarding_continue)
-                else stringResource(Res.string.onboarding_next),
+            
+            FloatingActionButton(
                 onClick = {
                     if (isLastPage) {
                         onComplete()
@@ -163,12 +129,18 @@ fun OnboardingScreen(
                         }
                     }
                 },
-                leadingIcon = if (isLastPage) Icons.Default.Check else null
-            )
-
-
-        }
+                containerColor = colors.primary,
+                contentColor = colors.onPrimary
+            ) {
+                Icon(
+                    imageVector = if (isLastPage) Icons.Default.Check else Icons.AutoMirrored.Filled.ArrowBack, // Using ArrowBack mirrored for forward
+                    contentDescription = null,
+                    modifier = Modifier.graphicsLayer(scaleX = if (isLastPage) 1f else -1f)
+                )
+            }
     }
+}
+
 }
 
 private data class OnboardingPage(
@@ -184,7 +156,7 @@ private fun OnboardingPageContent(
     page: OnboardingPage,
     modifier: Modifier = Modifier
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val title = stringResource(page.titleRes)
     val description = stringResource(page.descriptionRes)
 
@@ -211,7 +183,7 @@ private fun OnboardingPageContent(
                 Text(
                     text = titleParts.dropLast(1).joinToString(" ") + " ",
                     style = AegisTypography.displayMedium,
-                    color = colors.textPrimary
+                    color = colors.onSurface
                 )
                 Text(
                     text = titleParts.last(),
@@ -223,7 +195,7 @@ private fun OnboardingPageContent(
             Text(
                 text = title,
                 style = AegisTypography.displayMedium,
-                color = colors.textPrimary
+                color = colors.onSurface
             )
         }
 
@@ -232,7 +204,7 @@ private fun OnboardingPageContent(
         Text(
             text = description,
             style = AegisTypography.bodyLarge,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
     }
@@ -240,7 +212,7 @@ private fun OnboardingPageContent(
 
 @Composable
 private fun MockChatUI() {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -262,7 +234,7 @@ private fun MockChatUI() {
                 Text(
                     stringResource(Res.string.mock_sender_name),
                     style = AegisTypography.titleSmall,
-                    color = colors.textPrimary
+                    color = colors.onSurface
                 )
                 Text(
                     stringResource(Res.string.mock_message_time),
@@ -286,7 +258,7 @@ private fun MockChatUI() {
                 Text(
                     text = stringResource(Res.string.mock_message_content),
                     style = AegisTypography.bodyMedium,
-                    color = colors.textPrimary
+                    color = colors.onSurface
                 )
             }
 
@@ -335,7 +307,7 @@ private fun MockChatUI() {
 
 @Composable
 private fun ShieldHandUI() {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Box(
         modifier = Modifier
@@ -361,7 +333,7 @@ private fun ShieldHandUI() {
 
 @Composable
 private fun CameraBlockedUI() {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier

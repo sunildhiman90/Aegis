@@ -1,5 +1,11 @@
 package app.aegis.ui.theme
 
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -8,7 +14,7 @@ import androidx.compose.ui.graphics.Color
  */
 
 // === DARK THEME COLORS (Stitch Guidelines) ===
-object AegisDarkColors {
+private object AegisDarkPalette {
     // Background Colors
     val Background = Color(0xFF121212)          // Deep Charcoal (Stitch)
     val Surface = Color(0xFF1E1E1E)             // Lighter Grey cards (Stitch)
@@ -16,7 +22,7 @@ object AegisDarkColors {
 
     // Primary Accent - Aegis Gold (Stitch)
     val Primary = Color(0xFFFFD700)             // Aegis Gold
-    val PrimaryVariant = Color(0xFFE6C200)      // Darker gold for pressed states
+    val PrimaryVariant = Color(0xFFE6C200)      // Darker gold for pressed states (Secondary container in M3/Inverse Primary?)
     val PrimaryContainer = Color(0xFF3D3000)    // Gold container background
 
     // Text Colors
@@ -33,7 +39,6 @@ object AegisDarkColors {
     val ErrorContainer = Color(0xFF4A0A0A)      // Red container
 
     // Component Colors
-    val CardBackground = Color(0xFF1E1E1E)      // Same as Surface (Stitch)
     val CardBorder = Color(0xFF333333)          // Card border
     val Divider = Color(0xFF2D2D2D)             // Dividers
     val IconDefault = Color(0xFFB0B0B0)         // Default icon color
@@ -45,7 +50,7 @@ object AegisDarkColors {
 }
 
 // === LIGHT THEME COLORS (Stitch Guidelines) ===
-object AegisLightColors {
+private object AegisLightPalette {
     // Background Colors
     val Background = Color(0xFFF5F5F5)          // Off-White (Stitch)
     val Surface = Color(0xFFFFFFFF)             // Pure White (Stitch)
@@ -70,7 +75,6 @@ object AegisLightColors {
     val ErrorContainer = Color(0xFFFFCDD2)      // Light red container
 
     // Component Colors
-    val CardBackground = Color(0xFFFFFFFF)      // White card background
     val CardBorder = Color(0xFFE0E0E0)          // Light gray border
     val Divider = Color(0xFFE0E0E0)             // Dividers
     val IconDefault = Color(0xFF616161)         // Default icon color
@@ -82,128 +86,148 @@ object AegisLightColors {
 }
 
 /**
- * Unified color interface for theme-aware color access
+ * Standard Material 3 Light Color Scheme
  */
-data class AegisColorScheme(
-    val background: Color,
-    val surface: Color,
-    val surfaceVariant: Color,
-    val primary: Color,
-    val primaryVariant: Color,
-    val primaryContainer: Color,
-    val textPrimary: Color,
-    val textSecondary: Color,
-    val textTertiary: Color,
+val AegisLightColorScheme = lightColorScheme(
+    primary = AegisLightPalette.Primary,
+    onPrimary = AegisLightPalette.Surface,
+    primaryContainer = AegisLightPalette.PrimaryContainer,
+    onPrimaryContainer = AegisLightPalette.TextPrimary,
+    secondary = AegisLightPalette.TrustBadge, // Mapping trust badge to secondary for standard slots
+    onSecondary = AegisLightPalette.Surface,
+    tertiary = AegisLightPalette.Success,     // Mapping success to tertiary for standard slots
+    onTertiary = AegisLightPalette.Surface,
+    background = AegisLightPalette.Background,
+    onBackground = AegisLightPalette.TextPrimary,
+    surface = AegisLightPalette.Surface,
+    onSurface = AegisLightPalette.TextPrimary,
+    surfaceVariant = AegisLightPalette.SurfaceVariant,
+    onSurfaceVariant = AegisLightPalette.TextSecondary,
+    error = AegisLightPalette.Error,
+    onError = AegisLightPalette.Surface,
+    errorContainer = AegisLightPalette.ErrorContainer,
+    onErrorContainer = AegisLightPalette.TextPrimary,
+    outline = AegisLightPalette.CardBorder,
+    outlineVariant = AegisLightPalette.Divider
+)
+
+/**
+ * Standard Material 3 Dark Color Scheme
+ */
+val AegisDarkColorScheme = darkColorScheme(
+    primary = AegisDarkPalette.Primary,
+    onPrimary = Color(0xFF121212), // Dark text on gold for readability
+    primaryContainer = AegisDarkPalette.PrimaryContainer,
+    onPrimaryContainer = AegisDarkPalette.TextPrimary,
+    secondary = AegisDarkPalette.TrustBadge,
+    onSecondary = AegisDarkPalette.TextPrimary,
+    tertiary = AegisDarkPalette.Success,
+    onTertiary = AegisDarkPalette.TextPrimary,
+    background = AegisDarkPalette.Background,
+    onBackground = AegisDarkPalette.TextPrimary,
+    surface = AegisDarkPalette.Surface,
+    onSurface = AegisDarkPalette.TextPrimary,
+    surfaceVariant = AegisDarkPalette.SurfaceVariant,
+    onSurfaceVariant = AegisDarkPalette.TextSecondary,
+    error = AegisDarkPalette.Error,
+    onError = AegisDarkPalette.TextPrimary,
+    errorContainer = AegisDarkPalette.ErrorContainer,
+    onErrorContainer = AegisDarkPalette.TextPrimary,
+    outline = AegisDarkPalette.CardBorder,
+    outlineVariant = AegisDarkPalette.Divider
+)
+
+/**
+ * Custom Semantic Colors for Aegis
+ * These are colors that don't fit into standard Material slots or are distinct semantic roles.
+ */
+data class AegisCustomColors(
     val success: Color,
     val successContainer: Color,
     val warning: Color,
     val warningContainer: Color,
-    val error: Color,
-    val errorContainer: Color,
-    val cardBackground: Color,
-    val cardBorder: Color,
-    val divider: Color,
-    val iconDefault: Color,
     val shieldGreen: Color,
     val shieldYellow: Color,
-    val trustBadge: Color
+    val trustBadge: Color,
+    val iconDefault: Color,
+    val textTertiary: Color
 )
 
-val DarkColorScheme = AegisColorScheme(
-    background = AegisDarkColors.Background,
-    surface = AegisDarkColors.Surface,
-    surfaceVariant = AegisDarkColors.SurfaceVariant,
-    primary = AegisDarkColors.Primary,
-    primaryVariant = AegisDarkColors.PrimaryVariant,
-    primaryContainer = AegisDarkColors.PrimaryContainer,
-    textPrimary = AegisDarkColors.TextPrimary,
-    textSecondary = AegisDarkColors.TextSecondary,
-    textTertiary = AegisDarkColors.TextTertiary,
-    success = AegisDarkColors.Success,
-    successContainer = AegisDarkColors.SuccessContainer,
-    warning = AegisDarkColors.Warning,
-    warningContainer = AegisDarkColors.WarningContainer,
-    error = AegisDarkColors.Error,
-    errorContainer = AegisDarkColors.ErrorContainer,
-    cardBackground = AegisDarkColors.CardBackground,
-    cardBorder = AegisDarkColors.CardBorder,
-    divider = AegisDarkColors.Divider,
-    iconDefault = AegisDarkColors.IconDefault,
-    shieldGreen = AegisDarkColors.ShieldGreen,
-    shieldYellow = AegisDarkColors.ShieldYellow,
-    trustBadge = AegisDarkColors.TrustBadge
+val AegisLightCustomColors = AegisCustomColors(
+    success = AegisLightPalette.Success,
+    successContainer = AegisLightPalette.SuccessContainer,
+    warning = AegisLightPalette.Warning,
+    warningContainer = AegisLightPalette.WarningContainer,
+    shieldGreen = AegisLightPalette.ShieldGreen,
+    shieldYellow = AegisLightPalette.ShieldYellow,
+    trustBadge = AegisLightPalette.TrustBadge,
+    iconDefault = AegisLightPalette.IconDefault,
+    textTertiary = AegisLightPalette.TextTertiary
 )
 
-val LightColorScheme = AegisColorScheme(
-    background = AegisLightColors.Background,
-    surface = AegisLightColors.Surface,
-    surfaceVariant = AegisLightColors.SurfaceVariant,
-    primary = AegisLightColors.Primary,
-    primaryVariant = AegisLightColors.PrimaryVariant,
-    primaryContainer = AegisLightColors.PrimaryContainer,
-    textPrimary = AegisLightColors.TextPrimary,
-    textSecondary = AegisLightColors.TextSecondary,
-    textTertiary = AegisLightColors.TextTertiary,
-    success = AegisLightColors.Success,
-    successContainer = AegisLightColors.SuccessContainer,
-    warning = AegisLightColors.Warning,
-    warningContainer = AegisLightColors.WarningContainer,
-    error = AegisLightColors.Error,
-    errorContainer = AegisLightColors.ErrorContainer,
-    cardBackground = AegisLightColors.CardBackground,
-    cardBorder = AegisLightColors.CardBorder,
-    divider = AegisLightColors.Divider,
-    iconDefault = AegisLightColors.IconDefault,
-    shieldGreen = AegisLightColors.ShieldGreen,
-    shieldYellow = AegisLightColors.ShieldYellow,
-    trustBadge = AegisLightColors.TrustBadge
+val AegisDarkCustomColors = AegisCustomColors(
+    success = AegisDarkPalette.Success,
+    successContainer = AegisDarkPalette.SuccessContainer,
+    warning = AegisDarkPalette.Warning,
+    warningContainer = AegisDarkPalette.WarningContainer,
+    shieldGreen = AegisDarkPalette.ShieldGreen,
+    shieldYellow = AegisDarkPalette.ShieldYellow,
+    trustBadge = AegisDarkPalette.TrustBadge,
+    iconDefault = AegisDarkPalette.IconDefault,
+    textTertiary = AegisDarkPalette.TextTertiary
 )
 
 /**
- * Legacy AegisColors object for backward compatibility
- * Now provides theme-aware colors through LocalAegisColors
+ * CompositionLocal to provide custom colors
  */
-object AegisColors {
-    // These are now dynamically provided through LocalAegisColors
-    // Kept for backward compatibility - defaults to dark theme values
-    val Background = AegisDarkColors.Background
-    val Surface = AegisDarkColors.Surface
-    val SurfaceVariant = AegisDarkColors.SurfaceVariant
-    val Primary = AegisDarkColors.Primary
-    val PrimaryVariant = AegisDarkColors.PrimaryVariant
-    val PrimaryContainer = AegisDarkColors.PrimaryContainer
-    val TextPrimary = AegisDarkColors.TextPrimary
-    val TextSecondary = AegisDarkColors.TextSecondary
-    val TextTertiary = AegisDarkColors.TextTertiary
-    val Success = AegisDarkColors.Success
-    val SuccessContainer = AegisDarkColors.SuccessContainer
-    val Warning = AegisDarkColors.Warning
-    val WarningContainer = AegisDarkColors.WarningContainer
-    val Error = AegisDarkColors.Error
-    val ErrorContainer = AegisDarkColors.ErrorContainer
-    val CardBackground = AegisDarkColors.CardBackground
-    val CardBorder = AegisDarkColors.CardBorder
-    val Divider = AegisDarkColors.Divider
-    val IconDefault = AegisDarkColors.IconDefault
-    val ShieldGreen = AegisDarkColors.ShieldGreen
-    val ShieldYellow = AegisDarkColors.ShieldYellow
-    val TrustBadge = AegisDarkColors.TrustBadge
+val LocalAegisCustomColors = staticCompositionLocalOf { AegisDarkCustomColors }
 
-    // Danger overlay colors (same for both themes)
-    val DangerGradientStart = Color(0xFFB71C1C)
-    val DangerGradientEnd = Color(0xFF4A0A0A)
-    val CriticalRed = Color(0xFFB71C1C)
 
-    // Navigation colors reference Surface
-    val NavBackground = Surface
-    val NavSelected = Primary
-    val NavUnselected = TextSecondary
+// =========================================================================
+// Extensions for Unified Usage via MaterialTheme.colorScheme.xxx
+// =========================================================================
 
-    // Button colors
-    val ButtonPrimary = Primary
-    val ButtonPrimaryText = Color(0xFF121212)  // Dark text on gold
-    val ButtonSecondary = Color(0xFF2D2D2D)
-    val ButtonSecondaryText = TextPrimary
-    val ButtonDanger = Error
-    val ButtonDangerText = Color.White
-}
+val ColorScheme.success: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.success
+
+val ColorScheme.successContainer: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.successContainer
+
+val ColorScheme.warning: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.warning
+
+val ColorScheme.warningContainer: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.warningContainer
+
+val ColorScheme.shieldGreen: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.shieldGreen
+
+val ColorScheme.shieldYellow: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.shieldYellow
+
+val ColorScheme.trustBadge: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.trustBadge
+
+val ColorScheme.iconDefault: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.iconDefault
+
+val ColorScheme.textTertiary: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalAegisCustomColors.current.textTertiary

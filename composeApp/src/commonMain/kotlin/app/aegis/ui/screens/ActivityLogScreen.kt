@@ -23,7 +23,7 @@ import app.aegis.domain.model.Incident
 import app.aegis.domain.model.IncidentType
 import app.aegis.ui.components.IncidentLogItem
 import app.aegis.ui.theme.AegisTheme
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 import app.aegis.ui.viewmodel.ActivityFilter
 import app.aegis.ui.viewmodel.ActivityLogViewModel
 import org.jetbrains.compose.resources.StringResource
@@ -36,7 +36,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scrollState = rememberScrollState()
 
     val selectedFilter by viewModel.selectedFilter.collectAsState()
@@ -52,7 +52,7 @@ fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
                         Text(
                             text = stringResource(Res.string.nav_activity),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                     },
                     colors =
@@ -61,7 +61,7 @@ fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
                         ),
                 )
                 // Divider below action bar
-                HorizontalDivider(color = colors.divider, thickness = 1.dp)
+                HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp)
             }
         },
     ) { paddingValues ->
@@ -101,11 +101,11 @@ fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
                                 selectedContainerColor = colors.primary,
                                 selectedLabelColor = Color.White,
                                 containerColor = colors.surface,
-                                labelColor = colors.textSecondary,
+                                labelColor = colors.onSurfaceVariant,
                             ),
                         border =
                             FilterChipDefaults.filterChipBorder(
-                                borderColor = colors.cardBorder,
+                                borderColor = colors.outlineVariant,
                                 selectedBorderColor = colors.primary,
                                 enabled = true,
                                 selected = selectedFilter == filter,
@@ -149,7 +149,7 @@ fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
  */
 @Composable
 private fun ActivityEmptyState() {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier =
@@ -217,7 +217,7 @@ private fun ActivityEmptyState() {
         Text(
             text = stringResource(Res.string.activity_empty_title),
             style = AegisTypography.headlineMedium,
-            color = colors.textPrimary,
+            color = colors.onSurface,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -225,7 +225,7 @@ private fun ActivityEmptyState() {
         Text(
             text = stringResource(Res.string.activity_empty_message),
             style = AegisTypography.bodyMedium,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
     }
@@ -233,7 +233,7 @@ private fun ActivityEmptyState() {
 
 @Composable
 private fun ActivityDateHeader(dateLabel: String) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val text =
         when (dateLabel) {
             "TODAY" -> stringResource(Res.string.activity_today)
@@ -244,7 +244,7 @@ private fun ActivityDateHeader(dateLabel: String) {
     Text(
         text = text,
         style = AegisTypography.labelMedium,
-        color = colors.textSecondary,
+        color = colors.onSurfaceVariant,
     )
 }
 
@@ -253,7 +253,7 @@ private fun ActivityDateHeader(dateLabel: String) {
  */
 @Composable
 private fun IncidentLogItemFromData(incident: Incident) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     val (icon, iconColor) = getIncidentIconAndColor(incident.type, incident.isBlocked, colors)
 
@@ -284,7 +284,7 @@ private fun IncidentLogItemFromData(incident: Incident) {
 private fun getIncidentIconAndColor(
     type: IncidentType,
     isBlocked: Boolean,
-    colors: app.aegis.ui.theme.AegisColorScheme,
+    colors: ColorScheme,
 ): Pair<androidx.compose.ui.graphics.vector.ImageVector, Color> =
     when {
         isBlocked -> Icons.Default.Warning to colors.error

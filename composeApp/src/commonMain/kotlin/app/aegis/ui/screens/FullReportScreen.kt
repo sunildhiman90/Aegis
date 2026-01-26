@@ -20,7 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.aegis.ui.theme.AegisTheme
+import app.aegis.ui.theme.*
 import app.aegis.ui.theme.AegisTypography
 import app.aegis.ui.viewmodel.PrivacyReportStats
 import app.aegis.ui.viewmodel.ProfileViewModel
@@ -36,7 +36,7 @@ fun FullReportScreen(
     onBackClick: () -> Unit = {},
     viewModel: ProfileViewModel = koinViewModel()
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scrollState = rememberScrollState()
 
     val privacyStats by viewModel.privacyStats.collectAsState()
@@ -50,7 +50,7 @@ fun FullReportScreen(
                         Text(
                             text = stringResource(Res.string.full_report_title),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary
+                            color = colors.onSurface
                         )
                     },
                     navigationIcon = {
@@ -58,7 +58,7 @@ fun FullReportScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(Res.string.nav_back),
-                                tint = colors.textPrimary
+                                tint = colors.onSurface
                             )
                         }
                     },
@@ -66,7 +66,7 @@ fun FullReportScreen(
                         containerColor = colors.background
                     )
                 )
-                HorizontalDivider(color = colors.divider, thickness = 1.dp)
+                HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp)
             }
         }
     ) { paddingValues ->
@@ -86,7 +86,7 @@ fun FullReportScreen(
             Text(
                 text = stringResource(Res.string.full_report_threats_blocked),
                 style = AegisTypography.overline,
-                color = colors.textSecondary
+                color = colors.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -99,7 +99,7 @@ fun FullReportScreen(
             Text(
                 text = stringResource(Res.string.full_report_processing_summary),
                 style = AegisTypography.overline,
-                color = colors.textSecondary
+                color = colors.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -118,7 +118,7 @@ fun FullReportScreen(
 
 @Composable
 private fun SummaryCard(stats: PrivacyReportStats) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -152,7 +152,7 @@ private fun SummaryCard(stats: PrivacyReportStats) {
         Text(
             text = stringResource(Res.string.full_report_total_threats_blocked),
             style = AegisTypography.titleMedium,
-            color = colors.textSecondary
+            color = colors.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -168,7 +168,7 @@ private fun SummaryCard(stats: PrivacyReportStats) {
 
 @Composable
 private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -185,7 +185,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
 
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 12.dp),
-            color = colors.divider
+            color = colors.outlineVariant
         )
 
         ThreatRow(
@@ -196,7 +196,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
 
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 12.dp),
-            color = colors.divider
+            color = colors.outlineVariant
         )
 
         ThreatRow(
@@ -207,7 +207,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
 
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 12.dp),
-            color = colors.divider
+            color = colors.outlineVariant
         )
 
         ThreatRow(
@@ -218,7 +218,7 @@ private fun ThreatsBreakdownCard(stats: PrivacyReportStats) {
 
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 12.dp),
-            color = colors.divider
+            color = colors.outlineVariant
         )
 
         ThreatRow(
@@ -235,7 +235,7 @@ private fun ThreatRow(
     count: Int,
     iconColor: Color
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -261,21 +261,21 @@ private fun ThreatRow(
         Text(
             text = label,
             style = AegisTypography.bodyMedium,
-            color = colors.textPrimary,
+            color = colors.onSurface,
             modifier = Modifier.weight(1f)
         )
 
         Text(
             text = "$count",
             style = AegisTypography.titleMedium,
-            color = colors.textPrimary
+            color = colors.onSurface
         )
     }
 }
 
 @Composable
 private fun ProcessingSummaryCard(stats: PrivacyReportStats) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -309,7 +309,7 @@ private fun ProcessingSummaryCard(stats: PrivacyReportStats) {
                 Text(
                     text = stringResource(Res.string.full_report_data_processed),
                     style = AegisTypography.bodyMedium,
-                    color = colors.textPrimary
+                    color = colors.onSurface
                 )
                 Text(
                     text = stringResource(Res.string.full_report_no_cloud),
@@ -329,7 +329,7 @@ private fun ProcessingSummaryCard(stats: PrivacyReportStats) {
 
 @Composable
 private fun PrivacyAssuranceCard() {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -358,7 +358,7 @@ private fun PrivacyAssuranceCard() {
         Text(
             text = stringResource(Res.string.full_report_privacy_message),
             style = AegisTypography.bodySmall,
-            color = colors.textSecondary
+            color = colors.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(8.dp))

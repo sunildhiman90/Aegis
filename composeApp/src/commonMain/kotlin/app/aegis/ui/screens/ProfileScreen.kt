@@ -22,8 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.aegis.ui.theme.AegisTheme
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
+import app.aegis.ui.theme.*
 import app.aegis.ui.viewmodel.ProfileViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -43,7 +43,7 @@ fun ProfileScreen(
     onSupportClick: () -> Unit = {},
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scrollState = rememberScrollState()
 
     val privacyStats by viewModel.privacyStats.collectAsState()
@@ -58,7 +58,7 @@ fun ProfileScreen(
                         Text(
                             text = stringResource(Res.string.profile_title),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                     },
                     colors =
@@ -66,7 +66,7 @@ fun ProfileScreen(
                             containerColor = colors.background,
                         ),
                 )
-                HorizontalDivider(color = colors.divider, thickness = 1.dp)
+                HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp)
             }
         },
     ) { paddingValues ->
@@ -118,7 +118,7 @@ fun ProfileScreen(
                         stringResource(Res.string.profile_system_inactive)
                     },
                 style = AegisTypography.bodyMedium,
-                color = colors.textSecondary,
+                color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
 
@@ -145,7 +145,7 @@ fun ProfileScreen(
                     Text(
                         text = stringResource(Res.string.profile_device_id),
                         style = AegisTypography.overline,
-                        color = colors.textSecondary,
+                        color = colors.onSurfaceVariant,
                     )
                 }
 
@@ -154,7 +154,7 @@ fun ProfileScreen(
                 Text(
                     text = deviceId,
                     style = AegisTypography.headlineSmall,
-                    color = colors.textPrimary,
+                    color = colors.onSurface,
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -204,7 +204,7 @@ fun ProfileScreen(
                 Text(
                     text = stringResource(Res.string.profile_privacy_report),
                     style = AegisTypography.titleLarge,
-                    color = colors.textPrimary,
+                    color = colors.onSurface,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -220,7 +220,7 @@ fun ProfileScreen(
                     Text(
                         text = stringResource(Res.string.profile_local_processing),
                         style = AegisTypography.titleMedium,
-                        color = colors.textPrimary,
+                        color = colors.onSurface,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -231,7 +231,7 @@ fun ProfileScreen(
                                 privacyStats.dataProcessedMb,
                             ),
                         style = AegisTypography.bodySmall,
-                        color = colors.textSecondary,
+                        color = colors.onSurfaceVariant,
                     )
                 }
 
@@ -251,7 +251,7 @@ fun ProfileScreen(
             Text(
                 text = stringResource(Res.string.profile_general),
                 style = AegisTypography.titleLarge,
-                color = colors.textPrimary,
+                color = colors.onSurface,
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -306,7 +306,7 @@ private fun ProfileMenuItem(
     actionColor: Color = Color.Unspecified,
     onClick: () -> Unit,
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier =
@@ -321,7 +321,7 @@ private fun ProfileMenuItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = colors.textSecondary,
+            tint = colors.onSurfaceVariant,
             modifier = Modifier.size(24.dp),
         )
 
@@ -331,13 +331,13 @@ private fun ProfileMenuItem(
             Text(
                 text = title,
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary,
+                color = colors.onSurface,
             )
             if (subtitle != null) {
                 Text(
                     text = subtitle,
                     style = AegisTypography.bodySmall,
-                    color = colors.textSecondary,
+                    color = colors.onSurfaceVariant,
                 )
             }
         }

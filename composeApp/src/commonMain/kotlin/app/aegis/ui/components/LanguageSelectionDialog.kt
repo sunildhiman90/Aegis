@@ -37,7 +37,7 @@ fun LanguageSelectionDialog(
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = AegisTheme.colors.surface,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -78,7 +78,7 @@ fun LanguageSelectionDialog(
                 ) {
                     Text(
                         text = stringResource(Res.string.action_cancel),
-                        color = AegisTheme.colors.primary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -98,8 +98,8 @@ private fun LanguageItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onLanguageClick)
             .background(
-                if (isSelected) AegisTheme.colors.primaryContainer
-                else AegisTheme.colors.surface
+                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surface
             )
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -127,7 +127,7 @@ private fun LanguageItem(
                 selected = true,
                 onClick = null,
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = AegisTheme.colors.primary
+                    selectedColor = MaterialTheme.colorScheme.primary
                 )
             )
         }

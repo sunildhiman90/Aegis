@@ -52,7 +52,7 @@ fun App(
 
     app.aegis.ui.localization.LocalizedApp(language = appCurrentLanguageCode) {
         AegisTheme(darkTheme = isDarkTheme) {
-            val colors = AegisTheme.colors
+            val colors = androidx.compose.material3.MaterialTheme.colorScheme
             val mainNavController = rememberNavController()
 
             // Determine start destination

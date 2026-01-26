@@ -28,8 +28,7 @@ import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.Incident
 import app.aegis.domain.model.IncidentType
 import app.aegis.ui.components.*
-import app.aegis.ui.theme.AegisTheme
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 import app.aegis.ui.viewmodel.DashboardViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,7 +49,7 @@ fun DashboardScreen(
     onViewAllActivity: () -> Unit = {},
     viewModel: DashboardViewModel = koinViewModel(),
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scrollState = rememberScrollState()
     val needsSetup = !hasOverlayPermission || !hasAccessibilityPermission
 
@@ -67,7 +66,7 @@ fun DashboardScreen(
                         Text(
                             text = stringResource(Res.string.app_name),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary,
+                            color = colors.onSurface,
                         )
                     },
                     actions = {
@@ -75,7 +74,7 @@ fun DashboardScreen(
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = stringResource(Res.string.nav_settings),
-                                tint = colors.textSecondary,
+                                tint = colors.onSurfaceVariant,
                             )
                         }
                     },
@@ -85,7 +84,7 @@ fun DashboardScreen(
                         ),
                 )
                 // Divider below action bar
-                HorizontalDivider(color = colors.divider, thickness = 1.dp)
+                HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp)
             }
         },
     ) { paddingValues ->
@@ -122,7 +121,7 @@ private fun ActiveProtectionContent(
     incidents: List<Incident>,
     onViewAllActivity: () -> Unit,
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier.padding(horizontal = 20.dp),
@@ -138,7 +137,7 @@ private fun ActiveProtectionContent(
         Text(
             text = stringResource(Res.string.dashboard_active_title),
             style = AegisTypography.headlineLarge,
-            color = colors.textPrimary,
+            color = colors.onSurface,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -146,7 +145,7 @@ private fun ActiveProtectionContent(
         Text(
             text = stringResource(Res.string.dashboard_active_subtitle),
             style = AegisTypography.bodyMedium,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
 
@@ -156,7 +155,7 @@ private fun ActiveProtectionContent(
         Text(
             text = stringResource(Res.string.dashboard_quick_actions),
             style = AegisTypography.overline,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -225,7 +224,7 @@ private fun ActiveProtectionContent(
  */
 @Composable
 private fun DashboardIncidentsEmptyState() {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier =
@@ -264,7 +263,7 @@ private fun DashboardIncidentsEmptyState() {
                 Icon(
                     imageVector = Icons.Outlined.Search,
                     contentDescription = null,
-                    tint = colors.textSecondary,
+                    tint = colors.onSurfaceVariant,
                     modifier = Modifier.size(12.dp),
                 )
             }
@@ -275,7 +274,7 @@ private fun DashboardIncidentsEmptyState() {
         Text(
             text = stringResource(Res.string.dashboard_no_incidents_title),
             style = AegisTypography.titleMedium,
-            color = colors.textPrimary,
+            color = colors.onSurface,
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -283,7 +282,7 @@ private fun DashboardIncidentsEmptyState() {
         Text(
             text = stringResource(Res.string.dashboard_monitoring_desc),
             style = AegisTypography.bodySmall,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
 
@@ -303,13 +302,13 @@ private fun DashboardIncidentsEmptyState() {
  */
 @Composable
 private fun DashboardIncidentItem(incident: Incident) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     val (icon, iconColor) =
         when {
             incident.isBlocked -> Icons.Default.Warning to colors.error
 
-            incident.type == IncidentType.OTHER -> Icons.Outlined.Refresh to colors.textSecondary
+            incident.type == IncidentType.OTHER -> Icons.Outlined.Refresh to colors.onSurfaceVariant
 
             incident.type in
                     listOf(
@@ -358,7 +357,7 @@ private fun SetupRequiredContent(
     onOpenOverlaySettings: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val issuesCount = listOf(!hasOverlayPermission, !hasAccessibilityPermission).count { it }
 
     Column(
@@ -397,12 +396,12 @@ private fun SetupRequiredContent(
             Text(
                 text = stringResource(Res.string.dashboard_protection_label),
                 style = AegisTypography.headlineSmall,
-                color = colors.textPrimary,
+                color = colors.onSurface,
             )
             Text(
                 text = stringResource(Res.string.dashboard_protection_inactive).split("\n")[1],
                 style = AegisTypography.headlineLarge,
-                color = colors.textPrimary,
+                color = colors.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -410,7 +409,7 @@ private fun SetupRequiredContent(
             Text(
                 text = stringResource(Res.string.dashboard_at_risk_message),
                 style = AegisTypography.bodyMedium,
-                color = colors.textSecondary,
+                color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
 
@@ -443,13 +442,13 @@ private fun SetupRequiredContent(
         Text(
             text = stringResource(Res.string.dashboard_required_permissions),
             style = AegisTypography.titleLarge,
-            color = colors.textPrimary,
+            color = colors.onSurface,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
             text = stringResource(Res.string.dashboard_complete_steps),
             style = AegisTypography.bodySmall,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
         )
 

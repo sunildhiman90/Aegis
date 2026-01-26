@@ -38,7 +38,7 @@ fun LanguageSelectionBottomSheet(
     onApply: (AppLanguageItem) -> Unit,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -64,14 +64,14 @@ fun LanguageSelectionBottomSheet(
                     imageVector = Icons.Outlined.Language,
                     contentDescription = null,
                     modifier = Modifier.size(28.dp),
-                    tint = colors.textPrimary,
+                    tint = colors.onSurface,
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = stringResource(Res.string.select_language),
                     style = AegisTypography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = colors.textPrimary,
+                    color = colors.onSurface,
                 )
             }
 
@@ -81,7 +81,7 @@ fun LanguageSelectionBottomSheet(
             Text(
                 text = stringResource(Res.string.settings_language_desc),
                 style = AegisTypography.bodyMedium,
-                color = colors.textSecondary,
+                color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
@@ -115,7 +115,7 @@ private fun LanguageItemRow(
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Surface(
         modifier = Modifier
@@ -147,7 +147,7 @@ private fun LanguageItemRow(
             Text(
                 text = language.name,
                 style = AegisTypography.bodyMedium,
-                color = colors.textPrimary,
+                color = colors.onSurface,
                 modifier = Modifier.weight(1f),
             )
 

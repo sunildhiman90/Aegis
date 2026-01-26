@@ -1,5 +1,6 @@
 package app.aegis.ui.theme
 
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -7,130 +8,126 @@ import androidx.compose.ui.unit.sp
 /**
  * Aegis Typography - Consistent text styles across the app
  */
-object AegisTypography {
-
+val AegisTypography = Typography(
     // === DISPLAY ===
-    val displayLarge = TextStyle(
+    displayLarge = TextStyle(
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = (-0.5).sp,
         lineHeight = 40.sp
-    )
-
-    val displayMedium = TextStyle(
+    ),
+    displayMedium = TextStyle(
         fontSize = 28.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 0.sp,
         lineHeight = 36.sp
-    )
+    ),
+    // displaySmall not customized, using default or falling back
 
     // === HEADLINE ===
-    val headlineLarge = TextStyle(
+    headlineLarge = TextStyle(
         fontSize = 24.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.sp,
         lineHeight = 32.sp
-    )
-
-    val headlineMedium = TextStyle(
+    ),
+    headlineMedium = TextStyle(
         fontSize = 20.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.sp,
         lineHeight = 28.sp
-    )
-
-    val headlineSmall = TextStyle(
+    ),
+    headlineSmall = TextStyle(
         fontSize = 18.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.sp,
         lineHeight = 26.sp
-    )
+    ),
 
     // === TITLE ===
-    val titleLarge = TextStyle(
+    titleLarge = TextStyle(
         fontSize = 16.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.sp,
         lineHeight = 24.sp
-    )
-
-    val titleMedium = TextStyle(
+    ),
+    titleMedium = TextStyle(
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.1.sp,
         lineHeight = 20.sp
-    )
-
-    val titleSmall = TextStyle(
+    ),
+    titleSmall = TextStyle(
         fontSize = 12.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.1.sp,
         lineHeight = 16.sp
-    )
+    ),
 
     // === BODY ===
-    val bodyLarge = TextStyle(
+    bodyLarge = TextStyle(
         fontSize = 16.sp,
         fontWeight = FontWeight.Normal,
         letterSpacing = 0.sp,
         lineHeight = 24.sp
-    )
-
-    val bodyMedium = TextStyle(
+    ),
+    bodyMedium = TextStyle(
         fontSize = 14.sp,
         fontWeight = FontWeight.Normal,
         letterSpacing = 0.sp,
         lineHeight = 20.sp
-    )
-
-    val bodySmall = TextStyle(
+    ),
+    bodySmall = TextStyle(
         fontSize = 12.sp,
         fontWeight = FontWeight.Normal,
         letterSpacing = 0.sp,
         lineHeight = 16.sp
-    )
+    ),
 
     // === LABEL ===
-    val labelLarge = TextStyle(
+    labelLarge = TextStyle(
         fontSize = 14.sp,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.1.sp,
         lineHeight = 20.sp
-    )
-
-    val labelMedium = TextStyle(
+    ),
+    labelMedium = TextStyle(
         fontSize = 12.sp,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.5.sp,
         lineHeight = 16.sp
-    )
-
-    val labelSmall = TextStyle(
+    ),
+    labelSmall = TextStyle(
         fontSize = 10.sp,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.5.sp,
         lineHeight = 14.sp
     )
+)
 
-    // === SPECIAL ===
-    val caption = TextStyle(
+// === SPECIAL / CUSTOM STYLES (Extensions) ===
+
+val Typography.caption: TextStyle
+    get() = TextStyle(
         fontSize = 11.sp,
         fontWeight = FontWeight.Normal,
         letterSpacing = 0.4.sp,
         lineHeight = 14.sp
     )
 
-    val overline = TextStyle(
+val Typography.overline: TextStyle
+    get() = TextStyle(
         fontSize = 10.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 1.5.sp,
         lineHeight = 14.sp
     )
 
-    val button = TextStyle(
+val Typography.button: TextStyle
+    get() = TextStyle(
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.1.sp,
         lineHeight = 20.sp
     )
-}
+

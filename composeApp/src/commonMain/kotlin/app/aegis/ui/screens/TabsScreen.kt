@@ -15,7 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import app.aegis.ui.navigation.*
-import app.aegis.ui.theme.AegisTheme
+import app.aegis.ui.theme.*
 import app.aegis.ui.theme.AegisTypography
 import org.jetbrains.compose.resources.stringResource
 
@@ -31,21 +31,18 @@ fun TabsScreen(
     onOpenAccessibilitySettings: () -> Unit,
     onViewFullReport: () -> Unit = {},
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     val tabsNavController = rememberNavController()
     val navBackStackEntry by tabsNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     Scaffold(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(colors.background),
         containerColor = colors.background,
         bottomBar = {
             NavigationBar(
                 containerColor = colors.surface,
-                contentColor = colors.textPrimary,
+                contentColor = colors.onSurface,
+                tonalElevation = 0.dp
             ) {
                 bottomNavItems.forEach { item ->
                     val selected =
@@ -82,8 +79,8 @@ fun TabsScreen(
                             NavigationBarItemDefaults.colors(
                                 selectedIconColor = colors.primary,
                                 selectedTextColor = colors.primary,
-                                unselectedIconColor = colors.textSecondary,
-                                unselectedTextColor = colors.textSecondary,
+                                unselectedIconColor = colors.onSurfaceVariant,
+                                unselectedTextColor = colors.onSurfaceVariant,
                                 indicatorColor = colors.primary.copy(alpha = 0.1f),
                             ),
                     )

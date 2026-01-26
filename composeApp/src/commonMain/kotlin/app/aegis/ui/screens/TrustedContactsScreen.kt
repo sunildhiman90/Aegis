@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.TrustedContact
 import app.aegis.ui.theme.AegisTheme
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 import app.aegis.ui.viewmodel.TrustedContactViewModel
 import app.aegis.utils.DateUtils
 import org.jetbrains.compose.resources.stringResource
@@ -43,7 +43,7 @@ fun TrustedContactsScreen(
     onBackClick: () -> Unit = {},
     viewModel: TrustedContactViewModel = koinViewModel()
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     // Collect contacts from ViewModel
     val contacts by viewModel.contacts.collectAsState()
@@ -59,7 +59,7 @@ fun TrustedContactsScreen(
                         Text(
                             text = stringResource(Res.string.trusted_contacts_title),
                             style = AegisTypography.headlineMedium,
-                            color = colors.textPrimary
+                            color = colors.onSurface
                         )
                     },
                     navigationIcon = {
@@ -67,7 +67,7 @@ fun TrustedContactsScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(Res.string.nav_back),
-                                tint = colors.textPrimary
+                                tint = colors.onSurface
                             )
                         }
                     },
@@ -75,7 +75,7 @@ fun TrustedContactsScreen(
                         containerColor = colors.background
                     )
                 )
-                HorizontalDivider(color = colors.divider, thickness = 1.dp)
+                HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp)
             }
         }
     ) { paddingValues ->
@@ -90,7 +90,7 @@ fun TrustedContactsScreen(
             Text(
                 text = stringResource(Res.string.trusted_contacts_list_title, contacts.size),
                 style = AegisTypography.overline,
-                color = colors.textSecondary
+                color = colors.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -143,7 +143,7 @@ private fun TrustedContactItem(
     contact: TrustedContactDisplayItem,
     onDelete: () -> Unit
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier = Modifier
@@ -175,12 +175,12 @@ private fun TrustedContactItem(
             Text(
                 text = contact.name,
                 style = AegisTypography.titleMedium,
-                color = colors.textPrimary
+                color = colors.onSurface
             )
             Text(
                 text = contact.phoneNumber,
                 style = AegisTypography.bodySmall,
-                color = colors.textSecondary
+                color = colors.onSurfaceVariant
             )
             Text(
                 text = contact.relationship,
@@ -201,7 +201,7 @@ private fun TrustedContactItem(
 
 @Composable
 private fun EmptyContactsPlaceholder() {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -254,7 +254,7 @@ private fun EmptyContactsPlaceholder() {
         Text(
             text = stringResource(Res.string.trusted_contacts_empty_title),
             style = AegisTypography.headlineMedium,
-            color = colors.textPrimary
+            color = colors.onSurface
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -262,7 +262,7 @@ private fun EmptyContactsPlaceholder() {
         Text(
             text = stringResource(Res.string.trusted_contacts_empty_desc),
             style = AegisTypography.bodyMedium,
-            color = colors.textSecondary,
+            color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
     }
@@ -273,7 +273,7 @@ private fun AddContactDialog(
     onDismiss: () -> Unit,
     onAdd: (name: String, phone: String, relationship: String) -> Unit
 ) {
-    val colors = AegisTheme.colors
+    val colors = MaterialTheme.colorScheme
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var relationship by remember { mutableStateOf("") }
@@ -293,7 +293,7 @@ private fun AddContactDialog(
             Text(
                 text = dialogTitle,
                 style = AegisTypography.headlineSmall,
-                color = colors.textPrimary
+                color = colors.onSurface
             )
         },
         text = {
@@ -336,7 +336,7 @@ private fun AddContactDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.action_cancel), color = colors.textSecondary)
+                Text(stringResource(Res.string.action_cancel), color = colors.onSurfaceVariant)
             }
         }
     )
