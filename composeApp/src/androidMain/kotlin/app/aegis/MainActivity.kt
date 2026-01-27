@@ -53,18 +53,16 @@ class MainActivity : ComponentActivity() {
                 hasOverlayPermission = hasOverlayPermission,
                 hasAccessibilityPermission = hasAccessibilityPermission,
                 onOpenOverlaySettings = {
-                    if (!checkOverlayPermission()) {
-                        try {
-                            val intent =
-                                Intent(
-                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    "package:$packageName".toUri(),
-                                )
-                            startActivity(intent)
-                        } catch (e: Exception) {
-                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                            startActivity(intent)
-                        }
+                    try {
+                        val intent =
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                "package:$packageName".toUri(),
+                            )
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                        startActivity(intent)
                     }
                 },
                 onOpenAccessibilitySettings = {

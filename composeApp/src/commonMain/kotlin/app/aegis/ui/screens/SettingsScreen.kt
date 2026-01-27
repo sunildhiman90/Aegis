@@ -337,7 +337,9 @@ fun SettingsScreen(
                     },
                 subtitleColor = if (hasOverlayPermission) colors.success else colors.onSurfaceVariant,
                 checked = hasOverlayPermission,
-                onCheckedChange = { onOpenOverlaySettings() },
+                onCheckedChange = {},
+                enabled = false,
+                onRowClick = onOpenOverlaySettings,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -363,8 +365,10 @@ fun SettingsScreen(
                     },
                 subtitleColor = if (hasAccessibilityPermission) colors.success else colors.warning,
                 checked = hasAccessibilityPermission,
-                onCheckedChange = { onOpenAccessibilitySettings() },
+                onCheckedChange = {},
                 showWarning = !hasAccessibilityPermission,
+                enabled = false,
+                onRowClick = onOpenAccessibilitySettings,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -651,6 +655,8 @@ private fun SettingsToggleItem(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     showWarning: Boolean = false,
+    enabled: Boolean = true,
+    onRowClick: (() -> Unit)? = null,
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -660,6 +666,11 @@ private fun SettingsToggleItem(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .background(colors.surface)
+                .then(
+                    if (onRowClick != null) {
+                        Modifier.clickable { onRowClick() }
+                    } else Modifier
+                )
                 .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -702,13 +713,18 @@ private fun SettingsToggleItem(
 
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = if (enabled) onCheckedChange else null,
+            enabled = enabled,
             colors =
                 SwitchDefaults.colors(
                     checkedThumbColor = colors.primary,
                     checkedTrackColor = colors.primary.copy(alpha = 0.5f),
                     uncheckedThumbColor = colors.onSurfaceVariant,
                     uncheckedTrackColor = colors.outline,
+                    disabledCheckedThumbColor = colors.primary.copy(alpha = 0.6f),
+                    disabledCheckedTrackColor = colors.primary.copy(alpha = 0.3f),
+                    disabledUncheckedThumbColor = colors.onSurfaceVariant.copy(alpha = 0.6f),
+                    disabledUncheckedTrackColor = colors.outline.copy(alpha = 0.3f),
                 ),
         )
     }
