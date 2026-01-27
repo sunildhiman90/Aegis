@@ -20,6 +20,7 @@ enum class IncidentType {
     DANGEROUS_APP,
     POLICE_IMPERSONATION,
     SEXTORTION,
+    SCAM_TEXT,
     OTHER,
 }
 

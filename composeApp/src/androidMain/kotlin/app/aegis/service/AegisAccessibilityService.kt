@@ -14,14 +14,22 @@ import app.aegis.ai.gemini.types.Source
 import app.aegis.data.TrustRepository
 import app.aegis.data.settings.AppSettingsRepository
 import app.aegis.helper.ScreenshotHelper
+import app.aegis.models.NudityVerdict
+import app.aegis.models.PhishingVerdict
 import app.aegis.models.RiskLevel
+import app.aegis.models.ScamVerdict
 import app.aegis.models.SensitivityLevel
 import app.aegis.tools.LocalRisk
 import app.aegis.tools.SecurityTools
 import kotlinx.coroutines.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import app.aegis.domain.model.Incident
+import app.aegis.domain.model.IncidentSeverity
+import app.aegis.domain.model.IncidentType
+import app.aegis.domain.repository.IncidentRepository
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 
 class AegisAccessibilityService :
     AccessibilityService(),
@@ -35,6 +43,7 @@ class AegisAccessibilityService :
 
     private val geminiClient: GeminiClient by inject()
     private val settingsRepository: AppSettingsRepository by inject()
+    private val incidentRepository: IncidentRepository by inject() // 🟢 Inject Incident Repository
     private lateinit var overlayManager: OverlayManager
 
     private lateinit var screenshotHelper: ScreenshotHelper // New Helper
@@ -491,15 +500,87 @@ class AegisAccessibilityService :
 
         analysisJob =
             serviceScope.launch {
-                val verdict = geminiClient.analyze(chatContent, sensitivity)
+                //TODO, just for testing
+                //val verdict = geminiClient.analyze(chatContent, sensitivity)
+                val verdicts = listOf(
+                    ScamVerdict(
+                        riskLevel = RiskLevel.DANGER,
+                        reason = "test danger",
+                        confidence = 99,
+                        sources = listOf(Source("test", "https://google.com"))
+                    ),
+                    ScamVerdict(
+                        riskLevel = RiskLevel.SAFE,
+                        reason = "test safe",
+                        confidence = 99,
+                        sources = listOf(Source("test", "https://google.com"))
+                    ),
+                    ScamVerdict(
+                        riskLevel = RiskLevel.WARN,
+                        reason = "test Warn",
+                        confidence = 99,
+                        sources = listOf(Source("test", "https://google.com"))
+                    )
+                )
+                val verdict = verdicts[0]
                 if (!isActive) return@launch
 
                 if (verdict.riskLevel == RiskLevel.DANGER) {
                     showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
+                    logIncident(
+                        type = IncidentType.SCAM_TEXT,
+                        riskLevel = verdict.riskLevel,
+                        reason = verdict.reason,
+                        contactName = contactName,
+                        isBlocked = true
+                    )
                 } else {
                     overlayManager.hideShield()
+                    if (verdict.riskLevel == RiskLevel.WARN) {
+                         logIncident(
+                            type = IncidentType.SCAM_TEXT,
+                            riskLevel = verdict.riskLevel,
+                            reason = verdict.reason,
+                            contactName = contactName,
+                            isBlocked = false
+                        )
+                    }
                 }
             }
+    }
+
+    // --- HELPER TO LOG INCIDENTS ---
+    private suspend fun logIncident(
+        type: IncidentType,
+        riskLevel: RiskLevel,
+        reason: String,
+        contactName: String,
+        isBlocked: Boolean
+    ) {
+        val severity = when (riskLevel) {
+            RiskLevel.DANGER -> IncidentSeverity.CRITICAL
+            RiskLevel.WARN -> IncidentSeverity.MEDIUM
+            RiskLevel.SAFE -> IncidentSeverity.LOW
+        }
+
+        // Only log actual threats or warnings
+        if (riskLevel == RiskLevel.SAFE) return
+
+        val incident = Incident(
+            id = UUID.randomUUID().toString(),
+            type = type,
+            description = reason,
+            timestamp = System.currentTimeMillis(),
+            isBlocked = isBlocked,
+            severity = severity
+        )
+
+        try {
+            incidentRepository.addIncident(incident)
+            Log.d("Aegis", "✅ Incident logged: ${incident.type} - ${incident.description}")
+        } catch (e: Exception) {
+            Log.e("Aegis", "❌ Failed to log incident: ${e.message}")
+        }
     }
 
     private fun isSimilar(
@@ -1194,7 +1275,11 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                             val sensitivity = settingsRepository.getSensitivity()
 
                             // 1. Check for NUDITY (Sextortion)
-                            val nudityVerdict = geminiClient.analyzeForNudity(base64, sensitivity)
+                            //TODO, just for testing
+                            //val nudityVerdict = geminiClient.analyzeForNudity(base64, sensitivity)
+                            val nudityVerdict = NudityVerdict(
+                                nudity = true,
+                            )
                             Log.d(
                                 "Aegis",
                                 "📸 Nudity check: ${nudityVerdict.nudity}, fake=${nudityVerdict.fakeFeed}, confidence=${nudityVerdict.confidence}",
@@ -1203,12 +1288,26 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                             if (nudityVerdict.nudity) {
                                 Log.d("Aegis", "🚨 NUDITY DETECTED! Ending call immediately.")
                                 autoEndCall("Sextortion attempt - Explicit content detected")
+                                logIncident(
+                                    type = IncidentType.SEXTORTION,
+                                    riskLevel = RiskLevel.DANGER,
+                                    reason = "Nudity detected in video call",
+                                    contactName = callerId,
+                                    isBlocked = true
+                                )
                                 break
                             }
 
                             // 2. Check for POLICE IMPERSONATION (Digital Arrest)
                             // Uses existing analyzeImage which looks for "Police Uniforms"
-                            val scamVerdict = geminiClient.analyzeImage(base64, sensitivity)
+                            //TODO, just for testing
+                            //val scamVerdict = geminiClient.analyzeImage(base64, sensitivity)
+                            val scamVerdict = ScamVerdict(
+                                riskLevel = RiskLevel.DANGER,
+                                reason = "test danger image",
+                                confidence = 99,
+                                sources = listOf(Source("test", "https://google.com"))
+                            )
                             Log.d(
                                 "Aegis",
                                 "👮 Police check: ${scamVerdict.riskLevel}, reason=${scamVerdict.reason}",
@@ -1225,6 +1324,13 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                                     onUnlock = { overlayManager.hideShield() },
                                 )
                                 // Don't auto-end for digital arrest, let user decide
+                                logIncident(
+                                    type = IncidentType.POLICE_IMPERSONATION,
+                                    riskLevel = RiskLevel.DANGER,
+                                    reason = scamVerdict.reason,
+                                    contactName = callerId,
+                                    isBlocked = true
+                                )
                             } else if (scamVerdict.riskLevel == RiskLevel.SAFE && !nudityVerdict.fakeFeed) {
                                 // ═══════════════════════════════════════════════════════════════
                                 // SMART EARLY TERMINATION
@@ -1463,20 +1569,33 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         analysisJob =
             serviceScope.launch {
                 val sensitivity = settingsRepository.getSensitivity()
-                val verdict = geminiClient.analyzeUrl(url, sensitivity)
+                //TODO, just for testing
+                //val verdict = geminiClient.analyzeUrl(url, sensitivity)
+                val verdict = PhishingVerdict(
+                    riskLevel = RiskLevel.DANGER,
+                    reason = "test danger url",
+                    confidence = 99,
+                )
                 if (!isActive) return@launch
 
                 withContext(Dispatchers.Main) {
                     if (verdict.riskLevel == app.aegis.models.RiskLevel.DANGER) {
                         overlayManager.showPhishingWarning(
+                             reason = verdict.reason,
+                             url = url,
+                             onReport = { launchReportIntent(verdict) },
+                             onDismiss = { overlayManager.hideShield() },
+                             onTrust = {
+                                 // Add to whitelist session
+                                 overlayManager.hideShield()
+                             },
+                         )
+                        logIncident(
+                            type = IncidentType.PHISHING_LINK,
+                            riskLevel = RiskLevel.DANGER,
                             reason = verdict.reason,
-                            url = url,
-                            onReport = { launchReportIntent(verdict) },
-                            onDismiss = { overlayManager.hideShield() },
-                            onTrust = {
-                                // Add to whitelist session
-                                overlayManager.hideShield()
-                            },
+                            contactName = "Unknown Link",
+                            isBlocked = true
                         )
                     } else {
                         // ✅ Safe: Remove the yellow warning

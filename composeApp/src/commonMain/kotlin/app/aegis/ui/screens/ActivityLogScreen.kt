@@ -294,6 +294,8 @@ private fun getIncidentIconAndColor(
         type in
                 listOf(
                     IncidentType.SCAM_CALL,
+                    IncidentType.SCAM_TEXT,
+                    IncidentType.PHISHING_LINK,
                     IncidentType.PHISHING_LINK,
                     IncidentType.DANGEROUS_APP,
                     IncidentType.POLICE_IMPERSONATION,
@@ -310,6 +312,7 @@ private fun getIncidentIconAndColor(
 private fun getIncidentTitleRes(type: IncidentType): StringResource =
     when (type) {
         IncidentType.SCAM_CALL -> Res.string.incident_blocked_scam_call
+        IncidentType.SCAM_TEXT -> Res.string.incident_scam_text
         IncidentType.PHISHING_LINK -> Res.string.incident_blocked_link
         IncidentType.DANGEROUS_APP -> Res.string.incident_dangerous_app
         IncidentType.POLICE_IMPERSONATION -> Res.string.incident_police_impersonation

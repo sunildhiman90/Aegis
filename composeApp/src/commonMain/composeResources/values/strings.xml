@@ -71,6 +71,7 @@
     <string name="incident_sextortion">Sextortion Attempt Flagged</string>
     <string name="incident_police_impersonation">Police Impersonation Flagged</string>
     <string name="incident_dangerous_app">Dangerous App Flagged</string>
+    <string name="incident_scam_text">Suspicious Message Flagged</string>
     <string name="incident_safe_scan">Safe Scan</string>
     
     <!-- Profile Screen -->

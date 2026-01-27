@@ -313,6 +313,8 @@ private fun DashboardIncidentItem(incident: Incident) {
             incident.type in
                     listOf(
                         IncidentType.SCAM_CALL,
+                        IncidentType.SCAM_TEXT,
+                        IncidentType.PHISHING_LINK,
                         IncidentType.PHISHING_LINK,
                         IncidentType.DANGEROUS_APP,
                         IncidentType.POLICE_IMPERSONATION,
@@ -326,6 +328,7 @@ private fun DashboardIncidentItem(incident: Incident) {
     val title =
         when (incident.type) {
             IncidentType.SCAM_CALL -> stringResource(Res.string.incident_blocked_scam_call)
+            IncidentType.SCAM_TEXT -> stringResource(Res.string.incident_scam_text)
             IncidentType.PHISHING_LINK -> stringResource(Res.string.incident_blocked_link)
             IncidentType.DANGEROUS_APP -> stringResource(Res.string.incident_dangerous_app)
             IncidentType.POLICE_IMPERSONATION -> stringResource(Res.string.incident_police_impersonation)
