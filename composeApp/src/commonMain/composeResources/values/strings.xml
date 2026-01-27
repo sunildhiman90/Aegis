@@ -111,7 +111,7 @@
     <string name="full_report_no_cloud">No cloud uploads</string>
     <string name="full_report_privacy_assured">Privacy Assured</string>
     <string name="full_report_privacy_message">All threat detection and analysis happens locally on your device. Your data never leaves your phone and is never uploaded to any cloud servers.</string>
-    <string name="full_report_privacy_note">Aegis uses on-device AI models to protect your privacy while keeping you safe from scams.</string>
+    <string name="full_report_privacy_note">Aegis uses AI to protect your privacy while keeping you safe from scams.</string>
     
     <!-- Settings Screen -->
     <string name="settings_title">App Settings</string>

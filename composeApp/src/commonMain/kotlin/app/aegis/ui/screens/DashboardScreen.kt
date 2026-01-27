@@ -192,7 +192,7 @@ private fun ActiveProtectionContent(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        tint = colors.trustBadge,
+                        tint = colors.primary,
                         modifier = Modifier.size(28.dp),
                     )
                 },

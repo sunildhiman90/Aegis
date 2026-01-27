@@ -736,13 +736,13 @@ private fun TrustedContactItem(
                 Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(colors.trustBadge.copy(alpha = 0.2f)),
+                    .background(colors.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null,
-                tint = colors.trustBadge,
+                tint = colors.primary,
                 modifier = Modifier.size(24.dp),
             )
         }

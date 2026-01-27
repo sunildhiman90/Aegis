@@ -105,7 +105,10 @@ fun StatCard(
     AegisCard(modifier = modifier, onClick = onClick) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(vertical = 8.dp)
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 8.dp)
         ) {
             icon()
             Spacer(modifier = Modifier.height(12.dp))

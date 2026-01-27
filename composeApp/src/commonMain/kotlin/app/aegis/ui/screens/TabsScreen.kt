@@ -1,11 +1,13 @@
 package app.aegis.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -43,7 +45,12 @@ fun TabsScreen(
             NavigationBar(
                 containerColor = colors.surface,
                 contentColor = colors.onSurface,
-                tonalElevation = 0.dp
+                tonalElevation = 0.dp,
+                modifier = Modifier.border(
+                    width = 0.5.dp,
+                    color = colors.outlineVariant,
+                    shape = RectangleShape
+                )
             ) {
                 bottomNavItems.forEach { item ->
                     val selected =
