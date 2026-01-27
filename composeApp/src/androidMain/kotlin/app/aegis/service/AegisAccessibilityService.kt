@@ -123,6 +123,7 @@ class AegisAccessibilityService :
         if (event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) {
             val eventPackage = event.packageName?.toString() ?: ""
 
+
             // Try to get notification content from multiple sources:
             // 1. event.text (sometimes empty on Samsung)
             // 2. Notification object from parcelableData
@@ -285,6 +286,11 @@ class AegisAccessibilityService :
                     }
                 }
             }
+        }
+        
+        // 🛑 OPTIMIZATION: Invalidate Cache on Screen/Window State Changes
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+             invalidateTitleCache()
         }
 
         // 1. GLOBAL CHECKS & BATTERY OPTIMIZATION 🔋
@@ -797,30 +803,206 @@ class AegisAccessibilityService :
         return stable
     }
 
-    private fun extractTitle(rootNode: AccessibilityNodeInfo?): String {
-        if (rootNode == null) return "Unknown"
-        val waList =
-            rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/conversation_contact_name")
-        if (!waList.isNullOrEmpty()) return waList[0].text?.toString() ?: "Unknown"
 
-        val possibleTitles = mutableListOf<String>()
-        collectPossibleTitles(rootNode, possibleTitles)
-        return possibleTitles.firstOrNull {
-            it.length < 25 && !it.contains(":") && !it.contains("Type")
-        } ?: "Unknown"
+    
+    // Helper to find the "Back" button
+    private fun findBackButton(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        if (node.contentDescription?.toString().equals("Navigate up", ignoreCase = true) ||
+            node.contentDescription?.toString().equals("Back", ignoreCase = true)) {
+            return node
+        }
+        
+        for (i in 0 until node.childCount) {
+             val found = findBackButton(node.getChild(i) ?: continue)
+             if (found != null) return found
+        }
+        return null
+    }
+
+    // Helper to extract Name from Action Bar container
+    private fun findNameInActionBar(actionBar: AccessibilityNodeInfo): String? {
+         val ignored = setOf("Navigate up", "Back", "Call", "Video", "More options", "Search")
+         
+         for (i in 0 until actionBar.childCount) {
+             val child = actionBar.getChild(i) ?: continue
+             
+             // 🛑 CRITICAL: Do NOT pick up Editable text (like search bar hints)
+             if (child.isEditable) continue
+             
+             // Check direct text
+             val text = child.text?.toString()
+             if (!text.isNullOrEmpty() && !ignored.contains(text) && text.length < 30) {
+                 return text
+             }
+             
+             // Check children (sometimes Name/Status are wrapped in a LinearLayout)
+             if (child.childCount > 0) {
+                 for (j in 0 until child.childCount) {
+                     val grandChild = child.getChild(j) ?: continue
+                     if (grandChild.isEditable) continue // Skip editable input fields
+                     
+                     val grandText = grandChild.text?.toString()
+                      if (!grandText.isNullOrEmpty() && !ignored.contains(grandText) && 
+                          !grandText.equals("Online", true) && !grandText.contains("last seen", true)) {
+                         return grandText
+                      }
+                 }
+             }
+         }
+         return null
+    }
+
+    // Helper to check if a node is inside a Scrollable Container (RecyclerView, ListView, ScrollView)
+    // Contact Names (Titles) are usually in fixed headers, NOT content lists.
+    private fun isInsideScrollable(node: AccessibilityNodeInfo?): Boolean {
+        var current = node
+        while (current != null) {
+            if (current.isScrollable || 
+                current.className?.toString()?.contains("RecyclerView") == true ||
+                current.className?.toString()?.contains("ListView") == true ||
+                current.className?.toString()?.contains("ScrollView") == true) {
+                return true
+            }
+            current = current.parent
+        }
+        return false
     }
 
     private fun collectPossibleTitles(
         node: AccessibilityNodeInfo?,
         list: MutableList<String>,
     ) {
-        if (node == null || list.size > 3) return
+        // Collect text for fallback strategy
+        // Increased limit to 20 to ensure we don't miss the title if the UI is complex
+        if (node == null || list.size > 20) return
+        
+        // 🛑 CRITICAL: Ignore Editable Input Fields (e.g. "RCS message", "Type a message")
+        // If a node is editable, its text is the input hint or content -> IGNORE IT.
+        if (node.isEditable) return
+        
+        // 🛑 CRITICAL: Ignore Content inside Scrollable Lists (Messages)
+        // If a node is part of a list, it's likely a message bubble, not the Title.
+        // We only want static headers.
+        if (isInsideScrollable(node)) return
+        
         if (!node.text.isNullOrEmpty()) {
             val text = node.text.toString()
-            if (text.length > 2) list.add(text)
+            // Assume contact names are short but not too short (e.g., > 1 char)
+            if (text.length > 1) list.add(text)
         }
+        
+        // DFS traversal
         val count = node.childCount
         for (i in 0 until count) collectPossibleTitles(node.getChild(i), list)
+    }
+
+    // Helper to find Toolbar/ActionBar by class name
+    private fun findToolbar(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        val className = node.className?.toString() ?: ""
+        if (className.contains("Toolbar", ignoreCase = true) || 
+            className.contains("ActionBar", ignoreCase = true)) {
+            return node
+        }
+        
+        for (i in 0 until node.childCount) {
+             val found = findToolbar(node.getChild(i) ?: continue)
+             if (found != null) return found
+        }
+        return null
+    }
+
+    // 🛑 OPTIMIZATION: Cache Strategy
+    // We use a "Throttle" strategy:
+    // 1. If Window ID changes -> Scan Immediately (New screen)
+    // 2. If TYPE_WINDOW_STATE_CHANGED -> Scan Immediately (Major UI change)
+    // 3. Otherwise -> Only scan every 300ms (Prevent Scroll Lag, but allowed rapid screen switches)
+    private var lastWindowId = -1
+    private var lastExtractionTime = 0L
+    private var lastExtractedTitle = "Unknown"
+    private val TITLE_CACHE_TTL = 300L // Reduced to 300ms for safety
+
+    // Call this from onAccessibilityEvent to invalidate cache on specific major events
+    private fun invalidateTitleCache() {
+        lastExtractedTitle = "Unknown"
+        lastExtractionTime = 0L
+    }
+
+    private fun extractTitle(rootNode: AccessibilityNodeInfo?): String {
+        if (rootNode == null) return "Unknown"
+        
+        val currentWindowId = rootNode.windowId
+        val currentTime = System.currentTimeMillis()
+        
+        // Check if we can use the cache
+        val isSameWindow = (currentWindowId == lastWindowId)
+        val isCacheValid = (currentTime - lastExtractionTime) < TITLE_CACHE_TTL
+        
+        if (isSameWindow && isCacheValid && lastExtractedTitle != "Unknown") {
+            return lastExtractedTitle
+        }
+        
+        // Update Cache State (before extraction, updated after success)
+        lastWindowId = currentWindowId
+        
+        // 1. Precise ID Check (WhatsApp) - FASTEST
+        val waList =
+            rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/conversation_contact_name")
+        if (!waList.isNullOrEmpty()) {
+            val title = waList[0].text?.toString() ?: "Unknown"
+            lastExtractedTitle = title
+            lastExtractionTime = currentTime
+            return title
+        }
+
+        // 2. Structural Action Bar Check (Universal Fallback)
+        var title: String? = null
+        
+        val toolbar = findToolbar(rootNode)
+        if (toolbar != null) {
+             title = findNameInActionBar(toolbar)
+        } else {
+            // If no explicit Toolbar found, try the Back Button heuristic
+             val backButton = findBackButton(rootNode)
+             if (backButton != null) {
+                 val actionBar = backButton.parent
+                 if (actionBar != null) {
+                     title = findNameInActionBar(actionBar)
+                 }
+             }
+        }
+        
+        if (title != null) {
+            lastExtractedTitle = title
+            lastExtractionTime = currentTime
+            return title
+        }
+
+        // 3. Last Resort: Deep Scan
+        val possibleTitles = mutableListOf<String>()
+        collectPossibleTitles(rootNode, possibleTitles)
+        
+        // Filter out common UI elements/buttons
+        val ignoredTitles = setOf(
+            "Apply Now", "Call", "Video", "Add", "Block", "Report", "Search",
+            "Type a message", "Message", "Online", "Typing...", "last seen",
+            "RCS message", "Text message", "Sending with"
+        )
+        
+        val found = possibleTitles.firstOrNull { t ->
+             val clean = t.trim()
+             clean.length < 25 && 
+             !clean.contains(":") && 
+             !clean.contains("Type") &&
+             !t.contains("RCS message", true) &&
+             !t.contains("Sending with", true) &&
+             !ignoredTitles.any { clean.equals(it, ignoreCase = true) }
+        } ?: "Unknown"
+        
+        // Even if unknown, we cache it to prevent retrying deeply every ms
+        lastExtractedTitle = found
+        lastExtractionTime = currentTime
+        
+        return found
     }
 
     // ---------------------------------------------------------
