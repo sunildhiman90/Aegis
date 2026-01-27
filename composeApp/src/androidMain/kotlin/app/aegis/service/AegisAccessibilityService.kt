@@ -970,6 +970,26 @@ class AegisAccessibilityService :
         lastExtractedTitle = "Unknown"
         lastExtractionTime = 0L
     }
+    
+    // 🛑 NEW: Clean dirty titles (e.g., "Save Name?", "Add Name")
+    private fun cleanExtractedTitle(rawTitle: String): String {
+        var title = rawTitle.trim()
+        
+        // Remove common prefixes (case insensitive)
+        if (title.startsWith("Save ", ignoreCase = true)) {
+            title = title.substring(5).trim()
+        }
+        if (title.startsWith("Add ", ignoreCase = true)) {
+            title = title.substring(4).trim()
+        }
+        
+        // Remove common suffixes
+        if (title.endsWith("?")) {
+            title = title.dropLast(1).trim()
+        }
+        
+        return title
+    }
 
     private fun extractTitle(rootNode: AccessibilityNodeInfo?): String {
         if (rootNode == null) return "Unknown"
@@ -992,7 +1012,8 @@ class AegisAccessibilityService :
         val waList =
             rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/conversation_contact_name")
         if (!waList.isNullOrEmpty()) {
-            val title = waList[0].text?.toString() ?: "Unknown"
+            val raw = waList[0].text?.toString() ?: "Unknown"
+            val title = cleanExtractedTitle(raw)
             lastExtractedTitle = title
             lastExtractionTime = currentTime
             return title
@@ -1016,9 +1037,10 @@ class AegisAccessibilityService :
         }
         
         if (title != null) {
-            lastExtractedTitle = title
+            val cleanTitle = cleanExtractedTitle(title)
+            lastExtractedTitle = cleanTitle
             lastExtractionTime = currentTime
-            return title
+            return cleanTitle
         }
 
         // 3. Last Resort: Deep Scan
@@ -1043,10 +1065,11 @@ class AegisAccessibilityService :
         } ?: "Unknown"
         
         // Even if unknown, we cache it to prevent retrying deeply every ms
-        lastExtractedTitle = found
+        val finalTitle = cleanExtractedTitle(found)
+        lastExtractedTitle = finalTitle
         lastExtractionTime = currentTime
         
-        return found
+        return finalTitle
     }
 
     // ---------------------------------------------------------

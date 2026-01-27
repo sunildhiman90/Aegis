@@ -26,8 +26,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-
-
         setStatusBarColor(isPrimaryStatusBar = false)
 
         setContent {
