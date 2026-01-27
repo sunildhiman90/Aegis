@@ -1099,11 +1099,19 @@ class AegisAccessibilityService :
         
         val found = possibleTitles.firstOrNull { t ->
              val clean = t.trim()
+             // Filter notification badges like "10 new messages", "5 unread messages"
+             val hasNumberPrefix = clean.matches(Regex("^\\d+\\s.*"))
+             val isNotificationBadge = clean.contains("new message", ignoreCase = true) ||
+                                      clean.contains("unread message", ignoreCase = true) ||
+                                      clean.contains("missed call", ignoreCase = true)
+             
              clean.length < 25 && 
              !clean.contains(":") && 
              !clean.contains("Type") &&
              !t.contains("RCS message", true) &&
              !t.contains("Sending with", true) &&
+             !hasNumberPrefix &&
+             !isNotificationBadge &&
              !ignoredTitles.any { clean.equals(it, ignoreCase = true) }
         } ?: "Unknown"
         
