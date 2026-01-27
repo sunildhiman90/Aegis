@@ -722,20 +722,64 @@ class AegisAccessibilityService :
     // --- NODE TRAVERSAL (Keep existing) ---
     private fun isRealChatScreen(node: AccessibilityNodeInfo?): Boolean {
         if (node == null) return false
-        return hasChatInput(node)
+        // IT IS A CHAT IF:
+        // 1. It has an Input Box (Standard Chat)
+        // 2. OR It has "Read Only" indicators (Short Codes, Bank Alerts, Business Accounts)
+        return hasChatInput(node) || hasReadOnlyIndicator(node)
     }
 
     private fun hasChatInput(node: AccessibilityNodeInfo?): Boolean {
         if (node == null) return false
         if (node.className == "android.widget.EditText") {
-            val text = (node.text ?: "").toString().lowercase()
-            val hint = (node.hintText ?: "").toString().lowercase()
-            if (text.contains("search") || hint.contains("search")) return false
-            return true
+             val text = (node.text ?: "") .toString()
+             val hint = (node.hintText ?: "").toString()
+             
+             // 🛑 EXCLUDE SEARCH BARS: If it's a search bar, it's a List Screen, NOT a Chat.
+             if (hint.contains("Search", true) || text.contains("Search", true)) {
+                 return false
+             }
+
+             // Check hint or content to see if it looks like a message input
+             if (hint.contains("Type", true) || 
+                 hint.contains("Message", true) || 
+                 hint.contains("Chat", true) ||
+                 text.contains("Type", true)) {
+                 return true
+             }
+             // Fallback: If it's an EditText and NOT a search bar, assume it's chat input
+             return true
         }
         val count = node.childCount
         for (i in 0 until count) {
             if (hasChatInput(node.getChild(i))) return true
+        }
+        return false
+    }
+
+    // 🛑 NEW: Detect "Read Only" chats (Short Codes, OTPs, Bank Alerts)
+    // These screens replace the Input Box with text like "Can't reply to this short code".
+    // WE MUST BE STRICT: Avoid generic terms like "Learn more" which might appear in Settings/Help.
+    private fun hasReadOnlyIndicator(node: AccessibilityNodeInfo?): Boolean {
+        if (node == null) return false
+        
+        val text = (node.text ?: "").toString()
+        val desc = (node.contentDescription ?: "").toString()
+        
+        // STRICT phrases found in Google Android / Samsung / WhatsApp read-only footers.
+        val indicators = listOf(
+            "Can't reply",
+            "reply to this short code",
+            "does not support replies", // Covers "Sender does not support replies"
+            "sending to this short code" // Sometimes appears in error states
+        )
+        
+        if (indicators.any { text.contains(it, ignoreCase = true) || desc.contains(it, ignoreCase = true) }) {
+            return true
+        }
+
+        val count = node.childCount
+        for (i in 0 until count) {
+            if (hasReadOnlyIndicator(node.getChild(i))) return true
         }
         return false
     }
