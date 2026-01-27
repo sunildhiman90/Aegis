@@ -82,6 +82,7 @@ fun App(
                         onOpenOverlaySettings = onOpenOverlaySettings,
                         onOpenAccessibilitySettings = onOpenAccessibilitySettings,
                         onViewFullReport = { mainNavController.navigate(FullReportRoute) },
+                        onViewTrustedContacts = { mainNavController.navigate(TrustedContactsRoute) },
                     )
                 }
 

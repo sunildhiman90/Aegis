@@ -44,6 +44,8 @@ fun DashboardScreen(
     hasAccessibilityPermission: Boolean = true,
     sensitivityLevel: String? = null,
     onSettingsClick: () -> Unit = {},
+    onSensitivityClick: () -> Unit = {},
+    onContactsClick: () -> Unit = {},
     onOpenOverlaySettings: () -> Unit = {},
     onOpenAccessibilitySettings: () -> Unit = {},
     onViewAllActivity: () -> Unit = {},
@@ -108,6 +110,8 @@ fun DashboardScreen(
                     trustedContactsCount = trustedContactsCount,
                     incidents = latestIncidents,
                     onViewAllActivity = onViewAllActivity,
+                    onSensitivityClick = onSensitivityClick,
+                    onContactsClick = onContactsClick,
                 )
             }
         }
@@ -120,6 +124,8 @@ private fun ActiveProtectionContent(
     trustedContactsCount: Int,
     incidents: List<Incident>,
     onViewAllActivity: () -> Unit,
+    onSensitivityClick: () -> Unit,
+    onContactsClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -178,6 +184,7 @@ private fun ActiveProtectionContent(
                 title = stringResource(Res.string.dashboard_sensitivity),
                 subtitle = sensitivityLevel,
                 modifier = Modifier.weight(1f),
+                onClick = onSensitivityClick,
             )
 
             StatCard(
@@ -192,6 +199,7 @@ private fun ActiveProtectionContent(
                 title = stringResource(Res.string.dashboard_trusted),
                 subtitle = stringResource(Res.string.dashboard_contacts, trustedContactsCount),
                 modifier = Modifier.weight(1f),
+                onClick = onContactsClick,
             )
         }
 

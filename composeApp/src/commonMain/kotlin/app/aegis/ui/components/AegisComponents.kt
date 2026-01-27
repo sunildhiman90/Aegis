@@ -97,11 +97,12 @@ fun StatCard(
     icon: @Composable () -> Unit,
     title: String,
     subtitle: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     val colors = MaterialTheme.colorScheme
 
-    AegisCard(modifier = modifier) {
+    AegisCard(modifier = modifier, onClick = onClick) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(vertical = 8.dp)

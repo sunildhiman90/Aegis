@@ -30,6 +30,7 @@ fun TabsScreen(
     onOpenOverlaySettings: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
     onViewFullReport: () -> Unit = {},
+    onViewTrustedContacts: () -> Unit = {},
 ) {
     val colors = MaterialTheme.colorScheme
     val tabsNavController = rememberNavController()
@@ -103,6 +104,8 @@ fun TabsScreen(
                     hasOverlayPermission = hasOverlayPermission,
                     hasAccessibilityPermission = hasAccessibilityPermission,
                     onSettingsClick = onNavigateToSettings,
+                    onSensitivityClick = onNavigateToSettings,
+                    onContactsClick = onViewTrustedContacts,
                     onOpenOverlaySettings = onOpenOverlaySettings,
                     onOpenAccessibilitySettings = onOpenAccessibilitySettings,
                     onViewAllActivity = {
