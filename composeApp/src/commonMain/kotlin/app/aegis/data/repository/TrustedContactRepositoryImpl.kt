@@ -28,4 +28,8 @@ class TrustedContactRepositoryImpl(
     override suspend fun getContactById(id: String): TrustedContact? {
         return dao.getContactById(id)?.toDomain()
     }
+
+    override suspend fun isTrusted(identifier: String): Boolean {
+        return dao.checkIsTrusted(identifier) > 0
+    }
 }

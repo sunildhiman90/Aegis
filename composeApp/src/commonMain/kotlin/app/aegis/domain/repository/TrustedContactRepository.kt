@@ -8,4 +8,5 @@ interface TrustedContactRepository {
     suspend fun addContact(contact: TrustedContact)
     suspend fun deleteContact(contact: TrustedContact)
     suspend fun getContactById(id: String): TrustedContact?
+    suspend fun isTrusted(identifier: String): Boolean
 }

@@ -21,4 +21,7 @@ interface TrustedContactDao {
 
     @Query("SELECT * FROM trusted_contacts WHERE id = :id")
     suspend fun getContactById(id: String): TrustedContactEntity?
+
+    @Query("SELECT COUNT(*) FROM trusted_contacts WHERE name = :identifier OR phoneNumber = :identifier")
+    suspend fun checkIsTrusted(identifier: String): Int
 }

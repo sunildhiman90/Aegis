@@ -11,7 +11,6 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import app.aegis.ai.gemini.GeminiClient
 import app.aegis.ai.gemini.types.Source
-import app.aegis.data.TrustRepository
 import app.aegis.data.settings.AppSettingsRepository
 import app.aegis.helper.ScreenshotHelper
 import app.aegis.models.NudityVerdict
@@ -43,8 +42,14 @@ class AegisAccessibilityService :
 
     private val geminiClient: GeminiClient by inject()
     private val settingsRepository: AppSettingsRepository by inject()
-    private val incidentRepository: IncidentRepository by inject() // 🟢 Inject Incident Repository
+    private val incidentRepository: IncidentRepository by inject()
+    private val trustedContactRepository: app.aegis.domain.repository.TrustedContactRepository by inject() // 🟢 Inject Trusted Contact Repo
     private lateinit var overlayManager: OverlayManager
+    
+    // 🟢 Local Cache for synchronous checks (Performance)
+    private var trustedCache = emptySet<String>()
+    // 🟢 Local Session Scores (reset on restart, eventually persists to DB)
+    private val sessionTrustScores = mutableMapOf<String, Int>()
 
     private lateinit var screenshotHelper: ScreenshotHelper // New Helper
 
@@ -88,6 +93,18 @@ class AegisAccessibilityService :
                 java.util.concurrent.Executors
                     .newSingleThreadExecutor(),
             )
+        
+        // 🟢 Start syncing trusted contacts from DB to Cache
+        serviceScope.launch {
+            trustedContactRepository.getAllContacts().collect { contacts ->
+                // Cache both Names and Phone Numbers for fast lookup
+                trustedCache = contacts.flatMap { listOf(it.name, it.phoneNumber) }
+                    .filter { it.isNotBlank() }
+                    .toSet()
+                Log.d("Aegis", "✅ Trusted Cache Updated: ${trustedCache.size} entries")
+            }
+        }
+        
         Log.d("Aegis", "✅ Service Online")
     }
 
@@ -339,7 +356,10 @@ class AegisAccessibilityService :
         val contactName = extractTitle(rootNode)
 
         // 🛑 TRUST CHECK: If user manually trusted them, or we auto-trusted them before
-        if (TrustRepository.isTrusted(contactName)) return
+        if (contactName.isNotBlank() && trustedCache.contains(contactName)) {
+             // Log.d("Aegis", "✨ Trusted Contact detected (Cached): $contactName")
+             return
+        }
 
         // 5. EXTRACT & DEDUPLICATE CONTENT
         // Don't re-scan if we just analyzed this exact screen 100ms ago
@@ -454,12 +474,39 @@ class AegisAccessibilityService :
                     "Aegis",
                     "Safe contact '$contactName' passed local checks (Trust Score increased).",
                 )
-                TrustRepository.increaseTrustScore(contactName)
+                increaseTrustScore(contactName)
             }
         } else {
             // Safe
-            if (!isUnknown) TrustRepository.increaseTrustScore(contactName)
+            if (!isUnknown) increaseTrustScore(contactName)
         }
+    }
+
+    private fun increaseTrustScore(contactName: String) {
+        if (contactName.isBlank() || trustedCache.contains(contactName)) return
+
+        val currentScore = sessionTrustScores.getOrElse(contactName) { 0 } + 1
+        sessionTrustScores[contactName] = currentScore
+        
+         if (currentScore >= 3) {
+            Log.d("Aegis", "🏆 '$contactName' has earned our trust. Whitelisting via Repository.")
+            // Persist to DB
+             serviceScope.launch {
+                val newContact = app.aegis.domain.model.TrustedContact(
+                    id = UUID.randomUUID().toString(),
+                    name = contactName,
+                    phoneNumber = contactName, // Best guess if we only have title
+                    relationship = "Auto-Added",
+                    addedAt = System.currentTimeMillis()
+                )
+                 try {
+                     trustedContactRepository.addContact(newContact)
+                     sessionTrustScores.remove(contactName)
+                 } catch (e: Exception) {
+                     Log.e("Aegis", "Failed to auto-add trusted contact: ${e.message}")
+                 }
+             }
+         }
     }
 
     // --- HELPER TO AVOID DUPLICATE CODE ---
@@ -629,7 +676,17 @@ class AegisAccessibilityService :
             reason = reason,
             contactName = contactName,
             onUnlock = {
-                TrustRepository.trustContact(contactName)
+                // Determine trust
+                serviceScope.launch {
+                    val newContact = app.aegis.domain.model.TrustedContact(
+                        id = UUID.randomUUID().toString(),
+                        name = contactName,
+                        phoneNumber = contactName,
+                        relationship = "Trusted via Shield",
+                        addedAt = System.currentTimeMillis()
+                    )
+                    trustedContactRepository.addContact(newContact)
+                }
                 overlayManager.hideShield()
             },
             onDismiss = {
@@ -1065,7 +1122,7 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         }
 
         // 2. Local Trust Check (If explicitly trusted, return false)
-        if (TrustRepository.isTrusted(contactName)) return false
+        if (trustedCache.contains(contactName)) return false
 
         // 3. Raw Phone Number Check
         val clean = contactName.trim()
