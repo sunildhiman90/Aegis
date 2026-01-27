@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import app.aegis.domain.model.Incident
 import app.aegis.domain.model.IncidentType
 import app.aegis.domain.repository.IncidentRepository
+
+import app.aegis.data.settings.AppSettingsRepository
 import app.aegis.platform.DeviceIdProvider
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,11 +32,17 @@ data class PrivacyReportStats(
 class ProfileViewModel(
     incidentRepository: IncidentRepository,
     deviceIdProvider: DeviceIdProvider,
+    private val appSettingsRepository: AppSettingsRepository,
 ) : ViewModel() {
-    /**
-     * Actual device ID from platform
-     */
-    val deviceId: String = deviceIdProvider.getDeviceId()
+    
+    init {
+        // Ensure Device ID is saved in preferences
+        val storedId = appSettingsRepository.getDeviceId()
+        if (storedId == null) {
+            val newId = deviceIdProvider.getDeviceId()
+            appSettingsRepository.setDeviceId(newId)
+        }
+    }
 
     /**
      * Privacy report stats calculated from incidents

@@ -19,6 +19,9 @@ class AppSettingsRepository(
         private const val KEY_LANGUAGE_CODE = "language_code"
         private const val KEY_LANGUAGE_NAME = "language_name"
         private const val DEFAULT_LANGUAGE = "en"
+
+        // Device ID
+        private const val KEY_DEVICE_ID = "device_id"
     }
 
     // Onboarding
@@ -118,5 +121,14 @@ class AppSettingsRepository(
 
     fun setLanguageName(name: String) {
         settings.putString(KEY_LANGUAGE_NAME, name)
+    }
+
+    // Device ID - Stored for persistence but not shown in UI
+    fun getDeviceId(): String? {
+        return settings.getStringOrNull(KEY_DEVICE_ID)
+    }
+
+    fun setDeviceId(id: String) {
+        settings.putString(KEY_DEVICE_ID, id)
     }
 }

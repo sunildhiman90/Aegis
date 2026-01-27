@@ -36,7 +36,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ProfileScreen(
     isProtected: Boolean = true,
     subscriptionType: String? = null,
-    onCopyId: () -> Unit = {},
     onViewReport: () -> Unit = {},
     onSubscriptionClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
@@ -47,7 +46,6 @@ fun ProfileScreen(
     val scrollState = rememberScrollState()
 
     val privacyStats by viewModel.privacyStats.collectAsState()
-    val deviceId = viewModel.deviceId
 
     Scaffold(
         containerColor = colors.background,
@@ -124,64 +122,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Device ID Card
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(colors.surface)
-                        .padding(16.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier =
-                            Modifier
-                                .size(8.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(colors.primary),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(Res.string.profile_device_id),
-                        style = AegisTypography.overline,
-                        color = colors.onSurfaceVariant,
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = deviceId,
-                    style = AegisTypography.headlineSmall,
-                    color = colors.onSurface,
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = onCopyId,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = colors.primary,
-                            contentColor = Color.White,
-                        ),
-                ) {
-                    Text(stringResource(Res.string.profile_copy_id), style = AegisTypography.button)
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = stringResource(Res.string.profile_id_note),
-                    style = AegisTypography.caption,
-                    color = colors.textTertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
