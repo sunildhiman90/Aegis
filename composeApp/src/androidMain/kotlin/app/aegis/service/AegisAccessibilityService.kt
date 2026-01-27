@@ -154,10 +154,16 @@ class AegisAccessibilityService :
             }
 
             // DEBUG: Log ALL notifications to understand what's coming through
-            Log.d("Aegis", "🔔 NOTIFICATION EVENT: package=$eventPackage, text=$notificationText")
+            // Log.d("Aegis", "🔔 NOTIFICATION EVENT: package=$eventPackage, text=$notificationText")
+
+            // 🛑 DEBUG: Log ALL accessibility events to trace missing scans
+            if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || 
+                event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+                 Log.v("Aegis", "🔍 ACCESSIBILITY EVENT: package=$eventPackage type=${event.eventType} class=${event.className}")
+            }
 
             if (eventPackage in SUPPORTED_PACKAGES) {
-                Log.d("Aegis", "🔔 WhatsApp notification: $notificationText")
+                Log.d("Aegis", "🔔 SUPPORTED APP EVENT: $eventPackage")
 
                 // ═══════════════════════════════════════════════════════════
                 // CALL ENDED/MISSED/DECLINED DETECTION → Stop Analysis
@@ -356,14 +362,21 @@ class AegisAccessibilityService :
 
         // 3. CHAT SCAM CHECK
         // Must be a real chat screen (have an input box) to proceed
-        if (!isRealChatScreen(rootNode)) return
+        val isChatScreen = isRealChatScreen(rootNode)
+        Log.d("Aegis", "💬 isChatScreen check: $isChatScreen")
+        if (!isChatScreen) {
+            Log.d("Aegis", "⏭️ NOT a chat screen, skipping analysis")
+            return
+        }
+        Log.d("Aegis", "✅ Chat screen detected! Proceeding with analysis...")
 
         // 4. IDENTIFY CONTACT (Fast Check)
         val contactName = extractTitle(rootNode)
+        Log.d("Aegis", "📛 Contact name: '$contactName'")
 
         // 🛑 TRUST CHECK: If user manually trusted them, or we auto-trusted them before
         if (contactName.isNotBlank() && trustedCache.contains(contactName)) {
-             // Log.d("Aegis", "✨ Trusted Contact detected (Cached): $contactName")
+             Log.d("Aegis", "✨ Trusted Contact detected (Cached): $contactName")
              return
         }
 
@@ -399,21 +412,33 @@ class AegisAccessibilityService :
             }
         }
 
-        if (rawChatContent.length < 10) return
+        if (rawChatContent.length < 10) {
+            Log.d("Aegis", "⏭️ Content too short (${rawChatContent.length} chars), skipping")
+            return
+        }
 
         // 🛑 STABLE HASHING (Ignore Timestamps & Status)
         val stableContent = getStableContent(rawChatContent)
         val contentHash = stableContent.hashCode()
 
-        if (contentHash == lastProcessedHash) return // 🔋 CPU Saver: Static Screen
-        if (isScreenSnoozed(contentHash)) return // User dismissed this specific text
+        if (contentHash == lastProcessedHash) {
+            Log.d("Aegis", "⏭️ Same content hash, already processed")
+            return // 🔋 CPU Saver: Static Screen
+        }
+        if (isScreenSnoozed(contentHash)) {
+            Log.d("Aegis", "⏭️ Screen snoozed by user")
+            return // User dismissed this specific text
+        }
 
         // Update state
         lastProcessedHash = contentHash
 
         // Debounce only for meaningful new content updates
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastAnalysisTime < DEBOUNCE) return
+        if (currentTime - lastAnalysisTime < DEBOUNCE) {
+            Log.d("Aegis", "⏭️ Debounced (${currentTime - lastAnalysisTime}ms since last)")
+            return
+        }
         lastAnalysisTime = currentTime
 
         // 6. DECISION ENGINE (The "Smart" Logic)
@@ -434,6 +459,7 @@ class AegisAccessibilityService :
         // 🛡️ SENSITIVITY GATEKEEPER LOGIC
         val isUnknown = isPotentialRisk(contactName) // True if not a saved contact
         val localRisk = SecurityTools.analyzeLocally(stableContent)
+        Log.d("Aegis", "🎯 Decision factors: isUnknown=$isUnknown, localRisk=$localRisk, sensitivity=$sensitivity")
 
         // DECISION MATRIX
         val shouldAnalyze =
@@ -457,6 +483,7 @@ class AegisAccessibilityService :
             }
 
         if (shouldAnalyze) {
+            Log.d("Aegis", "✅ shouldAnalyze=true, proceeding to gatekeeper...")
             // 🔋 GATEKEEPER: Don't waste money/battery analyzing "Hi" or "Ok" unless urgent
             if (stableContent.length < 15 && localRisk == LocalRisk.SAFE) {
                 Log.d("Aegis", "🔋 Short safe text ignored (Battery Saver).")
@@ -483,6 +510,7 @@ class AegisAccessibilityService :
                 increaseTrustScore(contactName)
             }
         } else {
+            Log.d("Aegis", "⏭️ shouldAnalyze=false (Safe contact or low risk), skipping analysis")
             // Safe
             if (!isUnknown) increaseTrustScore(contactName)
         }
@@ -553,51 +581,57 @@ class AegisAccessibilityService :
 
         analysisJob =
             serviceScope.launch {
-                //TODO, just for testing
-                //val verdict = geminiClient.analyze(chatContent, sensitivity)
-                val verdicts = listOf(
-                    ScamVerdict(
-                        riskLevel = RiskLevel.DANGER,
-                        reason = "test danger",
-                        confidence = 99,
-                        sources = listOf(Source("test", "https://google.com"))
-                    ),
-                    ScamVerdict(
-                        riskLevel = RiskLevel.SAFE,
-                        reason = "test safe",
-                        confidence = 99,
-                        sources = listOf(Source("test", "https://google.com"))
-                    ),
-                    ScamVerdict(
+                Log.d("Aegis", "🚀 Starting Gemini analysis for '$contactName'...")
+                Log.d("Aegis", "📝 Content length: ${chatContent.length} chars")
+                
+                try {
+                    //TODO, just for testing
+                    //val verdict = geminiClient.analyze(chatContent, sensitivity)
+                    val verdict = ScamVerdict(
                         riskLevel = RiskLevel.WARN,
-                        reason = "test Warn",
+                        reason = "test warn",
                         confidence = 99,
                         sources = listOf(Source("test", "https://google.com"))
                     )
-                )
-                val verdict = verdicts[0]
-                if (!isActive) return@launch
-
-                if (verdict.riskLevel == RiskLevel.DANGER) {
-                    showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
-                    logIncident(
-                        type = IncidentType.SCAM_TEXT,
-                        riskLevel = verdict.riskLevel,
-                        reason = verdict.reason,
-                        contactName = contactName,
-                        isBlocked = true
-                    )
-                } else {
-                    overlayManager.hideShield()
-                    if (verdict.riskLevel == RiskLevel.WARN) {
-                         logIncident(
-                            type = IncidentType.SCAM_TEXT,
-                            riskLevel = verdict.riskLevel,
-                            reason = verdict.reason,
-                            contactName = contactName,
-                            isBlocked = false
-                        )
+                    Log.d("Aegis", "📊 Gemini result: RiskLevel=${verdict.riskLevel}, Confidence=${verdict.confidence}%, Reason='${verdict.reason}'")
+                    
+                    if (!isActive) {
+                        Log.d("Aegis", "⚠️ Analysis job cancelled, ignoring result")
+                        return@launch
                     }
+
+                    when (verdict.riskLevel) {
+                        RiskLevel.DANGER -> {
+                            Log.d("Aegis", "🚨 DANGER detected! Showing blocking shield...")
+                            showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
+                            logIncident(
+                                type = IncidentType.SCAM_TEXT,
+                                riskLevel = verdict.riskLevel,
+                                reason = verdict.reason,
+                                contactName = contactName,
+                                isBlocked = true
+                            )
+                        }
+                        RiskLevel.WARN -> {
+                            Log.d("Aegis", "⚠️ WARNING detected, logging incident...")
+                            overlayManager.hideShield()
+                            logIncident(
+                                type = IncidentType.SCAM_TEXT,
+                                riskLevel = verdict.riskLevel,
+                                reason = verdict.reason,
+                                contactName = contactName,
+                                isBlocked = false
+                            )
+                        }
+                        RiskLevel.SAFE -> {
+                            Log.d("Aegis", "✅ SAFE verdict, not logging (threats only)")
+                            overlayManager.hideShield()
+                            // Don't log SAFE results to keep activity log focused on threats
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("Aegis", "❌ Gemini analysis failed: ${e.message}", e)
+                    overlayManager.hideShield()
                 }
             }
     }
@@ -610,6 +644,8 @@ class AegisAccessibilityService :
         contactName: String,
         isBlocked: Boolean
     ) {
+        Log.d("Aegis", "📝 logIncident called: type=$type, riskLevel=$riskLevel, contact='$contactName', blocked=$isBlocked")
+        
         val severity = when (riskLevel) {
             RiskLevel.DANGER -> IncidentSeverity.CRITICAL
             RiskLevel.WARN -> IncidentSeverity.MEDIUM
@@ -617,7 +653,8 @@ class AegisAccessibilityService :
         }
 
         // Only log actual threats or warnings
-        if (riskLevel == RiskLevel.SAFE) return
+        // Only log actual threats or warnings
+        // if (riskLevel == RiskLevel.SAFE) return
 
         val incident = Incident(
             id = UUID.randomUUID().toString(),
@@ -721,11 +758,17 @@ class AegisAccessibilityService :
 
     // --- NODE TRAVERSAL (Keep existing) ---
     private fun isRealChatScreen(node: AccessibilityNodeInfo?): Boolean {
-        if (node == null) return false
+        if (node == null) {
+            Log.v("Aegis", "🔍 isRealChatScreen: node is null")
+            return false
+        }
         // IT IS A CHAT IF:
         // 1. It has an Input Box (Standard Chat)
         // 2. OR It has "Read Only" indicators (Short Codes, Bank Alerts, Business Accounts)
-        return hasChatInput(node) || hasReadOnlyIndicator(node)
+        val hasInput = hasChatInput(node)
+        val hasReadOnly = hasReadOnlyIndicator(node)
+        Log.v("Aegis", "🔍 isRealChatScreen: hasInput=$hasInput, hasReadOnly=$hasReadOnly")
+        return hasInput || hasReadOnly
     }
 
     private fun hasChatInput(node: AccessibilityNodeInfo?): Boolean {
@@ -1878,8 +1921,8 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                 //TODO, just for testing
                 //val verdict = geminiClient.analyzeUrl(url, sensitivity)
                 val verdict = PhishingVerdict(
-                    riskLevel = RiskLevel.DANGER,
-                    reason = "test danger url",
+                    riskLevel = RiskLevel.SAFE,
+                    reason = "test safe url",
                     confidence = 99,
                 )
                 if (!isActive) return@launch
