@@ -94,16 +94,6 @@ data class Source(
     val title: String,
     val url: String
 )
-
-// 2. UPDATE VERDICT TO HOLD SOURCES
-@Serializable
-data class ScamVerdict(
-    val riskLevel: RiskLevel,
-    val reason: String,
-    val confidence: Int,
-    val sources: List<Source> = emptyList() // Default to empty
-)
-
 @Serializable
 data class GroundingMetadata(
     val groundingChunks: List<GroundingChunk>? = null
