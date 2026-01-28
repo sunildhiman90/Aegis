@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import app.aegis.ai.gemini.types.Source
 import aegis.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun ScamShield(
@@ -109,7 +110,7 @@ fun ScamShield(
             // 🛑 Animated Icon
             Box(
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(80.dp) // Reduced from 120dp
                     .scale(scale),
                 contentAlignment = Alignment.Center
             ) {
@@ -124,7 +125,7 @@ fun ScamShield(
                     imageVector = Icons.Default.GppBad,
                     contentDescription = null,
                     tint = Color(0xFFEF4444),
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier.size(64.dp) // Reduced from 100dp
                 )
             }
 
@@ -134,20 +135,20 @@ fun ScamShield(
             Text(
                 text = stringResource(Res.string.scam_shield_danger_detected),
                 color = Color.White,
-                fontSize = 40.sp,
+                fontSize = 28.sp, // Reduced from 40sp
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center,
-                lineHeight = 40.sp
+                lineHeight = 32.sp
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(Res.string.scam_shield_flagged_call),
                 color = Color(0xFFFECACA), // red-200
-                fontSize = 18.sp,
+                fontSize = 16.sp, // Reduced from 18sp
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp)) // Reduced from 32dp
 
             // 🤖 AI Analysis Report Card
             Card(
@@ -155,7 +156,7 @@ fun ScamShield(
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF7F1D1D)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = false) // Take available space
+                    .weight(1f, fill = false) // Auto-adaptable height: Wraps content, expands only if needed up to max remaining space
                     .shadow(15.dp, RoundedCornerShape(12.dp))
             ) {
                 Column {
@@ -306,4 +307,18 @@ fun ScamShield(
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
+}
+
+
+@Composable
+@Preview
+fun ScamShieldPreview() {
+    ScamShield(
+        reason = "Test",
+        contactName = "Test",
+        sources = emptyList(),
+        onDismiss = {},
+        onUnlock = {},
+        onSourceClick = {}
+    )
 }
