@@ -1212,7 +1212,37 @@ class AegisAccessibilityService :
         val isConnecting = screenText.any { it.equals("Connecting", ignoreCase = true) }
         val isEncryptedVideoCall =
             screenText.any { it.contains("encrypted video call", ignoreCase = true) }
+
+        // CHECK PIP MODE (API 26+)
+        var isPiP = false
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            // Check current root node first (optimization)
+            val window = rootNode.window
+            if (window != null && window.type == 3) {
+                 isPiP = true
+            } else {
+                 // Fallback: Global Window Search (e.g. if event comes from Launcher)
+                 try {
+                     val allWindows = windows
+                     if (allWindows != null) {
+                         for (w in allWindows) {
+                             if (w.type == 3) { // TYPE_PICTURE_IN_PICTURE
+                                 val pipRoot = w.root
+                                 if (pipRoot != null && pipRoot.packageName?.toString()?.contains("whatsapp", ignoreCase = true) == true) {
+                                     isPiP = true
+                                     Log.d("Aegis", "📞 P-i-P Window Found via Global Search!")
+                                     break
+                                 }
+                             }
+                         }
+                     }
+                 } catch (e: Exception) {
+                     Log.e("Aegis", "Error checking windows for PiP: ${e.message}")
+                 }
+            }
+        }
         val hasLeaveCall = screenText.any { it.contains("Leave call", ignoreCase = true) }
+        val isSpeaking = screenText.any { it.contains("now speaking", ignoreCase = true) }
 
         // Negative indicator: Screen has "Accept" or "Decline" buttons (Incoming call screen)
         // Even if it says "encrypted video call", if these buttons are here, it's NOT active yet.
@@ -1251,7 +1281,9 @@ class AegisAccessibilityService :
                 (hasCallTimer && hasCallControls) || // Established call
                     (isConnecting && hasCallControls) || // Connecting phase
                     isEncryptedVideoCall || // WhatsApp video call text
-                    hasLeaveCall
+                    hasLeaveCall || // Definitive "Leave call" button
+                    isSpeaking || // "now speaking" indicator
+                    isPiP // PiP Window
             ) && // Definitive "Leave call" button
                 !hasIncomingCallButtons && // EXCLUDE incoming call screens
                 !hasMessageInput && // EXCLUDE chat thread
