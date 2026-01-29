@@ -45,9 +45,10 @@ class AegisAccessibilityService :
     private val incidentRepository: IncidentRepository by inject()
     private val trustedContactRepository: app.aegis.domain.repository.TrustedContactRepository by inject() // 🟢 Inject Trusted Contact Repo
     private lateinit var overlayManager: OverlayManager
-    
+
     // 🟢 Local Cache for synchronous checks (Performance)
     private var trustedCache = emptySet<String>()
+
     // 🟢 Local Session Scores (reset on restart, eventually persists to DB)
     private val sessionTrustScores = mutableMapOf<String, Int>()
 
@@ -93,7 +94,7 @@ class AegisAccessibilityService :
                 java.util.concurrent.Executors
                     .newSingleThreadExecutor(),
             )
-        
+
         // 🟢 Start syncing trusted contacts from DB to Cache
         serviceScope.launch {
             trustedContactRepository.getAllContacts().collect { contacts ->
@@ -104,7 +105,7 @@ class AegisAccessibilityService :
                 Log.d("Aegis", "✅ Trusted Cache Updated: ${trustedCache.size} entries")
             }
         }
-        
+
         Log.d("Aegis", "✅ Service Online")
     }
 
@@ -157,9 +158,13 @@ class AegisAccessibilityService :
             // Log.d("Aegis", "🔔 NOTIFICATION EVENT: package=$eventPackage, text=$notificationText")
 
             // 🛑 DEBUG: Log ALL accessibility events to trace missing scans
-            if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || 
-                event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-                 Log.v("Aegis", "🔍 ACCESSIBILITY EVENT: package=$eventPackage type=${event.eventType} class=${event.className}")
+            if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
+                event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+            ) {
+                Log.v(
+                    "Aegis",
+                    "🔍 ACCESSIBILITY EVENT: package=$eventPackage type=${event.eventType} class=${event.className}"
+                )
             }
 
             if (eventPackage in SUPPORTED_PACKAGES) {
@@ -293,10 +298,10 @@ class AegisAccessibilityService :
                 }
             }
         }
-        
+
         // 🛑 OPTIMIZATION: Invalidate Cache on Screen/Window State Changes
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-             invalidateTitleCache()
+            invalidateTitleCache()
         }
 
         // 1. GLOBAL CHECKS & BATTERY OPTIMIZATION 🔋
@@ -376,8 +381,8 @@ class AegisAccessibilityService :
 
         // 🛑 TRUST CHECK: If user manually trusted them, or we auto-trusted them before
         if (contactName.isNotBlank() && trustedCache.contains(contactName)) {
-             Log.d("Aegis", "✨ Trusted Contact detected (Cached): $contactName")
-             return
+            Log.d("Aegis", "✨ Trusted Contact detected (Cached): $contactName")
+            return
         }
 
         // 5. EXTRACT & DEDUPLICATE CONTENT
@@ -521,11 +526,11 @@ class AegisAccessibilityService :
 
         val currentScore = sessionTrustScores.getOrElse(contactName) { 0 } + 1
         sessionTrustScores[contactName] = currentScore
-        
-         if (currentScore >= 3) {
+
+        if (currentScore >= 3) {
             Log.d("Aegis", "🏆 '$contactName' has earned our trust. Whitelisting via Repository.")
             // Persist to DB
-             serviceScope.launch {
+            serviceScope.launch {
                 val newContact = app.aegis.domain.model.TrustedContact(
                     id = UUID.randomUUID().toString(),
                     name = contactName,
@@ -533,14 +538,14 @@ class AegisAccessibilityService :
                     relationship = "Auto-Added",
                     addedAt = System.currentTimeMillis()
                 )
-                 try {
-                     trustedContactRepository.addContact(newContact)
-                     sessionTrustScores.remove(contactName)
-                 } catch (e: Exception) {
-                     Log.e("Aegis", "Failed to auto-add trusted contact: ${e.message}")
-                 }
-             }
-         }
+                try {
+                    trustedContactRepository.addContact(newContact)
+                    sessionTrustScores.remove(contactName)
+                } catch (e: Exception) {
+                    Log.e("Aegis", "Failed to auto-add trusted contact: ${e.message}")
+                }
+            }
+        }
     }
 
     // --- HELPER TO AVOID DUPLICATE CODE ---
@@ -583,7 +588,7 @@ class AegisAccessibilityService :
             serviceScope.launch {
                 Log.d("Aegis", "🚀 Starting Gemini analysis for '$contactName'...")
                 Log.d("Aegis", "📝 Content length: ${chatContent.length} chars")
-                
+
                 try {
                     //TODO, just for testing
                     //val verdict = geminiClient.analyze(chatContent, sensitivity)
@@ -593,8 +598,11 @@ class AegisAccessibilityService :
                         confidence = 99,
                         sources = listOf(Source("test", "https://google.com"))
                     )
-                    Log.d("Aegis", "📊 Gemini result: RiskLevel=${verdict.riskLevel}, Confidence=${verdict.confidence}%, Reason='${verdict.reason}'")
-                    
+                    Log.d(
+                        "Aegis",
+                        "📊 Gemini result: RiskLevel=${verdict.riskLevel}, Confidence=${verdict.confidence}%, Reason='${verdict.reason}'"
+                    )
+
                     if (!isActive) {
                         Log.d("Aegis", "⚠️ Analysis job cancelled, ignoring result")
                         return@launch
@@ -612,6 +620,7 @@ class AegisAccessibilityService :
                                 isBlocked = true
                             )
                         }
+
                         RiskLevel.WARN -> {
                             Log.d("Aegis", "⚠️ WARNING detected, logging incident...")
                             overlayManager.hideShield()
@@ -623,6 +632,7 @@ class AegisAccessibilityService :
                                 isBlocked = false
                             )
                         }
+
                         RiskLevel.SAFE -> {
                             Log.d("Aegis", "✅ SAFE verdict, not logging (threats only)")
                             overlayManager.hideShield()
@@ -644,8 +654,11 @@ class AegisAccessibilityService :
         contactName: String,
         isBlocked: Boolean
     ) {
-        Log.d("Aegis", "📝 logIncident called: type=$type, riskLevel=$riskLevel, contact='$contactName', blocked=$isBlocked")
-        
+        Log.d(
+            "Aegis",
+            "📝 logIncident called: type=$type, riskLevel=$riskLevel, contact='$contactName', blocked=$isBlocked"
+        )
+
         val severity = when (riskLevel) {
             RiskLevel.DANGER -> IncidentSeverity.CRITICAL
             RiskLevel.WARN -> IncidentSeverity.MEDIUM
@@ -774,23 +787,24 @@ class AegisAccessibilityService :
     private fun hasChatInput(node: AccessibilityNodeInfo?): Boolean {
         if (node == null) return false
         if (node.className == "android.widget.EditText") {
-             val text = (node.text ?: "") .toString()
-             val hint = (node.hintText ?: "").toString()
-             
-             // 🛑 EXCLUDE SEARCH BARS: If it's a search bar, it's a List Screen, NOT a Chat.
-             if (hint.contains("Search", true) || text.contains("Search", true)) {
-                 return false
-             }
+            val text = (node.text ?: "").toString()
+            val hint = (node.hintText ?: "").toString()
 
-             // Check hint or content to see if it looks like a message input
-             if (hint.contains("Type", true) || 
-                 hint.contains("Message", true) || 
-                 hint.contains("Chat", true) ||
-                 text.contains("Type", true)) {
-                 return true
-             }
-             // Fallback: If it's an EditText and NOT a search bar, assume it's chat input
-             return true
+            // 🛑 EXCLUDE SEARCH BARS: If it's a search bar, it's a List Screen, NOT a Chat.
+            if (hint.contains("Search", true) || text.contains("Search", true)) {
+                return false
+            }
+
+            // Check hint or content to see if it looks like a message input
+            if (hint.contains("Type", true) ||
+                hint.contains("Message", true) ||
+                hint.contains("Chat", true) ||
+                text.contains("Type", true)
+            ) {
+                return true
+            }
+            // Fallback: If it's an EditText and NOT a search bar, assume it's chat input
+            return true
         }
         val count = node.childCount
         for (i in 0 until count) {
@@ -804,10 +818,10 @@ class AegisAccessibilityService :
     // WE MUST BE STRICT: Avoid generic terms like "Learn more" which might appear in Settings/Help.
     private fun hasReadOnlyIndicator(node: AccessibilityNodeInfo?): Boolean {
         if (node == null) return false
-        
+
         val text = (node.text ?: "").toString()
         val desc = (node.contentDescription ?: "").toString()
-        
+
         // STRICT phrases found in Google Android / Samsung / WhatsApp read-only footers.
         val indicators = listOf(
             "Can't reply",
@@ -815,7 +829,7 @@ class AegisAccessibilityService :
             "does not support replies", // Covers "Sender does not support replies"
             "sending to this short code" // Sometimes appears in error states
         )
-        
+
         if (indicators.any { text.contains(it, ignoreCase = true) || desc.contains(it, ignoreCase = true) }) {
             return true
         }
@@ -891,52 +905,53 @@ class AegisAccessibilityService :
     }
 
 
-    
     // Helper to find the "Back" button
     private fun findBackButton(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         if (node.contentDescription?.toString().equals("Navigate up", ignoreCase = true) ||
-            node.contentDescription?.toString().equals("Back", ignoreCase = true)) {
+            node.contentDescription?.toString().equals("Back", ignoreCase = true)
+        ) {
             return node
         }
-        
+
         for (i in 0 until node.childCount) {
-             val found = findBackButton(node.getChild(i) ?: continue)
-             if (found != null) return found
+            val found = findBackButton(node.getChild(i) ?: continue)
+            if (found != null) return found
         }
         return null
     }
 
     // Helper to extract Name from Action Bar container
     private fun findNameInActionBar(actionBar: AccessibilityNodeInfo): String? {
-         val ignored = setOf("Navigate up", "Back", "Call", "Video", "More options", "Search")
-         
-         for (i in 0 until actionBar.childCount) {
-             val child = actionBar.getChild(i) ?: continue
-             
-             // 🛑 CRITICAL: Do NOT pick up Editable text (like search bar hints)
-             if (child.isEditable) continue
-             
-             // Check direct text
-             val text = child.text?.toString()
-             if (!text.isNullOrEmpty() && !ignored.contains(text) && text.length < 30) {
-                 return text
-             }
-             
-             // Check children (sometimes Name/Status are wrapped in a LinearLayout)
-             if (child.childCount > 0) {
-                 for (j in 0 until child.childCount) {
-                     val grandChild = child.getChild(j) ?: continue
-                     if (grandChild.isEditable) continue // Skip editable input fields
-                     
-                     val grandText = grandChild.text?.toString()
-                      if (!grandText.isNullOrEmpty() && !ignored.contains(grandText) && 
-                          !grandText.equals("Online", true) && !grandText.contains("last seen", true)) {
-                         return grandText
-                      }
-                 }
-             }
-         }
-         return null
+        val ignored = setOf("Navigate up", "Back", "Call", "Video", "More options", "Search")
+
+        for (i in 0 until actionBar.childCount) {
+            val child = actionBar.getChild(i) ?: continue
+
+            // 🛑 CRITICAL: Do NOT pick up Editable text (like search bar hints)
+            if (child.isEditable) continue
+
+            // Check direct text
+            val text = child.text?.toString()
+            if (!text.isNullOrEmpty() && !ignored.contains(text) && text.length < 30) {
+                return text
+            }
+
+            // Check children (sometimes Name/Status are wrapped in a LinearLayout)
+            if (child.childCount > 0) {
+                for (j in 0 until child.childCount) {
+                    val grandChild = child.getChild(j) ?: continue
+                    if (grandChild.isEditable) continue // Skip editable input fields
+
+                    val grandText = grandChild.text?.toString()
+                    if (!grandText.isNullOrEmpty() && !ignored.contains(grandText) &&
+                        !grandText.equals("Online", true) && !grandText.contains("last seen", true)
+                    ) {
+                        return grandText
+                    }
+                }
+            }
+        }
+        return null
     }
 
     // Helper to check if a node is inside a Scrollable Container (RecyclerView, ListView, ScrollView)
@@ -944,10 +959,11 @@ class AegisAccessibilityService :
     private fun isInsideScrollable(node: AccessibilityNodeInfo?): Boolean {
         var current = node
         while (current != null) {
-            if (current.isScrollable || 
+            if (current.isScrollable ||
                 current.className?.toString()?.contains("RecyclerView") == true ||
                 current.className?.toString()?.contains("ListView") == true ||
-                current.className?.toString()?.contains("ScrollView") == true) {
+                current.className?.toString()?.contains("ScrollView") == true
+            ) {
                 return true
             }
             current = current.parent
@@ -962,22 +978,22 @@ class AegisAccessibilityService :
         // Collect text for fallback strategy
         // Increased limit to 20 to ensure we don't miss the title if the UI is complex
         if (node == null || list.size > 20) return
-        
+
         // 🛑 CRITICAL: Ignore Editable Input Fields (e.g. "RCS message", "Type a message")
         // If a node is editable, its text is the input hint or content -> IGNORE IT.
         if (node.isEditable) return
-        
+
         // 🛑 CRITICAL: Ignore Content inside Scrollable Lists (Messages)
         // If a node is part of a list, it's likely a message bubble, not the Title.
         // We only want static headers.
         if (isInsideScrollable(node)) return
-        
+
         if (!node.text.isNullOrEmpty()) {
             val text = node.text.toString()
             // Assume contact names are short but not too short (e.g., > 1 char)
             if (text.length > 1) list.add(text)
         }
-        
+
         // DFS traversal
         val count = node.childCount
         for (i in 0 until count) collectPossibleTitles(node.getChild(i), list)
@@ -986,14 +1002,15 @@ class AegisAccessibilityService :
     // Helper to find Toolbar/ActionBar by class name
     private fun findToolbar(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         val className = node.className?.toString() ?: ""
-        if (className.contains("Toolbar", ignoreCase = true) || 
-            className.contains("ActionBar", ignoreCase = true)) {
+        if (className.contains("Toolbar", ignoreCase = true) ||
+            className.contains("ActionBar", ignoreCase = true)
+        ) {
             return node
         }
-        
+
         for (i in 0 until node.childCount) {
-             val found = findToolbar(node.getChild(i) ?: continue)
-             if (found != null) return found
+            val found = findToolbar(node.getChild(i) ?: continue)
+            if (found != null) return found
         }
         return null
     }
@@ -1013,11 +1030,11 @@ class AegisAccessibilityService :
         lastExtractedTitle = "Unknown"
         lastExtractionTime = 0L
     }
-    
+
     // 🛑 NEW: Clean dirty titles (e.g., "Save Name?", "Add Name")
     private fun cleanExtractedTitle(rawTitle: String): String {
         var title = rawTitle.trim()
-        
+
         // Remove common prefixes (case insensitive)
         if (title.startsWith("Save ", ignoreCase = true)) {
             title = title.substring(5).trim()
@@ -1025,32 +1042,32 @@ class AegisAccessibilityService :
         if (title.startsWith("Add ", ignoreCase = true)) {
             title = title.substring(4).trim()
         }
-        
+
         // Remove common suffixes
         if (title.endsWith("?")) {
             title = title.dropLast(1).trim()
         }
-        
+
         return title
     }
 
     private fun extractTitle(rootNode: AccessibilityNodeInfo?): String {
         if (rootNode == null) return "Unknown"
-        
+
         val currentWindowId = rootNode.windowId
         val currentTime = System.currentTimeMillis()
-        
+
         // Check if we can use the cache
         val isSameWindow = (currentWindowId == lastWindowId)
         val isCacheValid = (currentTime - lastExtractionTime) < TITLE_CACHE_TTL
-        
+
         if (isSameWindow && isCacheValid && lastExtractedTitle != "Unknown") {
             return lastExtractedTitle
         }
-        
+
         // Update Cache State (before extraction, updated after success)
         lastWindowId = currentWindowId
-        
+
         // 1. Precise ID Check (WhatsApp) - FASTEST
         val waList =
             rootNode.findAccessibilityNodeInfosByViewId("com.whatsapp:id/conversation_contact_name")
@@ -1064,21 +1081,21 @@ class AegisAccessibilityService :
 
         // 2. Structural Action Bar Check (Universal Fallback)
         var title: String? = null
-        
+
         val toolbar = findToolbar(rootNode)
         if (toolbar != null) {
-             title = findNameInActionBar(toolbar)
+            title = findNameInActionBar(toolbar)
         } else {
             // If no explicit Toolbar found, try the Back Button heuristic
-             val backButton = findBackButton(rootNode)
-             if (backButton != null) {
-                 val actionBar = backButton.parent
-                 if (actionBar != null) {
-                     title = findNameInActionBar(actionBar)
-                 }
-             }
+            val backButton = findBackButton(rootNode)
+            if (backButton != null) {
+                val actionBar = backButton.parent
+                if (actionBar != null) {
+                    title = findNameInActionBar(actionBar)
+                }
+            }
         }
-        
+
         if (title != null) {
             val cleanTitle = cleanExtractedTitle(title)
             lastExtractedTitle = cleanTitle
@@ -1089,37 +1106,37 @@ class AegisAccessibilityService :
         // 3. Last Resort: Deep Scan
         val possibleTitles = mutableListOf<String>()
         collectPossibleTitles(rootNode, possibleTitles)
-        
+
         // Filter out common UI elements/buttons
         val ignoredTitles = setOf(
             "Apply Now", "Call", "Video", "Add", "Block", "Report", "Search",
             "Type a message", "Message", "Online", "Typing...", "last seen",
             "RCS message", "Text message", "Sending with"
         )
-        
+
         val found = possibleTitles.firstOrNull { t ->
-             val clean = t.trim()
-             // Filter notification badges like "10 new messages", "5 unread messages"
-             val hasNumberPrefix = clean.matches(Regex("^\\d+\\s.*"))
-             val isNotificationBadge = clean.contains("new message", ignoreCase = true) ||
-                                      clean.contains("unread message", ignoreCase = true) ||
-                                      clean.contains("missed call", ignoreCase = true)
-             
-             clean.length < 25 && 
-             !clean.contains(":") && 
-             !clean.contains("Type") &&
-             !t.contains("RCS message", true) &&
-             !t.contains("Sending with", true) &&
-             !hasNumberPrefix &&
-             !isNotificationBadge &&
-             !ignoredTitles.any { clean.equals(it, ignoreCase = true) }
+            val clean = t.trim()
+            // Filter notification badges like "10 new messages", "5 unread messages"
+            val hasNumberPrefix = clean.matches(Regex("^\\d+\\s.*"))
+            val isNotificationBadge = clean.contains("new message", ignoreCase = true) ||
+                    clean.contains("unread message", ignoreCase = true) ||
+                    clean.contains("missed call", ignoreCase = true)
+
+            clean.length < 25 &&
+                    !clean.contains(":") &&
+                    !clean.contains("Type") &&
+                    !t.contains("RCS message", true) &&
+                    !t.contains("Sending with", true) &&
+                    !hasNumberPrefix &&
+                    !isNotificationBadge &&
+                    !ignoredTitles.any { clean.equals(it, ignoreCase = true) }
         } ?: "Unknown"
-        
+
         // Even if unknown, we cache it to prevent retrying deeply every ms
         val finalTitle = cleanExtractedTitle(found)
         lastExtractedTitle = finalTitle
         lastExtractionTime = currentTime
-        
+
         return finalTitle
     }
 
@@ -1179,13 +1196,13 @@ class AegisAccessibilityService :
         val isIncomingVideoCall =
             screenText.any {
                 it.contains("Incoming video call", ignoreCase = true) ||
-                    (
-                        it.contains("WhatsApp video call", ignoreCase = true) &&
-                            it.contains(
-                                "Decline",
-                                ignoreCase = true,
-                            )
-                    )
+                        (
+                                it.contains("WhatsApp video call", ignoreCase = true) &&
+                                        it.contains(
+                                            "Decline",
+                                            ignoreCase = true,
+                                        )
+                                )
             }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -1201,13 +1218,13 @@ class AegisAccessibilityService :
         val hasCallControls =
             screenText.any {
                 it.contains("mute", ignoreCase = true) ||
-                    it.contains("camera", ignoreCase = true) ||
-                    it.contains("end call", ignoreCase = true) ||
-                    it.contains("speaker", ignoreCase = true) ||
-                    it.contains("switch camera", ignoreCase = true) ||
-                    it.contains("video off", ignoreCase = true) ||
-                    it.contains("microphone", ignoreCase = true) ||
-                    it.contains("Leave call", ignoreCase = true) // Definitive indicator
+                        //it.contains("camera", ignoreCase = true) || // Too generic (exists on main screen)
+                        it.contains("end call", ignoreCase = true) ||
+                        it.contains("speaker", ignoreCase = true) ||
+                        it.contains("switch camera", ignoreCase = true) ||
+                        it.contains("video off", ignoreCase = true) ||
+                        //it.contains("microphone", ignoreCase = true) || // Too generic
+                        it.contains("Leave call", ignoreCase = true) // Definitive indicator
             }
         val isConnecting = screenText.any { it.equals("Connecting", ignoreCase = true) }
         val isEncryptedVideoCall =
@@ -1218,27 +1235,34 @@ class AegisAccessibilityService :
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             // Check current root node first (optimization)
             val window = rootNode.window
-            if (window != null && window.type == 3) {
-                 isPiP = true
+            if (window != null && window.isInPictureInPictureMode) { // FIXED: Use proper property
+                isPiP = true
             } else {
-                 // Fallback: Global Window Search (e.g. if event comes from Launcher)
-                 try {
-                     val allWindows = windows
-                     if (allWindows != null) {
-                         for (w in allWindows) {
-                             if (w.type == 3) { // TYPE_PICTURE_IN_PICTURE
-                                 val pipRoot = w.root
-                                 if (pipRoot != null && pipRoot.packageName?.toString()?.contains("whatsapp", ignoreCase = true) == true) {
-                                     isPiP = true
-                                     Log.d("Aegis", "📞 P-i-P Window Found via Global Search!")
-                                     break
-                                 }
-                             }
-                         }
-                     }
-                 } catch (e: Exception) {
-                     Log.e("Aegis", "Error checking windows for PiP: ${e.message}")
-                 }
+                // Fallback: Global Window Search (e.g. if event comes from Launcher)
+                try {
+                    val allWindows = windows
+                    if (allWindows != null) {
+                        for (w in allWindows) {
+                            if (w.isInPictureInPictureMode) { // FIXED: Use proper property
+                                // Sanity Check: Ensure window has dimensions (is visible)
+                                val bounds = android.graphics.Rect()
+                                w.getBoundsInScreen(bounds)
+                                if (bounds.width() > 10 && bounds.height() > 10) {
+                                    val pipRoot = w.root
+                                    if (pipRoot != null && pipRoot.packageName?.toString()
+                                            ?.contains("whatsapp", ignoreCase = true) == true
+                                    ) {
+                                        isPiP = true
+                                        Log.d("Aegis", "📞 P-i-P Window Found via Global Search! Bounds: $bounds")
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("Aegis", "Error checking windows for PiP: ${e.message}")
+                }
             }
         }
         val hasLeaveCall = screenText.any { it.contains("Leave call", ignoreCase = true) }
@@ -1249,24 +1273,37 @@ class AegisAccessibilityService :
         val hasIncomingCallButtons =
             screenText.any {
                 it.contains("Accept call", ignoreCase = true) ||
-                    it.contains("Decline call", ignoreCase = true) ||
-                    it.contains("slide to answer", ignoreCase = true)
+                        it.contains("Decline call", ignoreCase = true) ||
+                        it.contains("slide to answer", ignoreCase = true)
             }
 
         // Negative Indicator: Chat Screen (has text input)
         val hasMessageInput =
             screenText.any {
                 it.contains("Type a message", ignoreCase = true) ||
-                    it.equals("Message", ignoreCase = true)
+                        it.equals("Message", ignoreCase = true)
+            }
+
+        // Negative Indicator: App Lock Screen (Fingerprint/PIN)
+        val hasAppLock =
+            screenText.any {
+                it.contains("WhatsApp Locked", ignoreCase = true) ||
+                        it.contains("Touch the fingerprint sensor", ignoreCase = true) ||
+                        it.contains("Unlock with fingerprint", ignoreCase = true) ||
+                        it.contains("Enter your PIN", ignoreCase = true) ||
+                        it.contains("Verify your identity", ignoreCase = true)
             }
 
         // Negative Indicator: Main List (has tabs)
+        // FIXED: Use 'contains' to handle badges (e.g., "Chats 2", "Updates •")
         val hasMainTabs =
-            screenText.any { it.equals("Chats", ignoreCase = true) } &&
-                screenText.any { it.equals("Calls", ignoreCase = true) }
+            screenText.any { it.contains("Chats", ignoreCase = true) } &&
+                    (screenText.any { it.contains("Calls", ignoreCase = true) } ||
+                            screenText.any { it.contains("Updates", ignoreCase = true) } ||
+                            screenText.any { it.contains("Communities", ignoreCase = true) })
 
         // EXIT CONDITION #2: Main App List (Chats/Calls tabs)
-        if (hasMainTabs) {
+        if (hasMainTabs || hasAppLock) { // EXIT if on Tabs OR Lock Screen
             if (isInVideoCall) stopSextortionAnalysis()
             if (hasShownCameraWarning) {
                 Log.d("Aegis", "Resetting camera warning flag (User returned to Main List)")
@@ -1278,16 +1315,16 @@ class AegisAccessibilityService :
         // Active call if ANY of these combinations AND distinct lack of incoming call buttons:
         val isActiveVideoCall =
             (
-                (hasCallTimer && hasCallControls) || // Established call
-                    (isConnecting && hasCallControls) || // Connecting phase
-                    isEncryptedVideoCall || // WhatsApp video call text
-                    hasLeaveCall || // Definitive "Leave call" button
-                    isSpeaking || // "now speaking" indicator
-                    isPiP // PiP Window
-            ) && // Definitive "Leave call" button
-                !hasIncomingCallButtons && // EXCLUDE incoming call screens
-                !hasMessageInput && // EXCLUDE chat thread
-                !hasMainTabs // EXCLUDE chat list
+                    (hasCallTimer && hasCallControls) || // Established call
+                            (isConnecting && hasCallControls) || // Connecting phase
+                            isEncryptedVideoCall || // WhatsApp video call text
+                            hasLeaveCall || // Definitive "Leave call" button
+                            isSpeaking || // "now speaking" indicator
+                            isPiP // PiP Window
+                    ) && // Definitive "Leave call" button
+                    !hasIncomingCallButtons && // EXCLUDE incoming call screens
+                    !hasMessageInput && // EXCLUDE chat thread
+                    !hasMainTabs // EXCLUDE chat list
 
         Log.d(
             "Aegis",
@@ -1319,12 +1356,12 @@ class AegisAccessibilityService :
             screenText.firstOrNull { text ->
                 val cleanText = text.trim()
                 !cleanText.equals("incoming video call", ignoreCase = true) &&
-                    !cleanText.equals("whatsapp video call", ignoreCase = true) &&
-                    !cleanText.equals("decline", ignoreCase = true) &&
-                    !cleanText.equals("answer", ignoreCase = true) &&
-                    !cleanText.contains("mute", ignoreCase = true) &&
-                    !cleanText.contains("camera", ignoreCase = true) &&
-                    cleanText.length > 2
+                        !cleanText.equals("whatsapp video call", ignoreCase = true) &&
+                        !cleanText.equals("decline", ignoreCase = true) &&
+                        !cleanText.equals("answer", ignoreCase = true) &&
+                        !cleanText.contains("mute", ignoreCase = true) &&
+                        !cleanText.contains("camera", ignoreCase = true) &&
+                        cleanText.length > 2
             } ?: "Unknown"
 
         // 3. Is it an Unknown Number? (High Risk) - Apply Zero-Trust for BOTH threats
@@ -1368,13 +1405,13 @@ class AegisAccessibilityService :
         val isIncomingAudioCall =
             screenText.any {
                 it.contains("Incoming voice call", ignoreCase = true) ||
-                    (
-                        it.contains("WhatsApp voice call", ignoreCase = true) &&
-                            it.contains(
-                                "Decline",
-                                ignoreCase = true,
-                            )
-                    )
+                        (
+                                it.contains("WhatsApp voice call", ignoreCase = true) &&
+                                        it.contains(
+                                            "Decline",
+                                            ignoreCase = true,
+                                        )
+                                )
             }
 
         if (!isIncomingAudioCall) return false
@@ -1383,11 +1420,11 @@ class AegisAccessibilityService :
             screenText.firstOrNull { text ->
                 val cleanText = text.trim()
                 !cleanText.equals("incoming voice call", ignoreCase = true) &&
-                    !cleanText.equals("whatsapp voice call", ignoreCase = true) &&
-                    !cleanText.equals("decline", ignoreCase = true) &&
-                    !cleanText.equals("answer", ignoreCase = true) &&
-                    !cleanText.equals("swipe up to accept", ignoreCase = true) &&
-                    cleanText.length > 2
+                        !cleanText.equals("whatsapp voice call", ignoreCase = true) &&
+                        !cleanText.equals("decline", ignoreCase = true) &&
+                        !cleanText.equals("answer", ignoreCase = true) &&
+                        !cleanText.equals("swipe up to accept", ignoreCase = true) &&
+                        cleanText.length > 2
             } ?: "Unknown"
 
         if (isPotentialRisk(callerId)) {
@@ -1664,11 +1701,7 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                             val sensitivity = settingsRepository.getSensitivity()
 
                             // 1. Check for NUDITY (Sextortion)
-                            //TODO, just for testing
-                            //val nudityVerdict = geminiClient.analyzeForNudity(base64, sensitivity)
-                            val nudityVerdict = NudityVerdict(
-                                nudity = true,
-                            )
+                            val nudityVerdict = geminiClient.analyzeForNudity(base64, sensitivity)
                             Log.d(
                                 "Aegis",
                                 "📸 Nudity check: ${nudityVerdict.nudity}, fake=${nudityVerdict.fakeFeed}, confidence=${nudityVerdict.confidence}",
@@ -1689,14 +1722,8 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
 
                             // 2. Check for POLICE IMPERSONATION (Digital Arrest)
                             // Uses existing analyzeImage which looks for "Police Uniforms"
-                            //TODO, just for testing
-                            //val scamVerdict = geminiClient.analyzeImage(base64, sensitivity)
-                            val scamVerdict = ScamVerdict(
-                                riskLevel = RiskLevel.DANGER,
-                                reason = "test danger image",
-                                confidence = 99,
-                                sources = listOf(Source("test", "https://google.com"))
-                            )
+                            val scamVerdict = geminiClient.analyzeImage(base64, sensitivity)
+
                             Log.d(
                                 "Aegis",
                                 "👮 Police check: ${scamVerdict.riskLevel}, reason=${scamVerdict.reason}",
@@ -1875,12 +1902,12 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
             // Criteria for "End Call" button
             val isEndButton =
                 text.contains("end call") || text.contains("hang up") || text.contains("decline") ||
-                    desc.contains("end call") || desc.contains("hang up") || desc.contains("decline") ||
-                    desc.contains("end") || // Simple "End" often works
-                    viewId.contains("end_call") || viewId.contains("hangup") ||
-                    viewId.contains(
-                        "reject",
-                    )
+                        desc.contains("end call") || desc.contains("hang up") || desc.contains("decline") ||
+                        desc.contains("end") || // Simple "End" often works
+                        viewId.contains("end_call") || viewId.contains("hangup") ||
+                        viewId.contains(
+                            "reject",
+                        )
 
             if (isEndButton) {
                 val clicked = node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
@@ -1934,10 +1961,10 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                 )
             safeDomains.any {
                 host.equals(it, ignoreCase = true) ||
-                    host.endsWith(
-                        ".$it",
-                        ignoreCase = true,
-                    )
+                        host.endsWith(
+                            ".$it",
+                            ignoreCase = true,
+                        )
             }
         } catch (e: Exception) {
             false
@@ -1970,15 +1997,15 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                 withContext(Dispatchers.Main) {
                     if (verdict.riskLevel == app.aegis.models.RiskLevel.DANGER) {
                         overlayManager.showPhishingWarning(
-                             reason = verdict.reason,
-                             url = url,
-                             onReport = { launchReportIntent(verdict) },
-                             onDismiss = { overlayManager.hideShield() },
-                             onTrust = {
-                                 // Add to whitelist session
-                                 overlayManager.hideShield()
-                             },
-                         )
+                            reason = verdict.reason,
+                            url = url,
+                            onReport = { launchReportIntent(verdict) },
+                            onDismiss = { overlayManager.hideShield() },
+                            onTrust = {
+                                // Add to whitelist session
+                                overlayManager.hideShield()
+                            },
+                        )
                         logIncident(
                             type = IncidentType.PHISHING_LINK,
                             riskLevel = RiskLevel.DANGER,
