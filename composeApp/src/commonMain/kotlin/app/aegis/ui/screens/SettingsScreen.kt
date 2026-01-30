@@ -77,14 +77,14 @@ fun SettingsScreen(
             title = {
                 Text(
                     text = stringResource(Res.string.settings_factory_reset_title),
-                    style = AegisTypography.headlineSmall,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = colors.error,
                 )
             },
             text = {
                 Text(
                     text = stringResource(Res.string.settings_factory_reset_message),
-                    style = AegisTypography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant,
                 )
             },
@@ -115,7 +115,7 @@ fun SettingsScreen(
                     title = {
                         Text(
                             text = stringResource(Res.string.settings_title),
-                            style = AegisTypography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMedium,
                             color = colors.onSurface,
                         )
                     },
@@ -170,13 +170,13 @@ fun SettingsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(Res.string.settings_sensitivity_title),
-                            style = AegisTypography.titleMedium,
+                            style = MaterialTheme.typography.titleMedium,
                             color = colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = stringResource(Res.string.settings_sensitivity_desc),
-                            style = AegisTypography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant,
                         )
                     }
@@ -236,7 +236,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = displayName,
-                                style = AegisTypography.labelMedium,
+                                style = MaterialTheme.typography.labelMedium,
                                 color = if (isSelected) colors.primary else colors.onSurfaceVariant,
                             )
                         }
@@ -302,7 +302,7 @@ fun SettingsScreen(
 
                         Text(
                             text = warningText,
-                            style = AegisTypography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurface,
                         )
                     }
@@ -375,7 +375,7 @@ fun SettingsScreen(
 
             Text(
                 text = stringResource(Res.string.settings_accessibility_note),
-                style = AegisTypography.caption,
+                style = MaterialTheme.typography.caption,
                 color = colors.textTertiary, // Extension
             )
 
@@ -403,13 +403,13 @@ fun SettingsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(Res.string.settings_theme_title),
-                            style = AegisTypography.titleMedium,
+                            style = MaterialTheme.typography.titleMedium,
                             color = colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = stringResource(Res.string.settings_theme_desc),
-                            style = AegisTypography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant,
                         )
                     }
@@ -420,7 +420,7 @@ fun SettingsScreen(
                                 AppThemeMode.DARK -> "🌙"
                                 AppThemeMode.SYSTEM_DEFAULT -> "🤖"
                             },
-                        style = AegisTypography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium,
                     )
                 }
 
@@ -471,7 +471,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = displayName,
-                                style = AegisTypography.labelMedium,
+                                style = MaterialTheme.typography.labelMedium,
                                 color = if (isSelected) colors.primary else colors.onSurfaceVariant,
                             )
                         }
@@ -504,7 +504,7 @@ fun SettingsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(Res.string.settings_language_title),
-                            style = AegisTypography.titleMedium,
+                            style = MaterialTheme.typography.titleMedium,
                             color = colors.onSurface,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -512,7 +512,7 @@ fun SettingsScreen(
                             text = languageUiState.languages?.find {
                                 it.code == languageUiState.selectedLanguageCode
                             }?.name ?: "English",
-                            style = AegisTypography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant,
                         )
                     }
@@ -597,7 +597,7 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = stringResource(Res.string.settings_factory_reset_title),
-                    style = AegisTypography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium,
                     color = colors.error,
                 )
             }
@@ -607,7 +607,7 @@ fun SettingsScreen(
             // Version
             Text(
                 text = stringResource(Res.string.profile_version, "2.4.1", "209"),
-                style = AegisTypography.caption,
+                style = MaterialTheme.typography.caption,
                 color = colors.textTertiary,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -632,13 +632,13 @@ private fun SectionTitle(
     ) {
         Text(
             text = title,
-            style = AegisTypography.labelMedium,
+            style = MaterialTheme.typography.labelMedium,
             color = colors.onSurfaceVariant,
         )
         if (action != null) {
             Text(
                 text = action,
-                style = AegisTypography.labelMedium,
+                style = MaterialTheme.typography.labelMedium,
                 color = colors.primary,
                 modifier = Modifier.clickable { onActionClick?.invoke() },
             )
@@ -690,7 +690,7 @@ private fun SettingsToggleItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -705,7 +705,7 @@ private fun SettingsToggleItem(
                 }
                 Text(
                     text = subtitle,
-                    style = AegisTypography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall,
                     color = subtitleColor,
                 )
             }
@@ -768,12 +768,12 @@ private fun TrustedContactItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = name,
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface,
             )
             Text(
                 text = detail,
-                style = AegisTypography.bodySmall,
+                style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
             )
         }
@@ -824,12 +824,12 @@ private fun TrustedContactEmptyState(onAddContacts: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(Res.string.settings_no_contacts),
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface,
             )
             Text(
                 text = stringResource(Res.string.settings_no_contacts_desc),
-                style = AegisTypography.bodySmall,
+                style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
             )
         }

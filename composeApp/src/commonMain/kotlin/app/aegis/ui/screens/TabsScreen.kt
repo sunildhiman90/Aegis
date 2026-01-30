@@ -18,7 +18,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import app.aegis.ui.navigation.*
 import app.aegis.ui.theme.*
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -80,7 +80,7 @@ fun TabsScreen(
                         label = {
                             Text(
                                 text = label,
-                                style = AegisTypography.labelSmall,
+                                style = MaterialTheme.typography.labelSmall,
                             )
                         },
                         colors =

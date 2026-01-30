@@ -58,7 +58,7 @@ fun TrustedContactsScreen(
                     title = {
                         Text(
                             text = stringResource(Res.string.trusted_contacts_title),
-                            style = AegisTypography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMedium,
                             color = colors.onSurface
                         )
                     },
@@ -89,7 +89,7 @@ fun TrustedContactsScreen(
 
             Text(
                 text = stringResource(Res.string.trusted_contacts_list_title, contacts.size),
-                style = AegisTypography.overline,
+                style = MaterialTheme.typography.overline,
                 color = colors.onSurfaceVariant
             )
 
@@ -174,17 +174,17 @@ private fun TrustedContactItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = contact.name,
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface
             )
             Text(
                 text = contact.phoneNumber,
-                style = AegisTypography.bodySmall,
+                style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant
             )
             Text(
                 text = contact.relationship,
-                style = AegisTypography.caption,
+                style = MaterialTheme.typography.caption,
                 color = colors.primary
             )
         }
@@ -243,7 +243,7 @@ private fun EmptyContactsPlaceholder() {
                 ) {
                     Text(
                         text = stringResource(Res.string.emoji_shield),
-                        style = AegisTypography.labelSmall
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
@@ -253,7 +253,7 @@ private fun EmptyContactsPlaceholder() {
 
         Text(
             text = stringResource(Res.string.trusted_contacts_empty_title),
-            style = AegisTypography.headlineMedium,
+            style = MaterialTheme.typography.headlineMedium,
             color = colors.onSurface
         )
 
@@ -261,7 +261,7 @@ private fun EmptyContactsPlaceholder() {
 
         Text(
             text = stringResource(Res.string.trusted_contacts_empty_desc),
-            style = AegisTypography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
@@ -292,7 +292,7 @@ private fun AddContactDialog(
         title = {
             Text(
                 text = dialogTitle,
-                style = AegisTypography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall,
                 color = colors.onSurface
             )
         },

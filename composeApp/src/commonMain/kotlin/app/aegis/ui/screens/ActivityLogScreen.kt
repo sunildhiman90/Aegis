@@ -51,7 +51,7 @@ fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
                     title = {
                         Text(
                             text = stringResource(Res.string.nav_activity),
-                            style = AegisTypography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMedium,
                             color = colors.onSurface,
                         )
                     },
@@ -93,7 +93,7 @@ fun ActivityLogScreen(viewModel: ActivityLogViewModel = koinViewModel()) {
                         label = {
                             Text(
                                 text = label,
-                                style = AegisTypography.labelMedium,
+                                style = MaterialTheme.typography.labelMedium,
                             )
                         },
                         colors =
@@ -206,7 +206,7 @@ private fun ActivityEmptyState() {
                 ) {
                     Text(
                         text = stringResource(Res.string.emoji_shield),
-                        style = AegisTypography.labelSmall,
+                        style = MaterialTheme.typography.labelSmall,
                     )
                 }
             }
@@ -216,7 +216,7 @@ private fun ActivityEmptyState() {
 
         Text(
             text = stringResource(Res.string.activity_empty_title),
-            style = AegisTypography.headlineMedium,
+            style = MaterialTheme.typography.headlineMedium,
             color = colors.onSurface,
         )
 
@@ -224,7 +224,7 @@ private fun ActivityEmptyState() {
 
         Text(
             text = stringResource(Res.string.activity_empty_message),
-            style = AegisTypography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -243,7 +243,7 @@ private fun ActivityDateHeader(dateLabel: String) {
 
     Text(
         text = text,
-        style = AegisTypography.labelMedium,
+        style = MaterialTheme.typography.labelMedium,
         color = colors.onSurfaceVariant,
     )
 }

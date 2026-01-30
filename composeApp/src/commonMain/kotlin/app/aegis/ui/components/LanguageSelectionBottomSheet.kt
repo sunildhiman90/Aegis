@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.AppLanguageItem
 import app.aegis.ui.theme.AegisTheme
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -69,7 +69,7 @@ fun LanguageSelectionBottomSheet(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = stringResource(Res.string.select_language),
-                    style = AegisTypography.headlineSmall,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = colors.onSurface,
                 )
@@ -80,7 +80,7 @@ fun LanguageSelectionBottomSheet(
             // Subtitle
             Text(
                 text = stringResource(Res.string.settings_language_desc),
-                style = AegisTypography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -146,7 +146,7 @@ private fun LanguageItemRow(
             // Language name
             Text(
                 text = language.name,
-                style = AegisTypography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 color = colors.onSurface,
                 modifier = Modifier.weight(1f),
             )

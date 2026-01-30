@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.ui.theme.*
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 import app.aegis.ui.viewmodel.PrivacyReportStats
 import app.aegis.ui.viewmodel.ProfileViewModel
 import org.jetbrains.compose.resources.stringResource
@@ -49,7 +49,7 @@ fun FullReportScreen(
                     title = {
                         Text(
                             text = stringResource(Res.string.full_report_title),
-                            style = AegisTypography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMedium,
                             color = colors.onSurface
                         )
                     },
@@ -85,7 +85,7 @@ fun FullReportScreen(
             // Threats Breakdown Section
             Text(
                 text = stringResource(Res.string.full_report_threats_blocked),
-                style = AegisTypography.overline,
+                style = MaterialTheme.typography.overline,
                 color = colors.onSurfaceVariant
             )
 
@@ -98,7 +98,7 @@ fun FullReportScreen(
             // Processing Summary Section
             Text(
                 text = stringResource(Res.string.full_report_processing_summary),
-                style = AegisTypography.overline,
+                style = MaterialTheme.typography.overline,
                 color = colors.onSurfaceVariant
             )
 
@@ -137,7 +137,7 @@ private fun SummaryCard(stats: PrivacyReportStats) {
         ) {
             Text(
                 text = stringResource(Res.string.emoji_shield),
-                style = AegisTypography.displayMedium
+                style = MaterialTheme.typography.displayMedium
             )
         }
 
@@ -145,13 +145,13 @@ private fun SummaryCard(stats: PrivacyReportStats) {
 
         Text(
             text = "${stats.totalThreatsBlocked}",
-            style = AegisTypography.displayLarge,
+            style = MaterialTheme.typography.displayLarge,
             color = colors.primary
         )
 
         Text(
             text = stringResource(Res.string.full_report_total_threats_blocked),
-            style = AegisTypography.titleMedium,
+            style = MaterialTheme.typography.titleMedium,
             color = colors.onSurfaceVariant
         )
 
@@ -159,7 +159,7 @@ private fun SummaryCard(stats: PrivacyReportStats) {
 
         Text(
             text = stringResource(Res.string.full_report_local_processing),
-            style = AegisTypography.bodySmall,
+            style = MaterialTheme.typography.bodySmall,
             color = colors.textTertiary,
             textAlign = TextAlign.Center
         )
@@ -260,14 +260,14 @@ private fun ThreatRow(
 
         Text(
             text = label,
-            style = AegisTypography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurface,
             modifier = Modifier.weight(1f)
         )
 
         Text(
             text = "$count",
-            style = AegisTypography.titleMedium,
+            style = MaterialTheme.typography.titleMedium,
             color = colors.onSurface
         )
     }
@@ -308,19 +308,19 @@ private fun ProcessingSummaryCard(stats: PrivacyReportStats) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(Res.string.full_report_data_processed),
-                    style = AegisTypography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurface
                 )
                 Text(
                     text = stringResource(Res.string.full_report_no_cloud),
-                    style = AegisTypography.caption,
+                    style = MaterialTheme.typography.caption,
                     color = colors.textTertiary
                 )
             }
 
             Text(
                 text = stats.dataProcessedMb,
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.primary
             )
         }
@@ -348,7 +348,7 @@ private fun PrivacyAssuranceCard() {
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = stringResource(Res.string.full_report_privacy_assured),
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.success
             )
         }
@@ -357,7 +357,7 @@ private fun PrivacyAssuranceCard() {
 
         Text(
             text = stringResource(Res.string.full_report_privacy_message),
-            style = AegisTypography.bodySmall,
+            style = MaterialTheme.typography.bodySmall,
             color = colors.onSurfaceVariant
         )
 
@@ -365,7 +365,7 @@ private fun PrivacyAssuranceCard() {
 
         Text(
             text = stringResource(Res.string.full_report_privacy_note),
-            style = AegisTypography.caption,
+            style = MaterialTheme.typography.caption,
             color = colors.textTertiary
         )
     }

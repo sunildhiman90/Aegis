@@ -55,7 +55,7 @@ fun ProfileScreen(
                     title = {
                         Text(
                             text = stringResource(Res.string.profile_title),
-                            style = AegisTypography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMedium,
                             color = colors.onSurface,
                         )
                     },
@@ -94,7 +94,7 @@ fun ProfileScreen(
             ) {
                 Text(
                     text = "🛡️",
-                    style = AegisTypography.displayMedium,
+                    style = MaterialTheme.typography.displayMedium,
                 )
             }
 
@@ -102,7 +102,7 @@ fun ProfileScreen(
 
             Text(
                 text = if (isProtected) stringResource(Res.string.profile_protected) else stringResource(Res.string.profile_at_risk),
-                style = AegisTypography.headlineMedium,
+                style = MaterialTheme.typography.headlineMedium,
                 color = if (isProtected) colors.success else colors.warning,
             )
 
@@ -115,7 +115,7 @@ fun ProfileScreen(
                     } else {
                         stringResource(Res.string.profile_system_inactive)
                     },
-                style = AegisTypography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
@@ -144,7 +144,7 @@ fun ProfileScreen(
             ) {
                 Text(
                     text = stringResource(Res.string.profile_privacy_report),
-                    style = AegisTypography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge,
                     color = colors.onSurface,
                 )
 
@@ -160,7 +160,7 @@ fun ProfileScreen(
                 ) {
                     Text(
                         text = stringResource(Res.string.profile_local_processing),
-                        style = AegisTypography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium,
                         color = colors.onSurface,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -171,7 +171,7 @@ fun ProfileScreen(
                                 privacyStats.totalThreatsBlocked,
                                 privacyStats.dataProcessedMb,
                             ),
-                        style = AegisTypography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant,
                     )
                 }
@@ -180,7 +180,7 @@ fun ProfileScreen(
 
                 Text(
                     text = stringResource(Res.string.profile_view_report),
-                    style = AegisTypography.labelMedium,
+                    style = MaterialTheme.typography.labelMedium,
                     color = colors.primary,
                     modifier = Modifier.clickable { onViewReport() },
                 )
@@ -191,7 +191,7 @@ fun ProfileScreen(
             // General Section
             Text(
                 text = stringResource(Res.string.profile_general),
-                style = AegisTypography.titleLarge,
+                style = MaterialTheme.typography.titleLarge,
                 color = colors.onSurface,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -229,7 +229,7 @@ fun ProfileScreen(
             // Version
             Text(
                 text = stringResource(Res.string.profile_version, "2.4.1", "8821"),
-                style = AegisTypography.caption,
+                style = MaterialTheme.typography.caption,
                 color = colors.textTertiary,
             )
 
@@ -271,13 +271,13 @@ private fun ProfileMenuItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface,
             )
             if (subtitle != null) {
                 Text(
                     text = subtitle,
-                    style = AegisTypography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant,
                 )
             }
@@ -286,7 +286,7 @@ private fun ProfileMenuItem(
         if (actionText != null) {
             Text(
                 text = actionText,
-                style = AegisTypography.labelMedium,
+                style = MaterialTheme.typography.labelMedium,
                 color = actionColor,
             )
             Spacer(modifier = Modifier.width(8.dp))

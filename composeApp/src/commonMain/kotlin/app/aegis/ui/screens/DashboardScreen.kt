@@ -67,7 +67,7 @@ fun DashboardScreen(
                     title = {
                         Text(
                             text = stringResource(Res.string.app_name),
-                            style = AegisTypography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMedium,
                             color = colors.onSurface,
                         )
                     },
@@ -142,7 +142,7 @@ private fun ActiveProtectionContent(
 
         Text(
             text = stringResource(Res.string.dashboard_active_title),
-            style = AegisTypography.headlineLarge,
+            style = MaterialTheme.typography.headlineLarge,
             color = colors.onSurface,
         )
 
@@ -150,7 +150,7 @@ private fun ActiveProtectionContent(
 
         Text(
             text = stringResource(Res.string.dashboard_active_subtitle),
-            style = AegisTypography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -160,7 +160,7 @@ private fun ActiveProtectionContent(
         // Quick Actions Section
         Text(
             text = stringResource(Res.string.dashboard_quick_actions),
-            style = AegisTypography.overline,
+            style = MaterialTheme.typography.overline,
             color = colors.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -281,7 +281,7 @@ private fun DashboardIncidentsEmptyState() {
 
         Text(
             text = stringResource(Res.string.dashboard_no_incidents_title),
-            style = AegisTypography.titleMedium,
+            style = MaterialTheme.typography.titleMedium,
             color = colors.onSurface,
         )
 
@@ -289,7 +289,7 @@ private fun DashboardIncidentsEmptyState() {
 
         Text(
             text = stringResource(Res.string.dashboard_monitoring_desc),
-            style = AegisTypography.bodySmall,
+            style = MaterialTheme.typography.bodySmall,
             color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -298,7 +298,7 @@ private fun DashboardIncidentsEmptyState() {
 
         Text(
             text = stringResource(Res.string.dashboard_no_incidents_message),
-            style = AegisTypography.caption,
+            style = MaterialTheme.typography.caption,
             color = colors.textTertiary,
             textAlign = TextAlign.Center,
         )
@@ -398,7 +398,7 @@ private fun SetupRequiredContent(
             ) {
                 Text(
                     text = stringResource(Res.string.emoji_shield),
-                    style = AegisTypography.displayMedium,
+                    style = MaterialTheme.typography.displayMedium,
                 )
             }
 
@@ -406,12 +406,12 @@ private fun SetupRequiredContent(
 
             Text(
                 text = stringResource(Res.string.dashboard_protection_label),
-                style = AegisTypography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall,
                 color = colors.onSurface,
             )
             Text(
                 text = stringResource(Res.string.dashboard_protection_inactive).split("\n")[1],
-                style = AegisTypography.headlineLarge,
+                style = MaterialTheme.typography.headlineLarge,
                 color = colors.onSurface,
             )
 
@@ -419,7 +419,7 @@ private fun SetupRequiredContent(
 
             Text(
                 text = stringResource(Res.string.dashboard_at_risk_message),
-                style = AegisTypography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
@@ -441,7 +441,7 @@ private fun SetupRequiredContent(
                 Text(
                     // String format with param
                     text = stringResource(Res.string.dashboard_issues_found, issuesCount),
-                    style = AegisTypography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium,
                     color = colors.warning,
                 )
             }
@@ -452,13 +452,13 @@ private fun SetupRequiredContent(
         // Required Permissions Header
         Text(
             text = stringResource(Res.string.dashboard_required_permissions),
-            style = AegisTypography.titleLarge,
+            style = MaterialTheme.typography.titleLarge,
             color = colors.onSurface,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
             text = stringResource(Res.string.dashboard_complete_steps),
-            style = AegisTypography.bodySmall,
+            style = MaterialTheme.typography.bodySmall,
             color = colors.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -519,7 +519,7 @@ private fun SetupRequiredContent(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(Res.string.permission_privacy_note),
-                style = AegisTypography.caption,
+                style = MaterialTheme.typography.caption,
                 color = colors.textTertiary,
                 textAlign = TextAlign.Center,
             )

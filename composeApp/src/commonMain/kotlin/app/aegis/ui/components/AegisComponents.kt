@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.ui.theme.*
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 
 /**
  * Primary action button with Aegis styling
@@ -56,7 +56,7 @@ fun AegisPrimaryButton(
         }
         Text(
             text = text,
-            style = AegisTypography.button
+            style = MaterialTheme.typography.button
         )
     }
 }
@@ -114,13 +114,13 @@ fun StatCard(
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = title,
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = subtitle,
-                style = AegisTypography.bodySmall,
+                style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant
             )
         }
@@ -171,13 +171,13 @@ fun IncidentLogItem(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = AegisTypography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = description,
-                style = AegisTypography.bodySmall,
+                style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant
             )
         }
@@ -185,7 +185,7 @@ fun IncidentLogItem(
         // Timestamp
         Text(
             text = timestamp,
-            style = AegisTypography.labelSmall,
+            style = MaterialTheme.typography.labelSmall,
             color = colors.textTertiary,
             textAlign = TextAlign.End
         )
@@ -211,13 +211,13 @@ fun SectionHeader(
     ) {
         Text(
             text = title,
-            style = AegisTypography.titleLarge,
+            style = MaterialTheme.typography.titleLarge,
             color = colors.onSurface
         )
         if (action != null) {
             Text(
                 text = action,
-                style = AegisTypography.labelMedium,
+                style = MaterialTheme.typography.labelMedium,
                 color = colors.primary,
                 modifier = Modifier.clickable { onActionClick?.invoke() }
             )
@@ -262,13 +262,13 @@ fun PermissionCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = AegisTypography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium,
                     color = colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = description,
-                    style = AegisTypography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
             }
@@ -319,7 +319,7 @@ fun ShieldStatusIcon(
         ) {
             Text(
                 text = if (isActive) "🛡️" else "⚠️",
-                style = AegisTypography.displayMedium
+                style = MaterialTheme.typography.displayMedium
             )
         }
     }

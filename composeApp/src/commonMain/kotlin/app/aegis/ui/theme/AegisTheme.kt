@@ -24,7 +24,7 @@ fun AegisTheme(
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = AegisTypography, // Ensure typography is still provided
+            typography = aegisTypography(), // Ensure typography is still provided
             content = content
         )
     }

@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.aegis.ui.components.AegisPrimaryButton
 import app.aegis.ui.theme.*
-import app.aegis.ui.theme.AegisTypography
+import app.aegis.ui.theme.*
 
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -182,19 +182,19 @@ private fun OnboardingPageContent(
             Row {
                 Text(
                     text = titleParts.dropLast(1).joinToString(" ") + " ",
-                    style = AegisTypography.displayMedium,
+                    style = MaterialTheme.typography.displayMedium,
                     color = colors.onSurface
                 )
                 Text(
                     text = titleParts.last(),
-                    style = AegisTypography.displayMedium,
+                    style = MaterialTheme.typography.displayMedium,
                     color = colors.primary
                 )
             }
         } else {
             Text(
                 text = title,
-                style = AegisTypography.displayMedium,
+                style = MaterialTheme.typography.displayMedium,
                 color = colors.onSurface
             )
         }
@@ -203,7 +203,7 @@ private fun OnboardingPageContent(
 
         Text(
             text = description,
-            style = AegisTypography.bodyLarge,
+            style = MaterialTheme.typography.bodyLarge,
             color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
@@ -233,12 +233,12 @@ private fun MockChatUI() {
             Column {
                 Text(
                     stringResource(Res.string.mock_sender_name),
-                    style = AegisTypography.titleSmall,
+                    style = MaterialTheme.typography.titleSmall,
                     color = colors.onSurface
                 )
                 Text(
                     stringResource(Res.string.mock_message_time),
-                    style = AegisTypography.caption,
+                    style = MaterialTheme.typography.caption,
                     color = colors.textTertiary
                 )
             }
@@ -257,7 +257,7 @@ private fun MockChatUI() {
             ) {
                 Text(
                     text = stringResource(Res.string.mock_message_content),
-                    style = AegisTypography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurface
                 )
             }
@@ -273,7 +273,7 @@ private fun MockChatUI() {
             ) {
                 Text(
                     text = stringResource(Res.string.mock_scam_badge),
-                    style = AegisTypography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall,
                     color = Color.White
                 )
             }
@@ -298,7 +298,7 @@ private fun MockChatUI() {
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(Res.string.mock_analyzing),
-                style = AegisTypography.labelSmall,
+                style = MaterialTheme.typography.labelSmall,
                 color = colors.primary
             )
         }
@@ -326,7 +326,7 @@ private fun ShieldHandUI() {
     ) {
         Text(
             text = stringResource(Res.string.emoji_shield),
-            style = AegisTypography.displayLarge.copy(fontSize = AegisTypography.displayLarge.fontSize * 2)
+            style = MaterialTheme.typography.displayLarge.copy(fontSize = MaterialTheme.typography.displayLarge.fontSize * 2)
         )
     }
 }
@@ -353,7 +353,7 @@ private fun CameraBlockedUI() {
         ) {
             Text(
                 text = stringResource(Res.string.emoji_camera_blocked),
-                style = AegisTypography.displayMedium
+                style = MaterialTheme.typography.displayMedium
             )
         }
 
@@ -376,7 +376,7 @@ private fun CameraBlockedUI() {
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(Res.string.mock_camera_blocked),
-                style = AegisTypography.labelSmall,
+                style = MaterialTheme.typography.labelSmall,
                 color = colors.primary
             )
         }
