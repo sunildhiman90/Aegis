@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 
 import aegis.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import app.aegis.ui.theme.AegisTheme
 
 /**
  * Yellow caution banner for non-blocking warnings.
@@ -52,8 +54,8 @@ fun ScamWarning(
                 .fillMaxWidth()
                 .shadow(4.dp, RoundedCornerShape(12.dp))
                 .background(Color(0xFFFFC107), RoundedCornerShape(12.dp)) // warning-bg (Amber)
-                .padding(12.dp),
-            verticalAlignment = Alignment.Top
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon
             Icon(
@@ -68,6 +70,7 @@ fun ScamWarning(
             // Content
             Column(
                 modifier = Modifier.weight(1f)
+                    .padding(end = 16.dp)
             ) {
                 Text(
                     text = stringResource(Res.string.scam_warning_title),
@@ -84,15 +87,6 @@ fun ScamWarning(
                     fontSize = 13.sp,
                     lineHeight = 18.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(Res.string.scam_warning_learn_more),
-                    color = Color.Black.copy(alpha = 0.6f),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier.clickable { /* TODO: Open help */ }
-                )
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -101,6 +95,7 @@ fun ScamWarning(
             IconButton(
                 onClick = onDismiss,
                 modifier = Modifier
+                    .padding(end = 16.dp)
                     .size(24.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.1f))
@@ -113,5 +108,16 @@ fun ScamWarning(
                 )
             }
         }
+    }
+}
+
+@Composable
+@Preview
+fun ScamWarningPreview() {
+    AegisTheme {
+        ScamWarning(
+            text = "This message matches a known scam pattern. Do not share codes.",
+            onDismiss = {}
+        )
     }
 }

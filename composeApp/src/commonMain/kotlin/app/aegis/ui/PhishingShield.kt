@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import aegis.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import app.aegis.ui.theme.AegisTheme
 
 /**
  * Phishing warning overlay.
@@ -43,6 +45,7 @@ import org.jetbrains.compose.resources.stringResource
 fun PhishingShield(
     reason: String,
     url: String,
+    sources: List<app.aegis.ai.gemini.types.Source> = emptyList(),
     onReport: () -> Unit,
     onDismiss: () -> Unit,
     onTrust: () -> Unit
@@ -82,7 +85,7 @@ fun PhishingShield(
                 .padding(24.dp)
                 .fillMaxHeight()
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // ⚠️ Critical Alert Badge
             Box(
@@ -109,12 +112,12 @@ fun PhishingShield(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // 🛑 Animated Icon
             Box(
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(80.dp)
                     .scale(scale),
                 contentAlignment = Alignment.Center
             ) {
@@ -129,31 +132,30 @@ fun PhishingShield(
                     imageVector = Icons.Default.Phishing,
                     contentDescription = null,
                     tint = Color(0xFFEF4444),
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier.size(64.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Headlines
             // Headlines
             Text(
                 text = stringResource(Res.string.phishing_shield_malicious_link),
                 color = Color.White,
-                fontSize = 40.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center,
-                lineHeight = 40.sp
+                lineHeight = 28.sp
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(Res.string.phishing_shield_identified_message),
                 color = Color(0xFFFECACA), // red-200
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // 🤖 AI Analysis Report Card
             Card(
@@ -161,10 +163,11 @@ fun PhishingShield(
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF7F1D1D)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = false) // Take available space
+                    .weight(1f) // Stable height
+                    .heightIn(min = 200.dp)
                     .shadow(15.dp, RoundedCornerShape(12.dp))
             ) {
-                Column {
+                Column(modifier = Modifier.fillMaxSize()) {
                     // Card Header
                     Row(
                         modifier = Modifier
@@ -208,6 +211,8 @@ fun PhishingShield(
                     // Card Content
                     Column(
                         modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f) // Push content to fill card and enable scroll
                             .padding(16.dp)
                             .verticalScroll(scrollState)
                     ) {
@@ -238,7 +243,7 @@ fun PhishingShield(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         // Reason
                         Row(modifier = Modifier.fillMaxWidth()) {
@@ -273,6 +278,39 @@ fun PhishingShield(
                                     fontSize = 14.sp,
                                     lineHeight = 20.sp
                                 )
+
+                                if (sources.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        "REFERENCE SOURCES",
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    sources.forEach { source ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Link,
+                                                contentDescription = null,
+                                                tint = Color(0xFFEF4444),
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = source.title,
+                                                color = Color(0xFFEF4444),
+                                                fontSize = 12.sp,
+                                                textDecoration = TextDecoration.Underline
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -314,7 +352,7 @@ fun PhishingShield(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Secondary Button (Dismiss)
             Button(
@@ -328,7 +366,7 @@ fun PhishingShield(
                 Text(stringResource(Res.string.phishing_shield_dismiss), color = Color.White)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // False Alarm Link
             Text(
@@ -342,8 +380,25 @@ fun PhishingShield(
                     .padding(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
+@Composable
+@Preview
+fun PhishingShieldPreview() {
+    AegisTheme {
+        PhishingShield(
+            reason = "This URL 'fedex-clearance.top' matches patterns typical of a phishing attack for delivery services. It is hosted on a suspicious TLD.",
+            url = "http://fedex-clearance.top",
+            sources = listOf(
+                app.aegis.ai.gemini.types.Source("Security Alert", "https://example.com/alerts"),
+                app.aegis.ai.gemini.types.Source("Phishing DB", "https://example.com/phishing")
+            ),
+            onReport = {},
+            onDismiss = {},
+            onTrust = {}
+        )
+    }
+}

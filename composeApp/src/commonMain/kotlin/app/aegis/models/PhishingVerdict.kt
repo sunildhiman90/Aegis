@@ -1,5 +1,6 @@
 package app.aegis.models
 
+import app.aegis.ai.gemini.types.Source
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -8,6 +9,7 @@ data class PhishingVerdict(
     val riskLevel: RiskLevel,
     val reason: String,
     val confidence: Int,
+    val sources: List<Source> = emptyList(),
     // Reporting Details
     val recipient: String = "", // e.g., "abuse@godaddy.com"
     val subject: String = "",   // e.g., "Phishing Report: example.com"

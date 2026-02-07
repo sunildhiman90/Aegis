@@ -57,6 +57,7 @@ class AegisAccessibilityService :
     // Snooze Logic
     private val snoozedScreens = mutableMapOf<Int, Long>()
     private var globalPauseUntil = 0L
+    private val sessionWhitelistedContacts = mutableSetOf<String>()
 
     private var lastAnalysisTime = 0L
     private val DEBOUNCE = 1000L // Reduced debounce slightly for responsiveness
@@ -109,8 +110,8 @@ class AegisAccessibilityService :
         Log.d("Aegis", "✅ Service Online")
     }
 
-    // Add this class-level variable to prevent re-scanning static screens
     private var lastProcessedHash = 0
+    private val sessionWhitelistedUrls = mutableSetOf<String>()
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
@@ -380,8 +381,11 @@ class AegisAccessibilityService :
         Log.d("Aegis", "📛 Contact name: '$contactName'")
 
         // 🛑 TRUST CHECK: If user manually trusted them, or we auto-trusted them before
-        if (contactName.isNotBlank() && trustedCache.contains(contactName)) {
-            Log.d("Aegis", "✨ Trusted Contact detected (Cached): $contactName")
+        if (contactName.isNotBlank() && (trustedCache.contains(contactName) || sessionWhitelistedContacts.contains(
+                contactName
+            ))
+        ) {
+            Log.d("Aegis", "✨ Trusted or Whitelisted Contact detected: $contactName")
             return
         }
 
@@ -451,14 +455,21 @@ class AegisAccessibilityService :
 
         // 🔗 PHISHING LINK CHECK (Priority: Links can be dangerous from ANYONE)
         val urls = extractUrls(stableContent)
+        var hasProcessingUrl = false
         if (urls.isNotEmpty()) {
             Log.d("Aegis", "🔗 URLs detected: $urls")
-            urls.forEach { url ->
+            urls.distinct().forEach { url ->
                 // Basic Whitelist Check (optimization)
                 if (!isWhitelisted(url)) {
-                    processSuspiciousUrl(url)
+                    processSuspiciousUrl(url, stableContent, contentHash)
+                    hasProcessingUrl = true
                 }
             }
+        }
+
+        if (hasProcessingUrl) {
+            Log.d("Aegis", "⏭️ Skipping general analysis as URL is being processed.")
+            return
         }
 
         // 🛡️ SENSITIVITY GATEKEEPER LOGIC
@@ -591,13 +602,13 @@ class AegisAccessibilityService :
 
                 try {
                     //TODO, just for testing
-                    //val verdict = geminiClient.analyze(chatContent, sensitivity)
-                    val verdict = ScamVerdict(
+                    val verdict = geminiClient.analyze(chatContent, sensitivity)
+                    /*val verdict = ScamVerdict(
                         riskLevel = RiskLevel.WARN,
                         reason = "test warn",
                         confidence = 99,
                         sources = listOf(Source("test", "https://google.com"))
-                    )
+                    )*/
                     Log.d(
                         "Aegis",
                         "📊 Gemini result: RiskLevel=${verdict.riskLevel}, Confidence=${verdict.confidence}%, Reason='${verdict.reason}'"
@@ -611,7 +622,13 @@ class AegisAccessibilityService :
                     when (verdict.riskLevel) {
                         RiskLevel.DANGER -> {
                             Log.d("Aegis", "🚨 DANGER detected! Showing blocking shield...")
-                            showBlockingShield(verdict.reason, contactName, contentHash, verdict.sources)
+                            showBlockingShield(
+                                verdict.reason,
+                                contactName,
+                                contentHash,
+                                verdict.sources,
+                                isCall = false
+                            )
                             logIncident(
                                 type = IncidentType.SCAM_TEXT,
                                 riskLevel = verdict.riskLevel,
@@ -727,22 +744,14 @@ class AegisAccessibilityService :
         contactName: String,
         contentHash: Int,
         sources: List<Source> = emptyList(),
+        isCall: Boolean = false
     ) {
         overlayManager.showShield(
             reason = reason,
             contactName = contactName,
+            isCall = isCall,
             onUnlock = {
-                // Determine trust
-                serviceScope.launch {
-                    val newContact = app.aegis.domain.model.TrustedContact(
-                        id = UUID.randomUUID().toString(),
-                        name = contactName,
-                        phoneNumber = contactName,
-                        relationship = "Trusted via Shield",
-                        addedAt = System.currentTimeMillis()
-                    )
-                    trustedContactRepository.addContact(newContact)
-                }
+                trustContact(contactName)
                 overlayManager.hideShield()
             },
             onDismiss = {
@@ -753,11 +762,52 @@ class AegisAccessibilityService :
                 // 2. Snooze this specific text for 30s
                 snoozedScreens[contentHash] = System.currentTimeMillis() + 30000L
 
-                // 3. Hide UI
+                // 3. Add to session whitelist (temporary suppress)
+                if (contactName.isNotBlank()) {
+                    sessionWhitelistedContacts.add(contactName)
+                }
+
+                // 4. Hide UI
                 overlayManager.hideShield()
             },
             sources = sources,
         )
+    }
+
+    /**
+     * Attempts to end the current call using gestures and global actions.
+     */
+    private fun performEndCall() {
+        // 1. Reveal Controls: Tap the center of the screen
+        tapToRevealControls()
+
+        // Wait a small bit for UI to respond to the tap
+        serviceScope.launch {
+            delay(200) // 200ms delay for UI animation
+
+            val rootNode = rootInActiveWindow
+            if (rootNode != null) {
+                // 2. Smart Search for End Button
+                val ended = findAndClickEndButton(rootNode)
+
+                if (!ended) {
+                    Log.d("Aegis", "⚠️ End button not found via search. Attempting fallback...")
+                    // 3. Fallback: Global Back Actions
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    delay(300)
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    Log.d("Aegis", "🔙 Performed double BACK action as fallback")
+                }
+            } else {
+                Log.d("Aegis", "❌ Root node null, forcing Global Back")
+                performGlobalAction(GLOBAL_ACTION_BACK)
+            }
+
+            delay(500)
+            // 4. Safety Net: Home Screen
+            performGlobalAction(GLOBAL_ACTION_HOME)
+            Log.d("Aegis", "🏠 Performed GLOBAL_ACTION_HOME safety net")
+        }
     }
 
     private fun isScreenSnoozed(hash: Int): Boolean {
@@ -1235,7 +1285,7 @@ class AegisAccessibilityService :
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             // Check current root node first (optimization)
             val window = rootNode.window
-            if (window != null && window.isInPictureInPictureMode) { // FIXED: Use proper property
+            if (window != null && window.isInPictureInPictureMode) {
                 isPiP = true
             } else {
                 // Fallback: Global Window Search (e.g. if event comes from Launcher)
@@ -1243,8 +1293,7 @@ class AegisAccessibilityService :
                     val allWindows = windows
                     if (allWindows != null) {
                         for (w in allWindows) {
-                            if (w.isInPictureInPictureMode) { // FIXED: Use proper property
-                                // Sanity Check: Ensure window has dimensions (is visible)
+                            if (w.isInPictureInPictureMode) {
                                 val bounds = android.graphics.Rect()
                                 w.getBoundsInScreen(bounds)
                                 if (bounds.width() > 10 && bounds.height() > 10) {
@@ -1254,6 +1303,12 @@ class AegisAccessibilityService :
                                     ) {
                                         isPiP = true
                                         Log.d("Aegis", "📞 P-i-P Window Found via Global Search! Bounds: $bounds")
+
+                                        // 🛑 CRITICAL FIX: If we are in PiP, the 'rootNode' (active window) 
+                                        // is effectively useless (it's the Home Screen). 
+                                        // We MUST collect text from the PiP root instead.
+                                        screenText.clear()
+                                        collectAllText(pipRoot, screenText)
                                         break
                                     }
                                 }
@@ -1352,21 +1407,35 @@ class AegisAccessibilityService :
             return false
         }
 
-        val callerId =
+        // 1. Prioritize Phone Numbers (Unknown contacts)
+        var callerId =
             screenText.firstOrNull { text ->
+                val cleanText = text.trim()
+                // Phone numbers often have + or are mostly digits
+                (cleanText.startsWith("+") || cleanText.count { it.isDigit() } >= 10) &&
+                        cleanText.length < 20
+            }
+
+        // 2. Fallback to Name extraction if no number found
+        if (callerId == null) {
+            callerId = screenText.firstOrNull { text ->
                 val cleanText = text.trim()
                 !cleanText.equals("incoming video call", ignoreCase = true) &&
                         !cleanText.equals("whatsapp video call", ignoreCase = true) &&
                         !cleanText.equals("decline", ignoreCase = true) &&
                         !cleanText.equals("answer", ignoreCase = true) &&
+                        !cleanText.equals("You", ignoreCase = true) &&
                         !cleanText.contains("mute", ignoreCase = true) &&
                         !cleanText.contains("camera", ignoreCase = true) &&
                         cleanText.length > 2
-            } ?: "Unknown"
+            }
+        }
+
+        val finalCallerId = callerId ?: "Unknown"
 
         // 3. Is it an Unknown Number? (High Risk) - Apply Zero-Trust for BOTH threats
-        if (isPotentialRisk(callerId)) {
-            Log.d("Aegis", "🚨 UNKNOWN VIDEO CALL: $callerId")
+        if (isPotentialRisk(finalCallerId)) {
+            Log.d("Aegis", "🚨 UNKNOWN VIDEO CALL: $finalCallerId")
 
             // 🛡️ ZERO-TRUST DEFENSE: Try to disable camera immediately
             if (isIncomingVideoCall && !isInVideoCall) {
@@ -1378,15 +1447,15 @@ class AegisAccessibilityService :
                     overlayManager.showCameraWarning {
                         // User acknowledged - start protection loop
                         Log.d("Aegis", "✅ User acknowledged camera warning")
-                        startVideoCallAnalysisLoop(callerId)
+                        startVideoCallAnalysisLoop(finalCallerId)
                     }
                 } else {
                     // Camera was disabled, start analysis loop
-                    startVideoCallAnalysisLoop(callerId)
+                    startVideoCallAnalysisLoop(finalCallerId)
                 }
             } else if (isActiveVideoCall && sextortionAnalysisJob?.isActive != true) {
                 // Already in call, ensure analysis is running
-                startVideoCallAnalysisLoop(callerId)
+                startVideoCallAnalysisLoop(finalCallerId)
             }
 
             return true
@@ -1432,15 +1501,39 @@ class AegisAccessibilityService :
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastAudioWarningTime > 10000) {
                 lastAudioWarningTime = currentTime
-                overlayManager.showWarning(
-                    text = """⚠️ Unknown Caller: $callerId
-DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
-                    onDismiss = {},
+                overlayManager.showShield(
+                    reason = "🚨 UNKNOWN CALLER\nDO NOT share OTPs. Real Police/Banks never ask for PINs on call.",
+                    contactName = callerId,
+                    isCall = true,
+                    onDismiss = {
+                        if (callerId.isNotBlank()) sessionWhitelistedContacts.add(callerId)
+                        overlayManager.hideShield()
+                    },
+                    onUnlock = {
+                        trustContact(callerId)
+                        overlayManager.hideShield()
+                    }
                 )
             }
             return true
         }
         return false
+    }
+
+    private fun trustContact(contactName: String) {
+        if (contactName.isBlank()) return
+
+        serviceScope.launch {
+            val newContact = app.aegis.domain.model.TrustedContact(
+                id = UUID.randomUUID().toString(),
+                name = contactName,
+                phoneNumber = contactName,
+                relationship = "Trusted via Shield",
+                addedAt = System.currentTimeMillis()
+            )
+            trustedContactRepository.addContact(newContact)
+            // Note: trustedCache will be updated automatically by the collector in onServiceConnected
+        }
     }
 
     // ---------------------------------------------------------
@@ -1490,8 +1583,8 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
             return true
         }
 
-        // 2. Local Trust Check (If explicitly trusted, return false)
-        if (trustedCache.contains(contactName)) return false
+        // 2. Local Trust & Session Whitelist Check (If explicitly trusted, return false)
+        if (trustedCache.contains(contactName) || sessionWhitelistedContacts.contains(contactName)) return false
 
         // 3. Raw Phone Number Check
         val clean = contactName.trim()
@@ -1736,8 +1829,15 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                                     reason = "🚨 DIGITAL ARREST SCAM\n${scamVerdict.reason}",
                                     contactName = callerId,
                                     sources = scamVerdict.sources,
-                                    onDismiss = { overlayManager.hideShield() },
-                                    onUnlock = { overlayManager.hideShield() },
+                                    isCall = true,
+                                    onDismiss = {
+                                        if (callerId.isNotBlank()) sessionWhitelistedContacts.add(callerId)
+                                        overlayManager.hideShield()
+                                    },
+                                    onUnlock = {
+                                        trustContact(callerId)
+                                        overlayManager.hideShield()
+                                    }
                                 )
                                 // Don't auto-end for digital arrest, let user decide
                                 logIncident(
@@ -1802,54 +1902,24 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         Log.d("Aegis", "🛡️ Sextortion Shield analysis stopped")
     }
 
-    /**
-     * Emergency: Auto-end the video call and show blocking shield.
-     */
     private fun autoEndCall(reason: String) {
         stopSextortionAnalysis()
-
-        // 1. Reveal Controls: Tap the center of the screen
-        // Video call controls often fade out. We need to wake them up.
-        tapToRevealControls()
-
-        // Wait a small bit for UI to respond to the tap
-        GlobalScope.launch {
-            delay(200) // 200ms delay for UI animation
-
-            val rootNode = rootInActiveWindow
-            if (rootNode != null) {
-                // 2. Smart Search for End Button
-                // We look for text like "End", "Decline", "Hang up" or standard IDs
-                val ended = findAndClickEndButton(rootNode)
-
-                if (!ended) {
-                    Log.d("Aegis", "⚠️ End button not found via search. Attempting fallback...")
-                    // 3. Fallback: Global Back Actions
-                    // Often pressing 'Back' during a call will ask "End call?", pressing again confirms.
-                    performGlobalAction(GLOBAL_ACTION_BACK)
-                    delay(300)
-                    performGlobalAction(GLOBAL_ACTION_BACK)
-                    Log.d("Aegis", "🔙 Performed double BACK action as fallback")
-                }
-            } else {
-                Log.d("Aegis", "❌ Root node null, forcing Global Back")
-                performGlobalAction(GLOBAL_ACTION_BACK)
-            }
-
-            delay(500)
-            // 4. Safety Net: Home Screen
-            // Even if call didn't end, strict reset logic will handle the flag eventually,
-            // but we must get the user out of the scam interface.
-            performGlobalAction(GLOBAL_ACTION_HOME)
-            Log.d("Aegis", "🏠 Performed GLOBAL_ACTION_HOME safety net")
-        }
+        performEndCall()
 
         // Show blocking shield regardless
+        val contactName = "Unknown Caller"
         overlayManager.showShield(
             reason = "🚨 SEXTORTION ATTEMPT BLOCKED\n$reason",
-            contactName = "Unknown Caller",
-            onDismiss = { overlayManager.hideShield() },
-            onUnlock = { overlayManager.hideShield() },
+            contactName = contactName,
+            isCall = true,
+            onDismiss = {
+                if (contactName.isNotBlank()) sessionWhitelistedContacts.add(contactName)
+                overlayManager.hideShield()
+            },
+            onUnlock = {
+                trustContact(contactName)
+                overlayManager.hideShield()
+            }
         )
     }
 
@@ -1941,6 +2011,10 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
     }
 
     private fun isWhitelisted(url: String): Boolean {
+        if (sessionWhitelistedUrls.contains(url)) {
+            Log.d("Aegis", "✅ URL in session whitelist: $url")
+            return true
+        }
         return try {
             val host =
                 android.net.Uri
@@ -1971,9 +2045,10 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
         }
     }
 
-    private fun processSuspiciousUrl(url: String) {
+    private fun processSuspiciousUrl(url: String, contextText: String, contentHash: Int) {
         if (analysisJob?.isActive == true && currentAnalysisText == url) return // Dedup
 
+        currentAnalysisText = url
         Log.d("Aegis", "🎣 Analyzing Suspicious URL: $url")
 
         // ⚡️ IMMEDIATE FEEDBACK: Warn the user effectively "Wait, I'm checking"
@@ -1986,12 +2061,12 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
             serviceScope.launch {
                 val sensitivity = settingsRepository.getSensitivity()
                 //TODO, just for testing
-                //val verdict = geminiClient.analyzeUrl(url, sensitivity)
-                val verdict = PhishingVerdict(
+                val verdict = geminiClient.analyzeUrl(url, contextText, sensitivity)
+                /*val verdict = PhishingVerdict(
                     riskLevel = RiskLevel.SAFE,
                     reason = "test safe url",
                     confidence = 99,
-                )
+                )*/
                 if (!isActive) return@launch
 
                 withContext(Dispatchers.Main) {
@@ -1999,10 +2074,20 @@ DO NOT share OTPs. Real Police/Banks never ask for PINs on call.""",
                         overlayManager.showPhishingWarning(
                             reason = verdict.reason,
                             url = url,
-                            onReport = { launchReportIntent(verdict) },
-                            onDismiss = { overlayManager.hideShield() },
+                            sources = verdict.sources,
+                            onReport = {
+                                sessionWhitelistedUrls.add(url)
+                                snoozedScreens[contentHash] = System.currentTimeMillis() + 30000L
+                                launchReportIntent(verdict)
+                            },
+                            onDismiss = {
+                                sessionWhitelistedUrls.add(url)
+                                snoozedScreens[contentHash] = System.currentTimeMillis() + 30000L
+                                overlayManager.hideShield()
+                            },
                             onTrust = {
-                                // Add to whitelist session
+                                sessionWhitelistedUrls.add(url)
+                                snoozedScreens[contentHash] = System.currentTimeMillis() + 30000L
                                 overlayManager.hideShield()
                             },
                         )

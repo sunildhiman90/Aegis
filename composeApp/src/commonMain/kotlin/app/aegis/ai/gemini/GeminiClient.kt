@@ -209,7 +209,12 @@ class GeminiClient(
                                         Content(
                                             listOf(
                                                 Part(text = promptText),
-                                                Part(inlineData = InlineData(mimeType = "image/jpeg", data = base64Image)),
+                                                Part(
+                                                    inlineData = InlineData(
+                                                        mimeType = "image/jpeg",
+                                                        data = base64Image
+                                                    )
+                                                ),
                                             ),
                                         ),
                                     ),
@@ -318,6 +323,7 @@ class GeminiClient(
      */
     suspend fun analyzeUrl(
         url: String,
+        contextText: String,
         sensitivity: SensitivityLevel = SensitivityLevel.BALANCED,
         model: String = defaultModelVision,
     ): app.aegis.models.PhishingVerdict {
@@ -331,35 +337,35 @@ class GeminiClient(
                 else -> "SENSITIVITY: BALANCED. Standard phishing detection."
             }
 
-        // 🛑 CRITICAL PROMPT: Detects Phishing & Drafts Report
+        // 🛑 CRITICAL PROMPT: Detects Phishing & Scams in context
         val promptText =
             """
-            You are a Cyber-Security Analyst. Investigate this URL for phishing/scam activity.
+            You are a Cyber-Security Analyst. Investigate this URL for phishing/scam activity, specifically in the context of the provided message.
             
             [OPERATION MODE]
             $sensitivityInstruction
             
+            [CASE DATA]
             URL: "$url"
+            MESSAGE CONTEXT: "$contextText"
             
             Check for:
-            1. Homograph attacks (e.g., 'g0ogle.com').
-            2. IP-based URLs or suspicious TLDs (.xyz, .top) mimicking banks/gov.
-            3. Free hosting providers (ngrok, vercel.app, firebaseapp) used for banking login?
+            1. Phishing: Homograph attacks, suspicious TLDs (.top, .xyz), or brand impersonation.
+            2. Scams: Even if the link is safe (e.g., bit.ly or whatsapp.com), is the message context a scam? 
+               Look for urgency, "digital arrest", payment requests, or coercion.
             
-            If DANGER:
-            - Construct a formal abuse report email.
-            - Identify the likely **Registrar** or **Hosting Provider** abuse email (e.g., abuse@godaddy.com, abuse@namecheap.com) based on the domain/TLD. 
-            - If it's a free subdomain (e.g., .vercel.app, .ngrok.io), use the platform's abuse email (abuse@vercel.com).
-            - **CRITICAL**: Do NOT use "abuse@<domain>" if the domain itself is suspicious, as that alerts the scammer. If unknown, use "report_phishing@google.com".
+            MISSION: 
+            If the link is dangerous OR the message context is a scam (even with a safe link), set riskLevel to DANGER.
             
             Return strictly JSON:
             {
               "riskLevel": "DANGER" | "WARN" | "SAFE",
-              "reason": "Brief explanation (e.g., 'Fake SBI login page hosted on ngrok').",
+              "reason": "Brief explanation. (e.g., 'Safe link but message is a sextortion attempt' or 'Phishing link for FedEx').",
               "confidence": 0-100,
+              "sources": [ { "title": "Evidence Source", "url": "https://..." } ],
               "recipient": "abuse@<hosting_provider>.com", 
-              "subject": "Phishing Takedown Request: <domain>",
-              "body": "To whom it may concern,\n\nThe following URL is hosting a phishing page targeting [Target Brand]:\n$url\n\nPlease investigate and suspend this domain immediately.\n\nSent via Aegis Security Agent."
+              "subject": "Security Threat Report: $url",
+              "body": "To whom it may concern,\n\nThe following URL/Context was flagged as a threat:\nURL: $url\nContext: $contextText\n\nPlease investigate.\n\nSent via Aegis Security Agent."
             }
             """.trimIndent()
 
@@ -373,17 +379,21 @@ class GeminiClient(
                             GenerateContentRequest(
                                 contents = listOf(Content(listOf(Part(text = promptText)))),
                                 generationConfig = GenerateContentConfig(responseMimeType = "application/json"),
+                                tools = listOf(Tool(googleSearch = GoogleSearchRetrieval()))
                             ),
                         )
                     }.body()
 
-            val rawText =
-                response.candidates
-                    ?.firstOrNull()
-                    ?.content
-                    ?.parts
-                    ?.firstOrNull()
-                    ?.text ?: ""
+            // FIND THE JSON PART:
+            // The model might return "Thinking..." text in one part, and JSON in another.
+            // We search for the part that contains a JSON object.
+            val partWithJson =
+                response.candidates?.firstOrNull()?.content?.parts?.find {
+                    val text = it.text?.trim() ?: ""
+                    text.startsWith("{") || text.contains("```json")
+                } ?: response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()
+
+            val rawText = partWithJson?.text ?: ""
             app.aegis.models.parsePhishingVerdictJson(rawText)
         } catch (e: Exception) {
             e.printStackTrace()

@@ -1,6 +1,7 @@
 package app.aegis.ui
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CallEnd
 import androidx.compose.material.icons.filled.GppBad
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.material.icons.filled.Warning
@@ -33,14 +35,17 @@ import app.aegis.ai.gemini.types.Source
 import aegis.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import app.aegis.ui.theme.AegisTheme
 
 @Composable
 fun ScamShield(
     reason: String,
     contactName: String,
     sources: List<Source>,
+    isCall: Boolean = false,
     onDismiss: () -> Unit,
     onUnlock: () -> Unit,
+    onEndCall: (() -> Unit)? = null,
     onSourceClick: (Source) -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -73,12 +78,13 @@ fun ScamShield(
         contentAlignment = Alignment.Center
     ) {
         Column(
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxHeight()
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // ⚠️ Critical Alert Badge
             Box(
@@ -105,7 +111,7 @@ fun ScamShield(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // 🛑 Animated Icon
             Box(
@@ -129,26 +135,26 @@ fun ScamShield(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Headlines
             Text(
                 text = stringResource(Res.string.scam_shield_danger_detected),
                 color = Color.White,
-                fontSize = 28.sp, // Reduced from 40sp
+                fontSize = 24.sp, // Reduced from 40sp
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center,
-                lineHeight = 32.sp
+                lineHeight = 28.sp
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(Res.string.scam_shield_flagged_call),
+                text = stringResource(if (isCall) Res.string.scam_shield_flagged_call else Res.string.scam_shield_flagged_chat),
                 color = Color(0xFFFECACA), // red-200
                 fontSize = 16.sp, // Reduced from 18sp
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp)) // Reduced from 32dp
+            Spacer(modifier = Modifier.height(12.dp)) // Reduced from 32dp
 
             // 🤖 AI Analysis Report Card
             Card(
@@ -156,7 +162,7 @@ fun ScamShield(
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF7F1D1D)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = false) // Auto-adaptable height: Wraps content, expands only if needed up to max remaining space
+                    .weight(1f)
                     .shadow(15.dp, RoundedCornerShape(12.dp))
             ) {
                 Column {
@@ -256,41 +262,100 @@ fun ScamShield(
                                     fontSize = 14.sp,
                                     lineHeight = 20.sp
                                 )
+
+                                if (sources.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        "DETECTION SOURCES",
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    sources.forEach { source ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { onSourceClick(source) }
+                                                .padding(vertical = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Link,
+                                                contentDescription = null,
+                                                tint = Color(0xFFEF4444),
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = source.title,
+                                                color = Color(0xFFEF4444),
+                                                fontSize = 12.sp,
+                                                textDecoration = TextDecoration.Underline
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 🛑 Action Button
-            Button(
-                onClick = onDismiss, // Handles blocking
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626)), // red-600
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .shadow(8.dp, RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(
-                    Icons.Default.CallEnd,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    stringResource(Res.string.overlay_block_end_call),
-                    color = Color.White,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 20.sp,
-                    letterSpacing = 1.sp
-                )
+            // Action Buttons
+            if (isCall) {
+                // Call Specific: END CALL + DISMISS
+                /*
+                Button(
+                    onClick = { onEndCall?.invoke() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)), // Red
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.CallEnd, contentDescription = null, tint = Color.White)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            stringResource(Res.string.overlay_block_end_call),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                */
+
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(Res.string.scam_shield_dismiss), color = Color.White)
+                }
+            } else {
+                // Chat Specific: DISMISS ALERT (Primary)
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(Res.string.scam_shield_dismiss), color = Color.White)
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // False Alarm Link
             Text(
@@ -313,12 +378,18 @@ fun ScamShield(
 @Composable
 @Preview
 fun ScamShieldPreview() {
-    ScamShield(
-        reason = "Test",
-        contactName = "Test",
-        sources = emptyList(),
-        onDismiss = {},
-        onUnlock = {},
-        onSourceClick = {}
-    )
+    AegisTheme {
+        ScamShield(
+            reason = "Aegis detected patterns typical of a 'Sextortion' attempt. The caller matches high-risk heuristics.",
+            contactName = "+91 98765 43210",
+            sources = listOf(
+                Source("Cyber Crime Awareness", "https://cybercrime.gov.in"),
+                Source("Known Scam Patterns", "https://example.com/scams"),
+            ),
+            isCall = true,
+            onDismiss = {},
+            onUnlock = {},
+            onSourceClick = {}
+        )
+    }
 }

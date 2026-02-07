@@ -222,7 +222,7 @@ fun CameraWarningOverlay(
 
                         // Secondary Button (Simulated placeholder action)
                         TextButton(
-                            onClick = { /* No-op, just dismiss or stay */ },
+                            onClick = onAcknowledge,
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(

@@ -193,11 +193,13 @@
     <string name="scam_shield_critical_alert">CRITICAL ALERT</string>
     <string name="scam_shield_danger_detected">DANGER\nDETECTED</string>
     <string name="scam_shield_flagged_call">Aegis AI has flagged this call as suspicious.</string>
+    <string name="scam_shield_flagged_chat">Aegis AI has flagged this conversation as suspicious.</string>
     <string name="scam_shield_ai_report">AI ANALYSIS REPORT</string>
     <string name="scam_shield_match_found">MATCH FOUND</string>
     <string name="scam_shield_risk_label">Scam Risk</string>
     <string name="scam_shield_confidence_label">CONFIDENCE</string>
     <string name="scam_shield_false_alarm">False Alarm (I trust this person)</string>
+    <string name="scam_shield_dismiss">DISMISS ALERT</string>
     
     <string name="phishing_shield_title">PHISHING ALERT</string>
     <string name="phishing_shield_malicious_link">MALICIOUS\nLINK</string>

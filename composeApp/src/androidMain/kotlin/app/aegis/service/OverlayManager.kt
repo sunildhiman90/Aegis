@@ -68,8 +68,10 @@ class OverlayManager(private val context: Context) {
         reason: String,
         contactName: String,
         sources: List<Source> = emptyList(),
+        isCall: Boolean = false,
         onUnlock: () -> Unit,
-        onDismiss: () -> Unit
+        onDismiss: () -> Unit,
+        onEndCall: (() -> Unit)? = null
     ) {
         hideShield() // Reset previous view
 
@@ -78,6 +80,7 @@ class OverlayManager(private val context: Context) {
                 reason = reason,
                 contactName = contactName,
                 sources = sources,
+                isCall = isCall,
                 onDismiss = {
                     hideShield()
                     onDismiss()
@@ -85,6 +88,10 @@ class OverlayManager(private val context: Context) {
                 onUnlock = {
                     hideShield()
                     onUnlock()
+                },
+                onEndCall = {
+                    hideShield()
+                    onEndCall?.invoke()
                 },
                 onSourceClick = {
                     try {
@@ -193,6 +200,7 @@ class OverlayManager(private val context: Context) {
     fun showPhishingWarning(
         reason: String,
         url: String,
+        sources: List<app.aegis.ai.gemini.types.Source> = emptyList(),
         onReport: () -> Unit,
         onDismiss: () -> Unit,
         onTrust: () -> Unit
@@ -203,6 +211,7 @@ class OverlayManager(private val context: Context) {
             app.aegis.ui.PhishingShield(
                 reason = reason,
                 url = url,
+                sources = sources,
                 onReport = {
                     hideShield()
                     onReport()
