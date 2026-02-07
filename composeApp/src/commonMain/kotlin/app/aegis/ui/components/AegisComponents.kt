@@ -7,8 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -141,6 +142,8 @@ fun IncidentLogItem(
     onClick: (() -> Unit)? = null
 ) {
     val colors = MaterialTheme.colorScheme
+    var isExpanded by remember { mutableStateOf(false) }
+    var canExpand by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
@@ -178,8 +181,26 @@ fun IncidentLogItem(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurfaceVariant
+                color = colors.onSurfaceVariant,
+                maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { textLayoutResult ->
+                    if (!isExpanded && textLayoutResult.hasVisualOverflow) {
+                        canExpand = true
+                    }
+                }
             )
+            if (canExpand || isExpanded) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (isExpanded) "Show Less" else "Show More",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = colors.primary,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    ),
+                    modifier = Modifier.clickable { isExpanded = !isExpanded }
+                )
+            }
         }
 
         // Timestamp
