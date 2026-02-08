@@ -373,7 +373,7 @@ class GeminiClient(
               "reason": "Brief explanation. (e.g., 'Safe link but message is a sextortion attempt' or 'Phishing link for FedEx').",
               "confidence": 0-100,
               "sources": [ { "title": "Evidence Source", "url": "https://..." } ],
-              "recipient": "abuse@<hosting_provider>.com", 
+              "recipient": "abuse@<hosting_provider>.com (or fallback to report-phishing@google.com if hosting provider is unknown)", 
               "subject": "Security Threat Report: $url",
               "body": "To whom it may concern,\n\nThe following URL/Context was flagged as a threat:\nURL: $url\nContext: $contextText\n\nPlease investigate.\n\nSent via Aegis Security Agent."
             }

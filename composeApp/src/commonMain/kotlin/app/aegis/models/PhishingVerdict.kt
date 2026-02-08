@@ -40,7 +40,7 @@ fun parsePhishingVerdictJson(rawJson: String): PhishingVerdict {
                 riskLevel = RiskLevel.DANGER,
                 reason = "High risk link detected (AI Output was messy).",
                 confidence = 80,
-                recipient = "report@phishing.org", // generic fallback
+                recipient = "report-phishing@google.com", // Google Safe Browsing fallback
                 subject = "Suspicious Link Report",
                 body = "I found a suspicious link. Please investigate."
             )

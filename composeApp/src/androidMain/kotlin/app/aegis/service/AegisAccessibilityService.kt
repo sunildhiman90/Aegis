@@ -465,7 +465,7 @@ class AegisAccessibilityService :
             urls.distinct().forEach { url ->
                 // Basic Whitelist Check (optimization)
                 if (!isWhitelisted(url)) {
-                    processSuspiciousUrl(url, stableContent, contentHash)
+                    processSuspiciousUrl(url, stableContent, contactName, contentHash)
                     hasProcessingUrl = true
                 }
             }
@@ -2083,7 +2083,7 @@ class AegisAccessibilityService :
         }
     }
 
-    private fun processSuspiciousUrl(url: String, contextText: String, contentHash: Int) {
+    private fun processSuspiciousUrl(url: String, contextText: String, contactName: String, contentHash: Int) {
         if (analysisJob?.isActive == true && currentAnalysisText == url) return // Dedup
 
         // Cancel previous job to avoid race conditions (Generic Scam vs specific URL)
@@ -2133,6 +2133,7 @@ class AegisAccessibilityService :
                                 onTrust = {
                                     sessionWhitelistedUrls.add(url)
                                     snoozedScreens[contentHash] = System.currentTimeMillis() + 30000L
+                                    trustContact(contactName)
                                     overlayManager.hideShield()
                                 },
                             )
