@@ -29,8 +29,8 @@ import io.ktor.http.contentType
 class GeminiClient(
     private val client: HttpClient,
 ) {
-     private val defaultModel = "gemini-3.0-pro"
-     private val defaultModelVision = "gemini-3.0-flash"
+     private val defaultModel = "gemini-3-pro-preview"
+     private val defaultModelVision = "gemini-3-flash-preview"
 
     // TODO, just for testing, need to remove later
 //    private val defaultModel = "gemini-2.5-pro"
