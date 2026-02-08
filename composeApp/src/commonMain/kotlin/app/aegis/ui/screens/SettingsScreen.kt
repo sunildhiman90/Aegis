@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import app.aegis.domain.model.AppThemeMode
 import app.aegis.domain.model.TrustedContact
 import app.aegis.models.SensitivityLevel
+import app.aegis.ui.events.SettingsScreenUiEvent
 import app.aegis.ui.viewmodel.SettingsViewModel
 import app.aegis.ui.theme.*
 import org.jetbrains.compose.resources.stringResource
@@ -599,6 +600,44 @@ fun SettingsScreen(
                     text = stringResource(Res.string.settings_factory_reset_title),
                     style = MaterialTheme.typography.titleMedium,
                     color = colors.error,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Custom API Key Field
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colors.surface)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Custom Gemini API Key",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = colors.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Provide your own key to bypass rate limits (High Thinking and Search).",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = settingsUiState.customApiKey,
+                    onValueChange = {
+                        viewModel.onSettingsScreenUiEvent(SettingsScreenUiEvent.OnCustomApiKeyChange(it))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Paste your API key here", style = MaterialTheme.typography.bodyMedium) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colors.primary,
+                        unfocusedBorderColor = colors.outlineVariant
+                    )
                 )
             }
 

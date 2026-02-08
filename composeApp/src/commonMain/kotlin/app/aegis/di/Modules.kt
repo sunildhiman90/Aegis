@@ -25,7 +25,7 @@ import kotlinx.serialization.json.Json
 /**
  * Common app module with shared dependencies
  */
-val appModule = module {
+val appModule: org.koin.core.module.Module = module {
     // Repositories
     single<TrustedContactRepository> {
         TrustedContactRepositoryImpl(get<app.aegis.data.local.AegisDatabase>().trustedContactDao())
@@ -50,7 +50,7 @@ val appModule = module {
     viewModelOf(::ProfileViewModel)
 }
 
-val networkModule = module {
+val networkModule: org.koin.core.module.Module = module {
     single {
         HttpClient {
             install(ContentNegotiation) {
@@ -71,6 +71,6 @@ val networkModule = module {
         }
     }
 
-    single { GeminiClient(get()) }
+    single { GeminiClient(get(), get()) }
 }
 

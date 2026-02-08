@@ -51,7 +51,7 @@ class SettingsViewModel(
         )
 
     private var _settingsScreenUiState = MutableStateFlow(SettingsScreenUiState())
-    val settingsScreenUiState = _settingsScreenUiState.asStateFlow()
+    val settingsScreenUiState: StateFlow<SettingsScreenUiState> = _settingsScreenUiState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -59,6 +59,7 @@ class SettingsViewModel(
                 it.copy(
                     loadingThemes = true,
                     selectedAppTheme = getAppThemeDisplayName(settingsRepository.getThemeMode()),
+                    customApiKey = settingsRepository.getCustomApiKey(),
                 )
             }
             val themes = getAppThemes()
@@ -154,6 +155,15 @@ class SettingsViewModel(
                 _settingsScreenUiState.update {
                     it.copy(
                         showNotificationSettingsDialog = event.show,
+                    )
+                }
+            }
+
+            is SettingsScreenUiEvent.OnCustomApiKeyChange -> {
+                settingsRepository.setCustomApiKey(event.apiKey)
+                _settingsScreenUiState.update {
+                    it.copy(
+                        customApiKey = event.apiKey,
                     )
                 }
             }

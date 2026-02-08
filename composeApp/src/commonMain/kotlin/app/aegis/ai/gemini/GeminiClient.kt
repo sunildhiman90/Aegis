@@ -28,9 +28,15 @@ import io.ktor.http.contentType
 
 class GeminiClient(
     private val client: HttpClient,
+    private val settingsRepository: app.aegis.data.settings.AppSettingsRepository
 ) {
-     private val defaultModel = "gemini-3-pro-preview"
-     private val defaultModelVision = "gemini-3-flash-preview"
+    private fun getApiKey(): String {
+        val customKey = settingsRepository.getCustomApiKey()
+        return if (customKey.isNotBlank()) customKey else AegisConfig.GEMINI_API_KEY
+    }
+
+    private val defaultModel = "gemini-3-pro-preview"
+    private val defaultModelVision = "gemini-3-flash-preview"
 
     // TODO, just for testing, need to remove later
 //    private val defaultModel = "gemini-2.5-pro"
@@ -48,7 +54,7 @@ class GeminiClient(
         sensitivity: SensitivityLevel = SensitivityLevel.BALANCED,
         model: String = defaultModel,
     ): ScamVerdict {
-        val apiKey = AegisConfig.GEMINI_API_KEY
+        val apiKey = getApiKey()
 
         // Local Tools Pre-check
         val localAnalysis = SecurityTools.analyzeLocally(screenText)
@@ -117,7 +123,7 @@ class GeminiClient(
         sensitivity: SensitivityLevel = SensitivityLevel.BALANCED,
         model: String = defaultModelVision,
     ): ScamVerdict {
-        val apiKey = AegisConfig.GEMINI_API_KEY
+        val apiKey = getApiKey()
         if (apiKey.isBlank()) return ScamVerdict(RiskLevel.SAFE, "No API Key", 0)
 
         val sensitivityInstruction =
@@ -171,7 +177,7 @@ class GeminiClient(
         sensitivity: SensitivityLevel = SensitivityLevel.BALANCED,
         model: String = defaultModelVision,
     ): NudityVerdict {
-        val apiKey = AegisConfig.GEMINI_API_KEY
+        val apiKey = getApiKey()
         if (apiKey.isBlank()) return NudityVerdict(nudity = false, fakeFeed = false, confidence = 0)
 
         val sensitivityInstruction =
@@ -311,6 +317,13 @@ class GeminiClient(
 
             // 3. Combine
             baseVerdict.copy(sources = extractedSources)
+        } catch (e: io.ktor.client.plugins.ClientRequestException) {
+            val reason = when (e.response.status.value) {
+                429 -> "🚨 Rate limit reached. Provide a custom API key in Settings for uninterrupted service."
+                401, 403 -> "🚨 Invalid API Key. Please check your key in Settings."
+                else -> "Analysis Failed (${e.response.status.value})"
+            }
+            ScamVerdict(RiskLevel.SAFE, reason, 0)
         } catch (e: Exception) {
             e.printStackTrace()
             ScamVerdict(RiskLevel.SAFE, "Analysis Failed", 0)
@@ -332,7 +345,7 @@ class GeminiClient(
         sensitivity: SensitivityLevel = SensitivityLevel.BALANCED,
         model: String = defaultModelVision,
     ): app.aegis.models.PhishingVerdict {
-        val apiKey = AegisConfig.GEMINI_API_KEY
+        val apiKey = getApiKey()
         if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "No API Key", 0)
 
         val sensitivityInstruction =
@@ -407,6 +420,13 @@ class GeminiClient(
 
             val rawText = partWithJson?.text ?: ""
             app.aegis.models.parsePhishingVerdictJson(rawText)
+        } catch (e: io.ktor.client.plugins.ClientRequestException) {
+            val reason = when (e.response.status.value) {
+                429 -> "🚨 Rate limit reached. Provide a custom API key in Settings for uninterrupted service."
+                401, 403 -> "🚨 Invalid API Key. Please check your key in Settings."
+                else -> "Analysis Failed (${e.response.status.value})"
+            }
+            app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, reason, 0)
         } catch (e: Exception) {
             e.printStackTrace()
             app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "Analysis Failed", 0)

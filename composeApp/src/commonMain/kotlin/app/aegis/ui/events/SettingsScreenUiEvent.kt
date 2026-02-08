@@ -10,4 +10,5 @@ sealed interface SettingsScreenUiEvent {
     data class ToggleAppLanguageDialog(val show: Boolean) : SettingsScreenUiEvent
     data class ToggleAppThemeDialog(val show: Boolean) : SettingsScreenUiEvent
     data class ToggleShowNotificationsDialog(val show: Boolean) : SettingsScreenUiEvent
+    data class OnCustomApiKeyChange(val apiKey: String) : SettingsScreenUiEvent
 }

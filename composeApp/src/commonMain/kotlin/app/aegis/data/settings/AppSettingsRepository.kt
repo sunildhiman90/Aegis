@@ -22,6 +22,9 @@ class AppSettingsRepository(
 
         // Device ID
         private const val KEY_DEVICE_ID = "device_id"
+
+        // Custom API Key (BYOK)
+        private const val KEY_CUSTOM_API_KEY = "custom_gemini_api_key"
     }
 
     // Onboarding
@@ -130,5 +133,14 @@ class AppSettingsRepository(
 
     fun setDeviceId(id: String) {
         settings.putString(KEY_DEVICE_ID, id)
+    }
+
+    // Custom API Key (BYOK)
+    fun getCustomApiKey(): String {
+        return settings.getString(KEY_CUSTOM_API_KEY, "")
+    }
+
+    fun setCustomApiKey(key: String) {
+        settings.putString(KEY_CUSTOM_API_KEY, key)
     }
 }
