@@ -29,12 +29,12 @@ import io.ktor.http.contentType
 class GeminiClient(
     private val client: HttpClient,
 ) {
-    //    private val defaultModel = "gemini-3.0-pro"
-//    private val defaultModelVision = "gemini-3.0-flash"
+     private val defaultModel = "gemini-3.0-pro"
+     private val defaultModelVision = "gemini-3.0-flash"
 
     // TODO, just for testing, need to remove later
-    private val defaultModel = "gemini-2.5-pro"
-    private val defaultModelVision = "gemini-2.5-flash"
+//    private val defaultModel = "gemini-2.5-pro"
+//    private val defaultModelVision = "gemini-2.5-flash"
 
     // Using Gemini 3 Pro (via AI Studio Free Tier)
     private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/"
