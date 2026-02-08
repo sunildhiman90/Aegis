@@ -67,7 +67,15 @@ class GeminiClient(
                 else -> "SENSITIVITY: BALANCED. Use your best judgment. If you see psychological manipulation or scam indicators, flag it."
             }
 
-        // 🛑 CRITICAL: Keep this detailed prompt. Do not shorten it.
+        // 🛑 AI Prompt
+        val groundingInstruction =
+            """
+            **MANDATORY INVESTIGATION STEP:**
+            **USE GOOGLE SEARCH** to verify the specific claims, phone numbers, or links found in the text.
+            - If it mentions an organization (e.g., FedEx, Mumbai Police, RBI), search if they typically use this communication method.
+            - Search for the specific phrasing (e.g., "package seized", "video call verification") to see if it matches recent fraud alerts.
+            """.trimIndent()
+
         val prompt =
             """
             You are Aegis, an Autonomous Security Investigator.
@@ -80,13 +88,10 @@ class GeminiClient(
             [YOUR MISSION]
             Investigate the "Raw Text" for potential fraud, coercion, or scams.
             
-            **MANDATORY INVESTIGATION STEP:**
-            **USE GOOGLE SEARCH** to verify the specific claims, phone numbers, or links found in the text.
-            - If it mentions an organization (e.g., FedEx, Mumbai Police, RBI), search if they typically use this communication method.
-            - Search for the specific phrasing (e.g., "package seized", "video call verification") to see if it matches recent fraud alerts.
+            $groundingInstruction
             
             [MENTAL TOOLKIT - Combine Search with Logic]
-            1. Official Protocol: Do government agencies or banks ever use personal numbers or video calls? (Verify via Search).
+            1. Official Protocol: Do government agencies or banks ever use personal numbers or video calls? (Verify via Search if enabled).
             2. Urgency Check: Does the text threaten "arrest", "blocking", or "expiry" within a short time?
             3. Link Analysis: Are they using "bit.ly", "ngrok", or unofficial domains for banking?
             
@@ -94,7 +99,7 @@ class GeminiClient(
             Return strictly JSON with this schema:
             {
               "riskLevel": "DANGER" | "WARN" | "SAFE",
-              "reason": "Briefly state the verdict. MUST cite the specific evidence found via Search (e.g., 'Google Search confirms Mumbai Police issued a warning about video call scams on Jan 2026').",
+              "reason": "Briefly state the verdict. MUST cite specific evidence found via Search.",
               "confidence": 0-100
             }
             """.trimIndent()
@@ -337,6 +342,9 @@ class GeminiClient(
                 else -> "SENSITIVITY: BALANCED. Standard phishing detection."
             }
 
+        val groundingInstruction =
+            "Use GOOGLE SEARCH to verify if this domain is known for phishing or if the brand typically uses this TLD."
+
         // 🛑 CRITICAL PROMPT: Detects Phishing & Scams in context
         val promptText =
             """
@@ -348,6 +356,8 @@ class GeminiClient(
             [CASE DATA]
             URL: "$url"
             MESSAGE CONTEXT: "$contextText"
+            
+            $groundingInstruction
             
             Check for:
             1. Phishing: Homograph attacks, suspicious TLDs (.top, .xyz), or brand impersonation.
@@ -369,6 +379,8 @@ class GeminiClient(
             }
             """.trimIndent()
 
+        val toolsList = listOf(Tool(googleSearch = GoogleSearchRetrieval()))
+
         return try {
             val response: GenerateContentResponse =
                 client
@@ -379,7 +391,7 @@ class GeminiClient(
                             GenerateContentRequest(
                                 contents = listOf(Content(listOf(Part(text = promptText)))),
                                 generationConfig = GenerateContentConfig(responseMimeType = "application/json"),
-                                tools = listOf(Tool(googleSearch = GoogleSearchRetrieval()))
+                                tools = toolsList,
                             ),
                         )
                     }.body()

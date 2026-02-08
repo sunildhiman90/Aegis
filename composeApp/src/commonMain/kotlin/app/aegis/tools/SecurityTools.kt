@@ -15,15 +15,14 @@ object SecurityTools {
         "amazon.in", "flipkart.com", "zomato.com", "swiggy.com" // Common Indian safe apps
     )
 
+
     // 💰 MONEY PATTERN: Kotlin Regex (KMP Compatible)
-    // Option: IGNORE_CASE handles "rs" vs "Rs"
     private val MONEY_PATTERN = Regex(
         "(rs\\.?|inr|\\$|usd|euro|eur|₹)\\s?\\d{3,}",
         RegexOption.IGNORE_CASE
     )
 
     // 🚨 HIGH RISK KEYWORDS (Scams/Threats)
-    // These are almost NEVER used in casual chat.
     private val HIGH_RISK_KEYWORDS = listOf(
         "digital arrest", "narcotics", "cbi", "money laundering",
         "seized", "illegal package", "police verification",
@@ -31,12 +30,12 @@ object SecurityTools {
     )
 
     // ⚠️ SUSPICIOUS KEYWORDS (Banking/Access)
-    // These are suspicious but might be used normally (e.g. "OTP" for login).
     private val SUSPICIOUS_KEYWORDS = listOf(
         "kyc", "pan card", "update", "expire", "block",
         "anydesk", "teamviewer", "screen share",
         "lottery", "winner", "prize", "investment", "part time job"
     )
+
 
     fun analyzeLocally(text: String): LocalRisk {
         val lower = text.lowercase()
