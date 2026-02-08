@@ -13,5 +13,7 @@ data class SettingsScreenUiState(
     val showAppThemeDialog: Boolean = false,
     val showNotificationSettingsDialog: Boolean = false,
     val showNotificationsSettingValue: Boolean = false,
-    val customApiKey: String = ""
+    val customApiKey: String = "",
+    val customModelId: String = "",
+    val isDemoMode: Boolean = false
 )

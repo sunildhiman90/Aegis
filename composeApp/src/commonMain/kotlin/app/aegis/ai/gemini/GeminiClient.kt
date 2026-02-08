@@ -55,6 +55,7 @@ class GeminiClient(
         model: String = defaultModel,
     ): ScamVerdict {
         val apiKey = getApiKey()
+        val finalModel = settingsRepository.getCustomModelId().takeIf { it.isNotBlank() } ?: model
 
         // Local Tools Pre-check
         val localAnalysis = SecurityTools.analyzeLocally(screenText)
@@ -260,7 +261,7 @@ class GeminiClient(
         parts: List<Part>,
         useGoogleSearch: Boolean,
     ): ScamVerdict {
-        // ... (Same logic as before)
+
         return try {
             val toolsList = if (useGoogleSearch) listOf(Tool(googleSearch = GoogleSearchRetrieval())) else emptyList()
 
@@ -345,6 +346,7 @@ class GeminiClient(
         sensitivity: SensitivityLevel = SensitivityLevel.BALANCED,
         model: String = defaultModelVision,
     ): app.aegis.models.PhishingVerdict {
+
         val apiKey = getApiKey()
         if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "No API Key", 0)
 

@@ -60,6 +60,8 @@ class SettingsViewModel(
                     loadingThemes = true,
                     selectedAppTheme = getAppThemeDisplayName(settingsRepository.getThemeMode()),
                     customApiKey = settingsRepository.getCustomApiKey(),
+                    customModelId = settingsRepository.getCustomModelId(),
+                    isDemoMode = settingsRepository.isDemoMode(),
                 )
             }
             val themes = getAppThemes()
@@ -164,6 +166,24 @@ class SettingsViewModel(
                 _settingsScreenUiState.update {
                     it.copy(
                         customApiKey = event.apiKey,
+                    )
+                }
+            }
+
+            is SettingsScreenUiEvent.OnCustomModelIdChange -> {
+                settingsRepository.setCustomModelId(event.modelId)
+                _settingsScreenUiState.update {
+                    it.copy(
+                        customModelId = event.modelId,
+                    )
+                }
+            }
+
+            is SettingsScreenUiEvent.OnDemoModeToggle -> {
+                settingsRepository.setDemoMode(event.enabled)
+                _settingsScreenUiState.update {
+                    it.copy(
+                        isDemoMode = event.enabled,
                     )
                 }
             }

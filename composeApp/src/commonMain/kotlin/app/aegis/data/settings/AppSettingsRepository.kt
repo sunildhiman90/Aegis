@@ -25,6 +25,8 @@ class AppSettingsRepository(
 
         // Custom API Key (BYOK)
         private const val KEY_CUSTOM_API_KEY = "custom_gemini_api_key"
+        private const val KEY_CUSTOM_MODEL_ID = "custom_gemini_model_id"
+        private const val KEY_DEMO_MODE = "demo_mode"
     }
 
     // Onboarding
@@ -143,4 +145,17 @@ class AppSettingsRepository(
     fun setCustomApiKey(key: String) {
         settings.putString(KEY_CUSTOM_API_KEY, key)
     }
+
+    // Custom Model ID
+    fun getCustomModelId(): String {
+        return settings.getString(KEY_CUSTOM_MODEL_ID, "")
+    }
+
+    fun setCustomModelId(modelId: String) {
+        settings.putString(KEY_CUSTOM_MODEL_ID, modelId)
+    }
+
+    // Demo Mode
+    fun isDemoMode(): Boolean = settings.getBoolean(KEY_DEMO_MODE, false)
+    fun setDemoMode(enabled: Boolean) = settings.putBoolean(KEY_DEMO_MODE, enabled)
 }

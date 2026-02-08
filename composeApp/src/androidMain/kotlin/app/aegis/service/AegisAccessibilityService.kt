@@ -434,7 +434,9 @@ class AegisAccessibilityService :
         val stableContent = getStableContent(rawChatContent)
         val contentHash = stableContent.hashCode()
 
-        if (contentHash == lastProcessedHash) {
+        val isDemoMode = settingsRepository.isDemoMode()
+
+        if (!isDemoMode && contentHash == lastProcessedHash) {
             Log.d("Aegis", "⏭️ Same content hash, already processed")
             return // 🔋 CPU Saver: Static Screen
         }
@@ -577,7 +579,8 @@ class AegisAccessibilityService :
 
         // 2. FUZZY DEDUP: Check if we are analyzing SIMILAR content to what was last ANALYZED
         // This stops "Online" flickering from re-triggering analysis every 2 seconds.
-        if (lastAnalyzedContent.isNotBlank() && isSimilar(chatContent, lastAnalyzedContent)) {
+        val isDemoMode = settingsRepository.isDemoMode()
+        if (!isDemoMode && lastAnalyzedContent.isNotBlank() && isSimilar(chatContent, lastAnalyzedContent)) {
             Log.d("Aegis", "♻️ Skipping re-analysis: Content is fuzzy-similar to last analyzed state.")
             return
         }

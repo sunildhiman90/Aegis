@@ -605,7 +605,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Custom API Key Field
+            // Custom Gemini Credentials (Advanced)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -620,9 +620,9 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Provide your own key to bypass rate limits (High Thinking and Search).",
+                    text = "Provide your own key to bypass rate limits.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
+                    color = colors.onSurface.copy(alpha = 0.6f)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
@@ -631,7 +631,7 @@ fun SettingsScreen(
                         viewModel.onSettingsScreenUiEvent(SettingsScreenUiEvent.OnCustomApiKeyChange(it))
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Paste your API key here", style = MaterialTheme.typography.bodyMedium) },
+                    placeholder = { Text("Paste API Key", style = MaterialTheme.typography.bodyMedium) },
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -639,6 +639,66 @@ fun SettingsScreen(
                         unfocusedBorderColor = colors.outlineVariant
                     )
                 )
+
+                /*
+                                Spacer(modifier = Modifier.height(20.dp))
+                
+                                Text(
+                                    text = "Custom Model ID",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = colors.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "e.g., 'gemini-3-pro-preview' or 'gemini-1.5-flash'",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurface.copy(alpha = 0.6f)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                OutlinedTextField(
+                                    value = settingsUiState.customModelId,
+                                    onValueChange = {
+                                        viewModel.onSettingsScreenUiEvent(SettingsScreenUiEvent.OnCustomModelIdChange(it))
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = { Text("Enter Model ID", style = MaterialTheme.typography.bodyMedium) },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = colors.primary,
+                                        unfocusedBorderColor = colors.outlineVariant
+                                    )
+                                )
+                
+                                Spacer(modifier = Modifier.height(20.dp))
+                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Demo Mode",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = colors.onSurface
+                                        )
+                                        Text(
+                                            text = "Bypass scan dedup for recording demos",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = colors.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    }
+                                    Switch(
+                                        checked = settingsUiState.isDemoMode,
+                                        onCheckedChange = {
+                                            viewModel.onSettingsScreenUiEvent(SettingsScreenUiEvent.OnDemoModeToggle(it))
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = colors.primary
+                                        )
+                                    )
+                                }
+                */
             }
 
             Spacer(modifier = Modifier.height(24.dp))

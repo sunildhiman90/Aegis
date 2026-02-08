@@ -11,4 +11,6 @@ sealed interface SettingsScreenUiEvent {
     data class ToggleAppThemeDialog(val show: Boolean) : SettingsScreenUiEvent
     data class ToggleShowNotificationsDialog(val show: Boolean) : SettingsScreenUiEvent
     data class OnCustomApiKeyChange(val apiKey: String) : SettingsScreenUiEvent
+    data class OnCustomModelIdChange(val modelId: String) : SettingsScreenUiEvent
+    data class OnDemoModeToggle(val enabled: Boolean) : SettingsScreenUiEvent
 }
