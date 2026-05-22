@@ -1,7 +1,7 @@
 package app.aegis.data.local.entities
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 import app.aegis.domain.model.Incident
 import app.aegis.domain.model.IncidentSeverity
 import app.aegis.domain.model.IncidentType
