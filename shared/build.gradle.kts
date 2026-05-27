@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.buildkonfig)
+
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
@@ -119,16 +119,4 @@ dependencies {
     add("kspIosSimulatorArm64", libs.room.compiler)
 }
 
-buildkonfig {
-    packageName = "app.aegis"
-    objectName = "AegisConfig"
-    exposeObjectWithName = "AegisConfig"
 
-    defaultConfigs {
-        buildConfigField(
-            com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
-            "GEMINI_API_KEY",
-            System.getenv("GEMINI_API_KEY") ?: localProperties.getProperty("GEMINI_API_KEY"),
-        )
-    }
-}

@@ -1,6 +1,6 @@
 package app.aegis.ai.gemini
 
-import app.aegis.AegisConfig
+
 import app.aegis.ai.gemini.types.Content
 import app.aegis.ai.gemini.types.GenerateContentConfig
 import app.aegis.ai.gemini.types.GenerateContentRequest
@@ -31,8 +31,7 @@ class GeminiClient(
     private val settingsRepository: app.aegis.data.settings.AppSettingsRepository
 ) {
     private fun getApiKey(): String {
-        val customKey = settingsRepository.getCustomApiKey()
-        return if (customKey.isNotBlank()) customKey else AegisConfig.GEMINI_API_KEY
+        return settingsRepository.getCustomApiKey()
     }
 
     private val defaultModel = "gemini-3-pro-preview"
@@ -55,6 +54,13 @@ class GeminiClient(
         model: String = defaultModel,
     ): ScamVerdict {
         val apiKey = getApiKey()
+        if (apiKey.isBlank()) {
+            return ScamVerdict(
+                riskLevel = RiskLevel.SAFE,
+                reason = "🚨 Gemini API Key is not configured. Please go to Settings to enter your Gemini API Key.",
+                confidence = 0
+            )
+        }
         val finalModel = settingsRepository.getCustomModelId().takeIf { it.isNotBlank() } ?: model
 
         // Local Tools Pre-check
@@ -125,7 +131,7 @@ class GeminiClient(
         model: String = defaultModelVision,
     ): ScamVerdict {
         val apiKey = getApiKey()
-        if (apiKey.isBlank()) return ScamVerdict(RiskLevel.SAFE, "No API Key", 0)
+        if (apiKey.isBlank()) return ScamVerdict(RiskLevel.SAFE, "🚨 Gemini API Key is not configured. Please go to Settings to enter your Gemini API Key.", 0)
 
         val sensitivityInstruction =
             when (sensitivity) {
@@ -348,7 +354,7 @@ class GeminiClient(
     ): app.aegis.models.PhishingVerdict {
 
         val apiKey = getApiKey()
-        if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "No API Key", 0)
+        if (apiKey.isBlank()) return app.aegis.models.PhishingVerdict(app.aegis.models.RiskLevel.SAFE, "🚨 Gemini API Key is not configured. Please go to Settings to enter your Gemini API Key.", 0)
 
         val sensitivityInstruction =
             when (sensitivity) {

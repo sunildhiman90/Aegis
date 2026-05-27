@@ -15,12 +15,16 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.BatteryStd
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +63,7 @@ fun SettingsScreen(
     var currentSensitivity by remember { mutableStateOf(sensitivityLevel) }
     var currentThemeMode by remember { mutableStateOf(themeMode) }
     val scrollState = rememberScrollState()
+    var isApiKeyVisible by remember { mutableStateOf(false) }
 
     val topContacts by viewModel.topContacts.collectAsState()
     var showResetDialog by remember { mutableStateOf(false) }
@@ -605,7 +610,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Custom Gemini Credentials (Advanced)
+            // Gemini Credentials
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -614,13 +619,13 @@ fun SettingsScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Custom Gemini API Key",
+                    text = "Gemini API Key",
                     style = MaterialTheme.typography.titleSmall,
                     color = colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Provide your own key to bypass rate limits.",
+                    text = "Provide your Gemini API Key to enable AI analysis and protection.",
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurface.copy(alpha = 0.6f)
                 )
@@ -634,6 +639,14 @@ fun SettingsScreen(
                     placeholder = { Text("Paste API Key", style = MaterialTheme.typography.bodyMedium) },
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
+                    visualTransformation = if (isApiKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (isApiKeyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                        val description = if (isApiKeyVisible) "Hide API Key" else "Show API Key"
+                        IconButton(onClick = { isApiKeyVisible = !isApiKeyVisible }) {
+                            Icon(imageVector = image, contentDescription = description)
+                        }
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = colors.primary,
                         unfocusedBorderColor = colors.outlineVariant
